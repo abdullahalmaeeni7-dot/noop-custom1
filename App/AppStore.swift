@@ -33,6 +33,7 @@ final class AppStore: ObservableObject {
     @Published private(set) var whoopAccountUserID: Int64?
     @Published var persistenceError: String?
     @Published private(set) var isImporting = false
+    @Published private(set) var lastImportSummary: String?
     private var journal: [JournalEntry]
     private let storageURL: URL
     private var storageWritable = true
@@ -122,6 +123,7 @@ final class AppStore: ObservableObject {
     }
     func importFile(_ url: URL) async throws {
         guard !isImporting else { return }
+        lastImportSummary = nil
         isImporting = true
         defer { isImporting = false }
         let accessed = url.startAccessingSecurityScopedResource()
@@ -137,19 +139,40 @@ final class AppStore: ObservableObject {
             }
             return try MeasurementExport.readImport(data, filename: url.lastPathComponent)
         }.value
-        guard !imported.days.isEmpty || imported.profile != nil else { throw ImportProblem.empty }
+        guard !imported.days.isEmpty || !imported.activities.isEmpty || imported.profile != nil else { throw ImportProblem.empty }
         let before = stateSnapshot()
         if !imported.days.isEmpty {
             var merged = days.filter { $0.source == .imported }
             for day in imported.days {
+                var day = day
+                if let existing = merged.first(where: { Self.utc.isDate($0.date, inSameDayAs: day.date) }),
+                   URL(fileURLWithPath: url.lastPathComponent).pathExtension.lowercased() != "json" {
+                    if day.heartRates.isEmpty { day.heartRates = existing.heartRates }
+                    if day.steps == 0 { day.steps = existing.steps }
+                    if day.recovery == nil { day.recovery = existing.recovery }
+                    if day.strain == nil { day.strain = existing.strain }
+                    if day.hrv == nil { day.hrv = existing.hrv }
+                    if day.restingHeartRate == nil { day.restingHeartRate = existing.restingHeartRate }
+                    if day.sleepPerformance == nil { day.sleepPerformance = existing.sleepPerformance }
+                    if day.respiratoryRate == nil { day.respiratoryRate = existing.respiratoryRate }
+                    if day.sleepMinutes == 0 { day.sleepMinutes = existing.sleepMinutes }
+                    if day.sleepNeededMinutes == 0 { day.sleepNeededMinutes = existing.sleepNeededMinutes }
+                    if day.energyKcal == 0 { day.energyKcal = existing.energyKcal }
+                }
                 merged.removeAll { Self.utc.isDate($0.date, inSameDayAs: day.date) }
                 merged.append(day)
             }
             days = merged.sorted { $0.date < $1.date }
             if let latest = imported.days.map(\.date).max() { selectedDate = latest }
         }
+        for activity in imported.activities {
+            if let index = activities.firstIndex(where: { $0.id == activity.id }) { activities[index] = activity }
+            else { activities.append(activity) }
+        }
+        if imported.days.isEmpty, let latest = imported.activities.map(\.start).max() { selectedDate = Self.utc.startOfDay(for: latest) }
         if let personalized = imported.profile { profile = personalized }
         do { try writeState() } catch { restoreState(before); throw error }
+        lastImportSummary = (["Imported \(imported.days.count) days and \(imported.activities.count) workouts."] + (imported.profile == nil ? [] : ["Profile preferences included."]) + imported.notices).joined(separator: " ")
     }
 
     /// Merge measurements without replacing supplied WHOOP day scores with local estimates.

@@ -8,12 +8,12 @@ files=[]
 for folder in ['App','Core','Tests','Configuration','WHOOP.xcodeproj','LiveActivityWidget']:
     files.extend(p for p in (ROOT/folder).rglob('*') if p.is_file() and
                  not any(part in {'xcuserdata','__pycache__'} for part in p.relative_to(ROOT).parts))
-files.extend(ROOT/p for p in ['Package.swift','codemagic.yaml','.gitattributes','.gitignore',
+files.extend(ROOT/p for p in ['Package.swift','Package.resolved','codemagic.yaml','.gitattributes','.gitignore',
     'README-CODEMAGIC.md','Scripts/package-ipa-on-mac.sh','Scripts/validate-ipa.py',
     'Scripts/tests/test_validate_ipa.py','Scripts/validate-nutrition-resource.py','lib/nutrition/calc.ts'])
 files=sorted(set(files))
 assert all(p.is_file() for p in files)
-assert len(files)+1<100, 'Keep this package under the GitHub browser upload batch limit.'
+assert len(files)+1<=100, 'Keep this package within the GitHub browser upload batch limit.'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 manifest={'scope':'Complete iOS unsigned cloud-build inputs, not a compiled IPA. No credentials or backend deployment.',
           'files':[{'path':str(p.relative_to(ROOT)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in files]}

@@ -59,6 +59,7 @@ private struct FirstRunView: View {
     @State private var sheet: SetupSheet?
     @State private var importing = false
     @State private var error: String?
+    @State private var importedSummary: String?
     let finish: () -> Void
 
     var body: some View {
@@ -80,9 +81,9 @@ private struct FirstRunView: View {
             .sheet(item: $sheet) { route in
                 switch route { case .health: HealthImportView(); case .account: AccountView() }
             }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .commaSeparatedText]) { result in
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.zip, .json, .commaSeparatedText]) { result in
                 Task { @MainActor in
-                    do { try await store.importFile(result.get()); draft = store.profile; error = nil }
+                    do { try await store.importFile(result.get()); draft = store.profile; importedSummary = store.lastImportSummary; error = nil }
                     catch { self.error = error.localizedDescription }
                 }
             }
@@ -163,7 +164,8 @@ private struct FirstRunView: View {
             Text("Choose where your measurements come from, or start fresh and add them later.").foregroundStyle(PulseColor.muted)
             dataSource("Apple Health", symbol: "heart.fill", detail: "Choose which measurements to import.") { sheet = .health }
             dataSource("WHOOP account", symbol: "person.crop.circle", detail: "Connect through your configured secure bridge.") { sheet = .account }
-            dataSource("Import a data file", symbol: "square.and.arrow.down", detail: "Bring in an app JSON export or heart-rate CSV.") { importing = true }
+            dataSource("Import your WHOOP ZIP", symbol: "square.and.arrow.down", detail: "Choose the downloaded ZIP, CSV or app JSON export.") { importing = true }
+            if let importedSummary { Text(importedSummary).font(PulseFont.body(14)).foregroundStyle(PulseColor.mint) }
             let count = store.days.filter { $0.source != .example }.count
             if count > 0 {
                 Label("\(count) saved days ready for your dashboard", systemImage: "checkmark.circle.fill").foregroundStyle(PulseColor.mint)
@@ -183,7 +185,9 @@ private struct FirstRunView: View {
             }.accessibilityElement(children: .ignore).accessibilityLabel("Setup step \(step.rawValue + 1) of 4")
             Button(buttonTitle, action: advance).buttonStyle(WButton()).disabled(store.isImporting || tracker.isConnecting)
                 .accessibilityIdentifier("setupContinue")
-        }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity).background(PulseColor.background.opacity(0.9))
+        }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 28, style: .continuous), solid: PulseColor.background))
+            .padding(.horizontal, 12).padding(.bottom, 8)
     }
 
     private var buttonTitle: String {

@@ -2,14 +2,54 @@
   "scope": "WHOOP iOS source with first-run setup, functional personal Home, tracker connection, nutrition, Live and saved-data exports; no compiled IPA or credentials.",
   "files": [
     {
+      "path": ".agents/skills/gpui-liquid-glass/SKILL.md",
+      "bytes": 6602,
+      "sha256": "8265b72e1d8b1999c85d736a74b90ec0364172b1a86f90c49ffb0a2373371e92"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/agents/openai.yaml",
+      "bytes": 122,
+      "sha256": "2f709dc453db6efa802f2e1c4cdc2700d308e330f9e216530b96df8a7bf8ca89"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/gpui-examples.md",
+      "bytes": 14940,
+      "sha256": "77edb9cdeed3c34365bb1327981845d8d985c4eab6b7c513b8514e97484f746c"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/gpui-pane-protocol.md",
+      "bytes": 6297,
+      "sha256": "edb9b8dcbef9f97db4afba71050ac761264dabd2acdf94d9c9cf67653d290013"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/implementation.md",
+      "bytes": 34942,
+      "sha256": "3f173606e62f7553bfaa9cf1f9668df15915be1e75dcfaea32bdd2f9ebcbc6d4"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/macos-bridge.md",
+      "bytes": 13063,
+      "sha256": "1c43c794a6be9291fbb2bf880072aa0cfbca7945c947953fb696ebcfab8f96f1"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/project-controls.md",
+      "bytes": 10678,
+      "sha256": "67e323cd4cd70a271abc9c2e6841dfac1b4074e5766a94c067efb2900955c007"
+    },
+    {
+      "path": ".agents/skills/gpui-liquid-glass/references/verification.md",
+      "bytes": 8531,
+      "sha256": "52f1b411adcfaf3bdb63e7024c05f2211946c5d299b7abc9e6339d0423ca23ee"
+    },
+    {
       "path": ".gitattributes",
       "bytes": 173,
       "sha256": "98d98085f8878851d21c084471fca5870692a3f1cb8da1ae14e07f85a7143f69"
     },
     {
       "path": ".github/workflows/ios-ipa.yml",
-      "bytes": 3580,
-      "sha256": "8341fc18f98f67a23460faeaaad290aa141bb06567f6618764b18b39f00a619b"
+      "bytes": 4303,
+      "sha256": "6bde25515a3a7c0b3dc31db188b6a2ce84251ba8f4458828d325e4a7f78e6d24"
     },
     {
       "path": ".gitignore",
@@ -33,8 +73,8 @@
     },
     {
       "path": "App/AppStore.swift",
-      "bytes": 18349,
-      "sha256": "7903fc8f6432f31879b3c58ac10ab7b20c7ac861f51ec2a0e4b03de9a3ea8a05"
+      "bytes": 20279,
+      "sha256": "c3f25e0f49fe6da4cb961c6cacb0fb099f19660d8a0b11639db1e12c2e1fe57d"
     },
     {
       "path": "App/DeviceModel.swift",
@@ -53,8 +93,8 @@
     },
     {
       "path": "App/LiveCamera.swift",
-      "bytes": 28331,
-      "sha256": "0a36e85e4f1d40512061227e338da50e6a35fb710fc9bf233e06ab181146133c"
+      "bytes": 28328,
+      "sha256": "6f3a38a2ead22f77c4090c980fb0bfb5dde459d451ef75d601d6304712335ba0"
     },
     {
       "path": "App/NutritionModel.swift",
@@ -63,8 +103,8 @@
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
-      "bytes": 13480,
-      "sha256": "d7488e4d58a8132cdcc7abbe4c6e420af46ec56deac36ae5ce2b2c33bdd14655"
+      "bytes": 13406,
+      "sha256": "8753e12b71a570871577b9fa7c98500d2c6a0f601728b1abcbd3eaf24771fa05"
     },
     {
       "path": "App/Pulse/PulseHomeCards.swift",
@@ -93,8 +133,8 @@
     },
     {
       "path": "App/Pulse/PulseTrackerView.swift",
-      "bytes": 8489,
-      "sha256": "48ad0b7b792cc2f5088c00274613f8532492e8e6e1787cd7e559911d259d616d"
+      "bytes": 8517,
+      "sha256": "c5e53a52c345dbd6822ab9c251e28a735f6cfdb01d0d00026f3a2cf7fa58ad7d"
     },
     {
       "path": "App/Resources/BrandColors.xcassets/Contents.json",
@@ -198,8 +238,8 @@
     },
     {
       "path": "App/Views/LiveView.swift",
-      "bytes": 14990,
-      "sha256": "2d57402630102962d81e566537f7ac00312e640b359618f463fccc194c09cc68"
+      "bytes": 14914,
+      "sha256": "ca9d3f9be359f0937add7921156d44ed788825dad151c337d0628913dab97174"
     },
     {
       "path": "App/Views/MeasurementExportView.swift",
@@ -208,8 +248,8 @@
     },
     {
       "path": "App/Views/NutritionComponents.swift",
-      "bytes": 11281,
-      "sha256": "d7d1d751332aedba1edef0b7570da1059ed54a058ddeab43759a25c72b66d111"
+      "bytes": 11356,
+      "sha256": "eb4387bab97de6d89381d03cbf0c6a11948fdcaf55d2105d6788bd12bd16fc7b"
     },
     {
       "path": "App/Views/NutritionForms.swift",
@@ -233,23 +273,23 @@
     },
     {
       "path": "App/Views/ReferenceLiveView.swift",
-      "bytes": 24568,
-      "sha256": "4b36afc948538597a5dc514970765684fc8044a69df727cc95c4c2c87e90d995"
+      "bytes": 24621,
+      "sha256": "0efae2268d8e319c2ec9961166f01e1fb2ffc97b5aa46264167a7adf42570287"
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 16737,
-      "sha256": "d01b28273959fba4d3962671dc58be05eaef5f992f30148249d50fd837dbb111"
+      "bytes": 17084,
+      "sha256": "ccf446a25daf3c9f09bb1a445b49ba595d4f02f7a74c28264a43c325d65b7038"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 18718,
-      "sha256": "27c5d69f1c7679e24eb88bbcb589c5584d4ded2b9a1bfb435d4e73aaf8051900"
+      "bytes": 19566,
+      "sha256": "7d3c83ee97dbc8ba683913719135d6e37702a67cd3e6bcd7c30ef62b3c258f84"
     },
     {
       "path": "App/Views/Theme.swift",
-      "bytes": 9445,
-      "sha256": "6c1732b96f3aa92ae17173efe1eb104ada2b915120a8254897b29d15dfea4d40"
+      "bytes": 10947,
+      "sha256": "7bf28ded017be7aece0da856735a62ab92195e874e420cb7a48c38cb3d1346eb"
     },
     {
       "path": "App/Views/WorkoutView.swift",
@@ -258,8 +298,8 @@
     },
     {
       "path": "App/WHOOPApp.swift",
-      "bytes": 13774,
-      "sha256": "1f28e18fb55087794bc3d0429c71d8cf037edebce548d8b8961fd805ef90eccd"
+      "bytes": 14142,
+      "sha256": "a3ec84d690e302d433fdd7a04beb9a9e3a12b3ed42816dc7beb7124ad53617dc"
     },
     {
       "path": "App/WhoopWordmark.swift",
@@ -308,8 +348,8 @@
     },
     {
       "path": "Core/ImportReader.swift",
-      "bytes": 10999,
-      "sha256": "845307926a5163e1224867c398233e9c28d2d7178f200127a1f15148abeaaa1e"
+      "bytes": 27103,
+      "sha256": "c2912796be82ce42799ca3b2a6b77bdd718d48b509ac292cffe69a0805c057a6"
     },
     {
       "path": "Core/LiveStrainEngine.swift",
@@ -328,8 +368,8 @@
     },
     {
       "path": "Core/MeasurementExport.swift",
-      "bytes": 18052,
-      "sha256": "be5b70ed4f793dbfcf3291285c80ca3009bb9a887570808fe8210d16db59fd01"
+      "bytes": 18644,
+      "sha256": "d37aba9f138fe6ce66707d0ec2d50e638bd98e720ff930254248589c0b4d8187"
     },
     {
       "path": "Core/Models.swift",
@@ -557,6 +597,11 @@
       "sha256": "25d33d91e8d139b3872d0887660b39a411b6aa32ebd7dfafa08e6e5140a51128"
     },
     {
+      "path": "Docs/ThirdParty/ZIPFoundation-LICENSE.txt",
+      "bytes": 1105,
+      "sha256": "93a5b6f4c4fcfbca71aaf17f5758d249cf205d5d1c237becc37f14e43af09f6b"
+    },
+    {
       "path": "Docs/WHOOP-PROTOCOL.md",
       "bytes": 9159,
       "sha256": "12b8ac48d1b417129e75f7b859935809b59c320e9b3ca6a593eb3e4ed9db7cc6"
@@ -565,6 +610,11 @@
       "path": "Docs/WHOOP-fonts.json",
       "bytes": 1054,
       "sha256": "241b57afbc55e19b694030eb330ce4d75c166d834f68e94cc19678fda3127e75"
+    },
+    {
+      "path": "Docs/ZIP-AND-GLASS.md",
+      "bytes": 4180,
+      "sha256": "0ea9209af17e3feb6980b8456ed4133830d81d063ccce642063e194bb4cf4cf9"
     },
     {
       "path": "EXPANSION-CONTRACT.md",
@@ -607,9 +657,14 @@
       "sha256": "0c95b9341258f322b1f608d23b77e02fc23fc9d6009013c8d1eb74679ad4c934"
     },
     {
+      "path": "Package.resolved",
+      "bytes": 397,
+      "sha256": "1d246a91e259fa3714b3baa8f8583622940771136de393b3e9162f467c428480"
+    },
+    {
       "path": "Package.swift",
-      "bytes": 488,
-      "sha256": "baafdfae0c6046eebf23c73203dbdefe4721551814a029e52ca33c4cd9c221fa"
+      "bytes": 723,
+      "sha256": "01b685e87c695448eca02ac1368a1c86014e1258ee03ddfe15fa1a0e0f86a034"
     },
     {
       "path": "README-CODEMAGIC.md",
@@ -618,8 +673,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12321,
-      "sha256": "8f8422f9122809d94debbc378b9e347b650b86b8c7c5d4b40fe5d15c8eceb06e"
+      "bytes": 13097,
+      "sha256": "4f3fded71cfc34972564833be5774c3e910fda732a1c46b4be1dacf53317e588"
     },
     {
       "path": "STATUS.md",
@@ -648,8 +703,8 @@
     },
     {
       "path": "Scripts/package-codemagic.py",
-      "bytes": 1893,
-      "sha256": "3be0ad451ec9411b7a23430a3ab29a00e62071b7c780e1588ed3573e8eebacc6"
+      "bytes": 1914,
+      "sha256": "4081c982bb57da8ab6ac6cba1bd33fa212227185f87420821ef2904c6d0773bc"
     },
     {
       "path": "Scripts/package-ipa-on-mac.sh",
@@ -728,8 +783,8 @@
     },
     {
       "path": "Tests/WHOOPCoreTests/CoreTests.swift",
-      "bytes": 17091,
-      "sha256": "a2825390a834f6d5ef40d7a785845492a5b84e2583466604cc84d6d93d74b171"
+      "bytes": 24886,
+      "sha256": "fa12ff7fabd2eb5058df2bc274bf9efd92282ca228b22a580296acd355721988"
     },
     {
       "path": "Tests/WHOOPCoreTests/Fixtures/NutritionCalculation.json",
@@ -793,8 +848,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 5501,
-      "sha256": "628313645d78d8e5fba6ee1a3091f045586fbd96e509c7f438cbba4cd4f2ffe5"
+      "bytes": 6477,
+      "sha256": "9126c4dd0f155c38bba0caae21f007063caf4d119573a473d143459228908d35"
     },
     {
       "path": "Validation/app-syntax.log",
@@ -1035,6 +1090,11 @@
       "path": "Validation/whoop-home-05-swift-syntax.log",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Validation/zip-glass-core-tests.log",
+      "bytes": 39664,
+      "sha256": "3713fc44ba6ce212a0173c9383bce6bf28feedcefee7b68ea3efbb81be780137"
     },
     {
       "path": "WHOOP.xcodeproj/project.pbxproj",

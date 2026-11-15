@@ -20,6 +20,7 @@ struct RootView: View {
     @State private var exporting = false
     @State private var exportDocument = JSONExportDocument()
     @State private var message: String?
+    @State private var importReport: String?
     @State private var confirmClear = false
     @State private var restoringBackup = false
     @State private var pendingBackup: LocalBackup?
@@ -114,12 +115,12 @@ struct RootView: View {
             Button("Record with Live camera") { showingLive = true }
             Button("Fill out journal") { sheet = .journal }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .commaSeparatedText], allowsMultipleSelection: false) { result in
+        .fileImporter(isPresented: $importing, allowedContentTypes: restoringBackup ? [.json] : [.zip, .json, .commaSeparatedText], allowsMultipleSelection: false) { result in
             Task { @MainActor in
                 do {
                     guard let url = try result.get().first else { return }
                     if restoringBackup { pendingBackup = try await store.readBackupFile(url) }
-                    else { try await store.importFile(url) }
+                    else { try await store.importFile(url); importReport = store.lastImportSummary }
                 } catch { message = error.localizedDescription }
             }
         }
@@ -139,6 +140,9 @@ struct RootView: View {
         .alert("Something needs attention", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
             Button("OK", role: .cancel) { message = nil }
         } message: { Text(message ?? "") }
+        .alert("Import complete", isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
+            Button("OK") { importReport = nil }
+        } message: { Text(importReport ?? "") }
         .confirmationDialog("Delete all day data, profile preferences, journal entries, activities and nutrition records from this iPhone?", isPresented: $confirmClear, titleVisibility: .visible) {
             Button("Delete local data", role: .destructive) {
                 if recorder.isRecording { message = "Finish or discard your recording before deleting local data." }
@@ -200,11 +204,11 @@ struct RootView: View {
                         Text(tab.title).font(store.tab == .nutrition ? NFont.body(8) : WFont.body(9)).lineLimit(1)
                     }.foregroundStyle(selected ? Color.white : WColor.muted)
                         .frame(maxWidth: .infinity).padding(.vertical, 10)
+                        .background { if selected { Capsule().fill(.white.opacity(0.12)).padding(4) } }
                 }.accessibilityAddTraits(selected ? .isSelected : [])
             }
-        }.background(store.tab == .nutrition ? NColor.background : WColor.background)
-            .overlay(alignment: .top) { Rectangle().fill(WColor.line).frame(height: 0.5) }
-            .frame(maxWidth: .infinity).background(store.tab == .nutrition ? NColor.background : WColor.background)
+        }.padding(.horizontal, 5).background(AppGlassSurface(shape: Capsule(), interactive: true))
+            .padding(.horizontal, 12).padding(.vertical, 6).frame(maxWidth: .infinity)
     }
 
     private func openMetric(_ metric: ScoreMetric) {
@@ -268,7 +272,7 @@ struct DaySelector: View {
             Button { store.moveDay(1) } label: { Image(systemName: "chevron.right").font(.system(size: compact ? 11 : 16)).frame(width: 44, height: 44) }
                 .disabled(DayCalendar.utc.isDateInToday(store.selectedDate)).accessibilityLabel("Next day")
         }.foregroundStyle(.white)
-            .background { if compact { Capsule().fill(WColor.elevated.opacity(0.55)) } }
+            .background { if compact { AppGlassSurface(shape: Capsule(), interactive: true) } }
             .sheet(isPresented: $pickingDate) {
                 SheetScaffold(title: "Choose a day") {
                     DatePicker("Day", selection: $store.selectedDate, in: ...Date(), displayedComponents: .date)

@@ -101,8 +101,8 @@ private struct PulseTrackerButton: ButtonStyle {
     var secondary = false
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(PulseFont.label(11)).tracking(0.6).frame(maxWidth: .infinity, minHeight: 46)
-            .foregroundStyle(secondary ? PulseColor.text : PulseColor.background)
-            .background(secondary ? PulseColor.card : PulseColor.sleep, in: RoundedRectangle(cornerRadius: 9))
+            .foregroundStyle(PulseColor.text)
+            .background(AppGlassSurface(shape: Capsule(), tint: secondary ? .white.opacity(0.03) : PulseColor.sleep.opacity(0.22), solid: PulseColor.card, interactive: true))
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }

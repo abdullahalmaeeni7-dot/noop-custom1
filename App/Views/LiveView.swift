@@ -136,7 +136,7 @@ struct LiveView: View {
         let strain = historical ? day.strain : recorder.localStrain
         let calorieText = historical && day.energyKcal > 0 ? nText(day.energyKcal) : "—"
         let dayLabel = store.days.contains { DayCalendar.utc.isDate($0.date, inSameDayAs: day.date) } ? (day.source == .example ? "EXAMPLE DAY" : "RECORDED DAY") : "NO RECORDED DATA"
-        let source = historical ? "\(NutritionDay.key(day.date)) · \(dayLabel)" : "LIVE HR · LOCAL STRAIN ESTIMATE · WORKOUT KCAL UNAVAILABLE"
+        let source = historical ? dayLabel : "LIVE HR · LOCAL STRAIN ESTIMATE · WORKOUT KCAL UNAVAILABLE"
         var values: [String], labels: [String], hrIndex: Int?
         switch choice {
         case .overview: values = [nText(hr), calorieText, nText(strain, digits: 1)]; labels = [historical ? "DAY AVG BPM" : "LIVE BPM", historical ? "DAY KCAL" : "WORKOUT KCAL", historical ? "DAY STRAIN" : "LOCAL STRAIN EST."]; hrIndex = 0
@@ -148,7 +148,7 @@ struct LiveView: View {
         }
         let dayScore = choice == .recovery || choice == .sleep
         return LiveOverlaySnapshot(title: historical || dayScore ? "Recorded day stats" : recorder.name,
-            source: dayScore ? "\(NutritionDay.key(day.date)) · \(dayLabel)" : source,
+            source: dayScore ? dayLabel : source,
             values: values, labels: labels, heartRateIndex: historical ? nil : hrIndex,
             sampleDate: historical || recorder.isPaused ? nil : recorder.latestSampleDate ?? device.heartRateReceivedAt)
     }

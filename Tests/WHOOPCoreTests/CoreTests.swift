@@ -1,5 +1,104 @@
 import XCTest
 @testable import WHOOPCore
+import ZIPFoundation
+
+final class WhoopZIPImportTests: XCTestCase {
+    private let cycles = "Cycle start time,Cycle timezone,Recovery score %,Resting heart rate (bpm),Heart rate variability (ms),Day Strain,Energy burned (cal),Sleep performance %,Asleep duration (min),Sleep need (min),Respiratory rate (rpm)\r\n2026-03-10 00:30:00,UTC+04:00,76,55,83.4,12.6,2345,88,416,473,15.2\r\n"
+    private let sleep = "Cycle start time,Cycle timezone,Nap,Sleep performance %,Asleep duration (min),Sleep need (min),Respiratory rate (rpm)\n2026-03-10 00:30:00,UTC+04:00,false,88,416,473,15.2\n2026-03-10 00:30:00,UTC+04:00,true,,22,,\n"
+    private let workout = "Cycle start time,Workout start time,Workout end time,Cycle timezone,Activity name,Activity Strain\n2026-03-10 00:30:00,2026-03-10 17:00:00,2026-03-10 17:45:00,UTC+04:00,\"Strength, circuit\",8.7\n"
+    private func zip(_ files: [(String, String)], compression: CompressionMethod = .deflate) throws -> Data {
+        let archive = try Archive(data: Data(), accessMode: .create)
+        for (name, text) in files {
+            let data = Data(text.utf8)
+            try archive.addEntry(with: name, type: .file, uncompressedSize: Int64(data.count), compressionMethod: compression) { position, size in
+                data.subdata(in: Int(position)..<(Int(position) + size))
+            }
+        }
+        return try XCTUnwrap(archive.data)
+    }
+    func testOfficialZIPImportsCyclesSleepAndWorkoutsWithoutInventedHeartRates() throws {
+        let result = try MeasurementExport.readImport(zip([("export/physiological_cycles.csv", cycles), ("export/sleeps.csv", sleep), ("export/workouts.csv", workout)]), filename: "WHOOP-export.zip")
+        let day = try XCTUnwrap(result.days.first)
+        XCTAssertEqual(result.days.count, 1)
+        XCTAssertEqual(day.date, ISO8601DateFormatter().date(from: "2026-03-09T00:00:00Z"))
+        XCTAssertEqual(day.recovery, 76); XCTAssertEqual(day.strain, 12.6)
+        XCTAssertEqual(day.hrv, 83.4); XCTAssertEqual(day.restingHeartRate, 55)
+        XCTAssertEqual(day.energyKcal, 2345); XCTAssertEqual(day.respiratoryRate, 15.2)
+        XCTAssertEqual(day.sleepMinutes, 416); XCTAssertEqual(day.sleepNeededMinutes, 473)
+        XCTAssertEqual(day.sleepPerformance, 88); XCTAssertTrue(day.heartRates.isEmpty)
+        XCTAssertEqual(day.source, .imported)
+        let activity = try XCTUnwrap(result.activities.first)
+        XCTAssertEqual(activity.name, "Strength, circuit"); XCTAssertEqual(activity.strain, 8.7)
+        XCTAssertEqual(activity.durationMinutes, 45); XCTAssertEqual(activity.strainIsEstimate, false)
+        XCTAssertEqual(activity.start, ISO8601DateFormatter().date(from: "2026-03-10T13:00:00Z"))
+    }
+    func testStoredZIPAndDirectOfficialCSVMatch() throws {
+        let direct = try MeasurementExport.readImport(Data(cycles.utf8), filename: "cycles.csv")
+        let archive = try MeasurementExport.readImport(zip([("physiological_cycles.csv", cycles)], compression: .none), filename: "export.ZIP")
+        XCTAssertEqual(direct.days, archive.days)
+        XCTAssertEqual(try ImportReader.read(Data(cycles.utf8), filename: "cycles.csv"), direct.days)
+    }
+    func testRepeatedWorkoutImportHasStableIdentityEvenWhenScoreChanges() throws {
+        let first = try MeasurementExport.readImport(zip([("workouts.csv", workout)]), filename: "export.zip")
+        let next = try MeasurementExport.readImport(zip([("workouts.csv", workout.replacingOccurrences(of: ",8.7", with: ",9.1"))]), filename: "export.zip")
+        XCTAssertTrue(first.days.isEmpty)
+        XCTAssertEqual(first.activities.first?.id, next.activities.first?.id)
+        XCTAssertEqual(next.activities.first?.strain, 9.1)
+    }
+    func testSleepOnlyArchiveDoesNotAddNapToPrimarySleepOrInventRecovery() throws {
+        let result = try MeasurementExport.readImport(zip([("sleeps.csv", sleep)]), filename: "export.zip")
+        XCTAssertEqual(result.days.first?.sleepMinutes, 416)
+        XCTAssertNil(result.days.first?.recovery); XCTAssertNil(result.days.first?.strain)
+    }
+    func testJournalIsReportedAndDoesNotOverwritePersonalNotes() throws {
+        let result = try MeasurementExport.readImport(zip([("physiological_cycles.csv", cycles), ("journal_entries.csv", "Question text,Answered yes/no\nCaffeine,true\n")]), filename: "export.zip")
+        XCTAssertEqual(result.notices, ["Journal answers are not part of this measurement import."])
+    }
+    func testMissingNumbersStayMissingAndPercentSuffixIsAccepted() throws {
+        let csv = "Cycle start time,Cycle timezone,Recovery score %,Day Strain\n2026-03-10 10:00:00,UTC,76%,\n"
+        let result = try MeasurementExport.readImport(Data(csv.utf8), filename: "cycles.csv")
+        XCTAssertEqual(result.days.first?.recovery, 76); XCTAssertNil(result.days.first?.strain)
+        XCTAssertNil(result.days.first?.hrv); XCTAssertTrue(result.days.first?.heartRates.isEmpty == true)
+    }
+    func testExplicitISOTimeAndIANATimezoneAreSupported() throws {
+        let iso = cycles.replacingOccurrences(of: "2026-03-10 00:30:00", with: "2026-03-09T20:30:00Z")
+        XCTAssertEqual(try ImportReader.read(Data(iso.utf8), filename: "cycles.csv"), try ImportReader.read(Data(cycles.utf8), filename: "cycles.csv"))
+        let ny = cycles.replacingOccurrences(of: "UTC+04:00", with: "America/New_York")
+        XCTAssertEqual(try ImportReader.read(Data(ny.utf8), filename: "cycles.csv").first?.date, ISO8601DateFormatter().date(from: "2026-03-10T00:00:00Z"))
+    }
+    func testInvalidMetricTimezoneAndTruncatedCSVAreRejected() throws {
+        for csv in [cycles.replacingOccurrences(of: ",76,", with: ",101,"), cycles.replacingOccurrences(of: "83.4", with: "NaN"), cycles.replacingOccurrences(of: "UTC+04:00", with: "UTC+99:00"), cycles + "2026-03-11\n"] {
+            XCTAssertThrowsError(try MeasurementExport.readImport(Data(csv.utf8), filename: "cycles.csv"))
+        }
+    }
+    func testDuplicateKnownFilesAndUnsafePathsAreRejected() throws {
+        for files in [[("a/physiological_cycles.csv", cycles), ("b/physiological_cycles.csv", cycles)], [("../physiological_cycles.csv", cycles)]] {
+            XCTAssertThrowsError(try MeasurementExport.readImport(zip(files), filename: "export.zip"))
+        }
+    }
+    func testCorruptedCSVChecksumIsRejectedBeforeParsing() throws {
+        var data = try zip([("physiological_cycles.csv", cycles)], compression: .none)
+        let region = try XCTUnwrap(data.range(of: Data(cycles.utf8)))
+        data[region.lowerBound + 2] ^= 1
+        XCTAssertThrowsError(try MeasurementExport.readImport(data, filename: "export.zip"))
+    }
+    func testUnknownAndBrokenArchivesGiveAnImportError() throws {
+        for data in [Data("not a zip".utf8), try zip([("readme.txt", "not WHOOP measurements")])] {
+            XCTAssertThrowsError(try MeasurementExport.readImport(data, filename: "export.zip")) { XCTAssertTrue($0 is WHOOPCore.ImportError) }
+        }
+    }
+    func testUnpackedSizeLimitStopsHighlyCompressedInput() throws {
+        let data = try zip([("physiological_cycles.csv", String(repeating: "x", count: ImportReader.maximumBytes + 1))])
+        XCTAssertLessThan(data.count, ImportReader.maximumBytes)
+        XCTAssertThrowsError(try MeasurementExport.readImport(data, filename: "export.zip"))
+    }
+    func testConflictingCyclesAndInvalidWorkoutDurationAreRejected() throws {
+        let extra = "2026-03-10 01:30:00,UTC+04:00,75,55,83.4,12.6,2345,88,416,473,15.2\n"
+        XCTAssertThrowsError(try MeasurementExport.readImport(Data((cycles + extra).utf8), filename: "cycles.csv"))
+        let bad = workout.replacingOccurrences(of: "2026-03-10 17:45:00", with: "2026-03-10 16:00:00")
+        XCTAssertThrowsError(try MeasurementExport.readImport(Data(bad.utf8), filename: "workouts.csv"))
+    }
+}
 
 final class LaunchDayDataTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_794_398_400)

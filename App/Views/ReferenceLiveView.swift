@@ -142,7 +142,7 @@ struct ReferenceLiveView: View {
             Button { torch = false; camera.engine.flip() } label: {
                 Image(systemName: "camera.rotate").font(.system(size: 29, weight: .light)).frame(maxWidth: .infinity, minHeight: 48)
             }.accessibilityLabel("Switch front and back cameras").disabled(camera.recording || camera.starting || busy || photoData != nil)
-        }.buttonStyle(PulsePressStyle())
+        }.buttonStyle(PulsePressStyle()).background(AppGlassSurface(shape: Capsule(), solid: Color(white: 0.1), interactive: true))
     }
 
     private func footer(width: CGFloat) -> some View {
@@ -191,7 +191,7 @@ struct ReferenceLiveView: View {
         let metrics = CameraOverlayData.metrics(mode: mode, day: day, liveHeartRate: hr, sampleDate: received, now: now, elapsedSeconds: elapsed)
         let exists = store.days.contains { DayCalendar.utc.isDate($0.date, inSameDayAs: day.date) }
         let label = day.source == .example ? "EXAMPLE" : exists ? "RECORDED DAY" : "NO SAVED DATA"
-        return LiveOverlaySnapshot(title: "WHOOP Live", source: "\(label) · \(NutritionDay.key(day.date))",
+        return LiveOverlaySnapshot(title: "WHOOP Live", source: label,
                                    values: metrics.map(\.value), labels: metrics.map(\.label), heartRateIndex: mode == .live ? 0 : nil,
                                    sampleDate: received, referenceMode: mode, referenceMetrics: metrics)
     }

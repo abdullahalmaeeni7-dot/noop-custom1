@@ -13,6 +13,7 @@ on:
       - 'WHOOP.xcodeproj/**'
       - 'Scripts/**'
       - 'Package.swift'
+      - 'Package.resolved'
       - 'lib/nutrition/calc.ts'
       - '.github/workflows/ios-ipa.yml'
 
@@ -41,6 +42,20 @@ jobs:
             echo 'Place the extracted WHOOP-iOS project at the repository root or in WHOOP-iOS/.' >&2
             exit 1
           fi
+      - name: Select Xcode with the iOS 26 SDK
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob, os, re
+          from pathlib import Path
+          candidates = glob.glob('/Applications/Xcode*26*.app/Contents/Developer')
+          if not candidates:
+              raise SystemExit('Xcode 26 is required to compile and validate the native Liquid Glass implementation.')
+          selected = max(candidates, key=lambda p: tuple(map(int, re.findall(r'\d+', Path(p).parents[1].name))))
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('DEVELOPER_DIR=' + selected + '\n')
+          print('Selected ' + selected)
+          PY
       - name: Check build tools
         run: |
           xcodebuild -version

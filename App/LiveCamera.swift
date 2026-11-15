@@ -361,7 +361,7 @@ extension LiveOverlayRenderer {
         if mode == .overview || mode == .live {
             brand(in: CGRect(x: w * 0.755, y: h * 0.035, width: w * 0.165, height: w * 0.027))
         }
-        // Source/date stays in exported media too; illustrative values remain labeled.
+        // Keep provenance in exported media; the user has removed the date overlay.
         text(snapshot.source, center: CGPoint(x: w / 2, y: h * 0.095), size: w * 0.021,
              color: UIColor.white.withAlphaComponent(0.8), tracking: w * 0.001)
         switch mode {

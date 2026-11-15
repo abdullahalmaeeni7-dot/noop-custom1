@@ -142,7 +142,7 @@ struct MenuView: View {
                 VStack(spacing: 0) {
                     MenuActionRow(title: "Import from Apple Health", symbol: "heart.text.square", action: openHealthImport)
                     Divider()
-                    MenuActionRow(title: "Import day data", symbol: "square.and.arrow.down", action: importData)
+                    MenuActionRow(title: "Import WHOOP ZIP / day data", symbol: "square.and.arrow.down", action: importData)
                     Divider()
                     MenuActionRow(title: "Export day data", symbol: "square.and.arrow.up", action: exportData)
                     Divider()
@@ -196,6 +196,14 @@ struct DataHelpView: View {
     var body: some View {
         SheetScaffold(title: "YOUR DATA FILES") {
             VStack(alignment: .leading, spacing: 24) {
+                SectionHeading(title: "Import a WHOOP export ZIP")
+                WCard {
+                    Text("CHOOSE THE ORIGINAL ZIP").font(WFont.label(12)).tracking(0.8)
+                    Text("Select the ZIP downloaded from WHOOP, or its individual CSV files. Cycle, primary-sleep and workout records are read on this iPhone. You do not need to unzip it or configure a secure bridge.")
+                        .font(WFont.body(15)).foregroundStyle(WColor.muted).padding(.top, 8)
+                    Text("Timestamps use the CSV timezone and are grouped by UTC day. Journal answers are not applied by this measurement import. Average and maximum heart rates are not converted into a continuous heart-rate trace.")
+                        .font(WFont.body(14)).foregroundStyle(WColor.muted).padding(.top, 8)
+                }
                 SectionHeading(title: "Import a day archive")
                 WCard {
                     Text("JSON DAY DATA").font(WFont.label(12)).tracking(0.8)

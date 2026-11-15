@@ -1,11 +1,12 @@
 {
-  "scope": "Welcome, personal setup, Bluetooth discovery and functional Home routing",
+  "scope": "Official WHOOP ZIP/CSV import, date-free Live, installed glass skill and SwiftUI glass surfaces",
   "checked_at": "2026-11-15",
-  "entry": "Welcome \u2192 Profile \u2192 Tracker search \u2192 Data \u2192 personal Home; returning users \u2192 Home",
+  "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
-    "tests_passed": 146,
+    "tests_passed": 159,
     "new_profile_tests": 13,
-    "failures": 0
+    "failures": 0,
+    "new_zip_tests": 13
   },
   "swift_frontend_syntax": "passed",
   "project_structure": "passed",
@@ -41,6 +42,10 @@
     "startup-core-tests.log": {
       "path": "Validation/startup-core-tests.log",
       "sha256": "a5072f333ae501d15b8944f4d95f346f4bd02bd2bc7ce264aa13fadb3bd2c095"
+    },
+    "zip-glass-core-tests.log": {
+      "path": "Validation/zip-glass-core-tests.log",
+      "sha256": "3713fc44ba6ce212a0173c9383bce6bf28feedcefee7b68ea3efbb81be780137"
     }
   },
   "changed_source_sha256": {
@@ -74,12 +79,12 @@
   "chosen_values_separate_from_measured_highlights": true,
   "legacy_backups_supported": true,
   "example_days_in_exported_highlights": false,
-  "apple_sdk_build": true,
+  "apple_sdk_build": false,
   "native_persistence_test": false,
   "native_file_exporter_test": false,
   "exact_visual_match": false,
   "signed_ipa_produced": false,
-  "review": "Docs/APP-STARTUP.md",
+  "review": "Docs/ZIP-AND-GLASS.md",
   "startup": {
     "first_run_shown": true,
     "completion_key": "whoop.setup.completed.v1",
@@ -96,8 +101,8 @@
     "native_build": "passed",
     "physical_device_test": false
   },
-  "unsigned_ipa_produced": true,
-  "native_device_build": {
+  "unsigned_ipa_produced": false,
+  "previous_native_device_build": {
     "provider": "GitHub Actions",
     "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43727040591",
     "source_commit": "f6a9f15a5135f2dd259dfe9b6413e2cf73c5daaa",
@@ -114,5 +119,29 @@
     "artifact_archive_sha256": "2c8a1899cc25f1f91ed1a9b4f9e6d496517f821854d0f0a3f3efab1face8258d",
     "signed": false,
     "physical_device_execution": false
-  }
+  },
+  "current_native_build": "pending",
+  "zip_import": {
+    "offline": true,
+    "official_csv_files": [
+      "physiological_cycles.csv",
+      "sleeps.csv",
+      "workouts.csv"
+    ],
+    "journal_imported": false,
+    "user_archive_tested": false,
+    "zip_dependency": "ZIPFoundation 0.9.20",
+    "crc_checked": true,
+    "extracts_to_disk": false
+  },
+  "glass": {
+    "skill": ".agents/skills/gpui-liquid-glass/SKILL.md",
+    "skill_source_commit": "dce9a4dffa353b39ba96266307892cdf249f2c42",
+    "platform_adaptation": "SwiftUI equivalents of desktop GPUI visual guidance",
+    "native_iOS_minimum": 26,
+    "older_iOS_fallback": "ultraThinMaterial",
+    "reduce_transparency_fallback": "opaque",
+    "physical_visual_test": false
+  },
+  "live_date_overlay": false
 }

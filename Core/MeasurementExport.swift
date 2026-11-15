@@ -118,6 +118,9 @@ public enum MeasurementExport {
 
     public static func readImport(_ data: Data, filename: String) throws -> ImportedMeasurementArchive {
         guard data.count <= ImportReader.maximumBytes else { throw ImportError.tooLarge }
+        let suffix = URL(fileURLWithPath: filename).pathExtension.lowercased()
+        if suffix == "zip" { return try WhoopExportImporter.readZIP(data) }
+        if suffix == "csv", WhoopExportImporter.recognizesCSV(data) { return try WhoopExportImporter.readCSV(data) }
         if URL(fileURLWithPath: filename).pathExtension.lowercased() == "json",
            data.first(where: { ![9, 10, 13, 32].contains($0) }) == 123 {
             let decoder = ImportReader.jsonDecoder()
@@ -276,4 +279,9 @@ public struct PersonalizedMeasurementArchive: Codable, Equatable, Sendable {
 public struct ImportedMeasurementArchive: Sendable {
     public let days: [DailySnapshot]
     public let profile: ProfilePersonalization?
+    public let activities: [ActivityRecord]
+    public let notices: [String]
+    public init(days: [DailySnapshot], profile: ProfilePersonalization?, activities: [ActivityRecord] = [], notices: [String] = []) {
+        self.days = days; self.profile = profile; self.activities = activities; self.notices = notices
+    }
 }

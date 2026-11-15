@@ -40,8 +40,7 @@ struct PulseCard<Content: View>: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(PulseColor.card.opacity(0.92), in: RoundedRectangle(cornerRadius: 11))
-            .overlay(RoundedRectangle(cornerRadius: 11).strokeBorder(.white.opacity(0.015), lineWidth: 0.3))
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
     }
 }
 struct PulseRing: View {
@@ -91,7 +90,7 @@ struct PulseDayStrip: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
         ZStack {
-            Capsule().fill(.white.opacity(0.045)).frame(width: 126, height: 28)
+            AppGlassSurface(shape: Capsule()).frame(width: 126, height: 28)
             Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28)
             Button { select(index - 1) } label: {
                 Image(systemName: "chevron.left").frame(width: 44, height: 44).contentShape(Rectangle())
@@ -140,8 +139,7 @@ struct PulseTabBar: View {
                         .foregroundStyle(item.offset == 0 ? PulseColor.text : PulseColor.muted)
                         .accessibilityLabel(item.element.1).accessibilityAddTraits(item.offset == 0 ? .isSelected : [])
                 }
-            }.padding(.horizontal, 8).background(PulseColor.top.opacity(0.88), in: Capsule())
-                .background(.ultraThinMaterial, in: Capsule())
+            }.padding(.horizontal, 8).background(AppGlassSurface(shape: Capsule(), solid: PulseColor.top, interactive: true))
                 .overlay(Capsule().stroke(.white.opacity(0.10), lineWidth: 0.7))
             Button(action: coachAction) {
                 ZStack {

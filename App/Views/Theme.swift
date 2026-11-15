@@ -24,6 +24,36 @@ enum WFont {
     static func label(_ size: CGFloat = 12) -> Font { .custom("DINPro-Bold", size: size, relativeTo: .caption).weight(.bold) }
 }
 
+/// SwiftUI material equivalent for the installed desktop glass skill's visual rules.
+/// Backgrounds are sampled by the system; Reduce Transparency uses an opaque surface.
+struct AppGlassSurface<S: Shape>: View {
+    let shape: S
+    var tint = Color.white.opacity(0.025)
+    var solid = WColor.card
+    var interactive = false
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
+    var body: some View {
+        Group {
+            if reduceTransparency { shape.fill(solid) }
+            else { material }
+        }.overlay(shape.stroke(LinearGradient(colors: [.white.opacity(contrast == .increased ? 0.40 : 0.20), .white.opacity(0.035), .white.opacity(0.08)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.75))
+            .allowsHitTesting(false)
+    }
+    @ViewBuilder private var material: some View {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            Color.clear.glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
+        } else { fallback }
+        #else
+        fallback
+        #endif
+    }
+    private var fallback: some View {
+        shape.fill(.ultraThinMaterial).overlay(shape.fill(solid.opacity(0.32)))
+    }
+}
+
 struct WCard<Content: View>: View {
     private let content: Content
     private let padding: CGFloat
@@ -34,8 +64,7 @@ struct WCard<Content: View>: View {
     }
     var body: some View {
         content.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(LinearGradient(colors: [surface ?? WColor.card, surface ?? WColor.card.opacity(0.72)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: radius))
-            .overlay(RoundedRectangle(cornerRadius: radius).stroke(WColor.line, lineWidth: 0.7))
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: radius * 2, style: .continuous), tint: (surface ?? WColor.card).opacity(0.13), solid: surface ?? WColor.card))
     }
 }
 
@@ -85,8 +114,8 @@ struct WButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(WFont.label(13)).tracking(0.9)
             .frame(maxWidth: .infinity).padding(.vertical, 16)
-            .foregroundStyle(filled ? Color.black : Color.white)
-            .background(filled ? Color.white : WColor.elevated, in: Capsule())
+            .foregroundStyle(Color.white)
+            .background(AppGlassSurface(shape: Capsule(), tint: filled ? WColor.sleep.opacity(0.25) : .white.opacity(0.03), solid: WColor.elevated, interactive: true))
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
@@ -178,8 +207,11 @@ struct ScoreRing: View {
 
 struct WhoopBackground: View {
     var body: some View {
-        LinearGradient(colors: [WColor.backgroundTop, WColor.background, WColor.background],
-                       startPoint: .top, endPoint: .bottom).ignoresSafeArea()
+        ZStack {
+            LinearGradient(colors: [WColor.backgroundTop, WColor.background, WColor.background], startPoint: .top, endPoint: .bottom)
+            RadialGradient(colors: [WColor.blue.opacity(0.16), .clear], center: .topTrailing, startRadius: 10, endRadius: 410)
+            RadialGradient(colors: [WColor.purple.opacity(0.09), .clear], center: .bottomLeading, startRadius: 10, endRadius: 360)
+        }.ignoresSafeArea()
     }
 }
 
