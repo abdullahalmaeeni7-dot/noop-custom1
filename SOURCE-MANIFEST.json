@@ -1,5 +1,5 @@
 {
-  "scope": "WHOOP iOS source with first-run setup, functional personal Home, tracker connection, nutrition, Live and saved-data exports; no compiled IPA or credentials.",
+  "scope": "WHOOP iOS with first-run setup, offline WHOOP ZIP/CSV import, date-free Live, native SwiftUI glass surfaces and personalized saved-data exports. No credentials or compiled IPA in this source archive.",
   "files": [
     {
       "path": ".agents/skills/gpui-liquid-glass/SKILL.md",
@@ -613,8 +613,8 @@
     },
     {
       "path": "Docs/ZIP-AND-GLASS.md",
-      "bytes": 4523,
-      "sha256": "b1c48dd839681e63e679d77fb0a83489a491da57a39b40d885f8d9b6815223bd"
+      "bytes": 4879,
+      "sha256": "086095c80bb94bc004ded3e41a6ff4abcb67a31224ecb75416ca263a6a1a47b5"
     },
     {
       "path": "EXPANSION-CONTRACT.md",
@@ -673,8 +673,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13097,
-      "sha256": "2848052ea708d4ca39d7c376bef93df178ce4e8101caf90e5b422cd8eb6bb19e"
+      "bytes": 13379,
+      "sha256": "8fd69ab9e3cb29d21af6ee209f83c823c1ac98ec041f01067edd38ce20c96355"
     },
     {
       "path": "STATUS.md",
@@ -848,8 +848,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 6857,
-      "sha256": "c722741e9831320a6ceaa76b97ee23cb88bc80f81553a1a70ec067efeb6e8b36"
+      "bytes": 8239,
+      "sha256": "00a3bec6dad1e282a6a814a4ae819149c40efc150d35be4bf7557387026dda74"
     },
     {
       "path": "Validation/app-syntax.log",
