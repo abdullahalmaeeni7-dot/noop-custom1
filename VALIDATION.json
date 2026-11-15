@@ -65,13 +65,13 @@
     "App/Pulse/PulseHomePanels.swift": "99617732159d26f71f2d291c17d07532d16cb8ba05b182805cfa02ac51ccc328",
     "App/Pulse/PulseComponents.swift": "18f0ea353c99ae1ab12bd6b20df537c7fb666bb4deb53e7c33b5629f0907980e",
     "App/Views/MeasurementExportView.swift": "9fcd0185e898389f92c7eed9dd046cd88d3c256e048573045d71e48b9626d62d",
-    "App/Views/RootView.swift": "cb2a91f5a71f16f4ddc23f1bff6fae9bbd35bae7447cb04bdc9dfb8aca07960e",
+    "App/Views/RootView.swift": "f6f324b493132c7cde9e0e4872b79b5ec9f83747b574789f3444afd8e4220a18",
     "Tests/WHOOPCoreTests/MeasurementExportTests.swift": "b8a2d0080c5dba13b3068f90cacf6146d21db5dbad41266779ae1faf9115b326",
     "App/DeviceModel.swift": "4b18856e060fba6209d0af8cbe4017c52cf1137d5b9515ee89e1efcc8460d2af",
     "App/Pulse/PulseTrackerView.swift": "5c4360a1bfcc57eda0877183800a866425dcfee2479c531697db795e53dd8434",
-    "App/Views/DashboardViews.swift": "f3e52644e66ee422cc09a1d900a41b59dee68be54bba9d20485bacf97095d420",
+    "App/Views/DashboardViews.swift": "b866db87b04cb8f463620f4dbc798900c0f95ba9e5f7c17ddccb2aaba9f8c179",
     "App/Views/SecondaryViews.swift": "63c5d2409863a3c9ae319db5a8031d6a6da41ff4f53049db7c7118658cf76440",
-    "App/Views/Theme.swift": "12812c95cc241907daa5fd3f20f0151968460533928e8795971e9e9e7fa29052",
+    "App/Views/Theme.swift": "e23cffa3751b0d3a5ffee60c942b324e454d1dd86cfecfe98816f45e120276ad",
     "App/WHOOPApp.swift": "a3ec84d690e302d433fdd7a04beb9a9e3a12b3ed42816dc7beb7124ad53617dc",
     "Tests/WHOOPCoreTests/CoreTests.swift": "8a63fc29cd98971b506cf08a4c4918569b4233605bc130e0ea7bccae4e10ed4a",
     "Core/ImportReader.swift": "bde642579ae97b55e61abd04f44d9553878f905e238afd1c5d0ce477df9e82a9",
@@ -87,7 +87,7 @@
     "Configuration/Info.plist": "a017a42c32f980156a7d63f6a8b3677f7834627b4b9c2581199bbcd99d8e958f",
     ".github/workflows/ios-ipa.yml": "6bde25515a3a7c0b3dc31db188b6a2ce84251ba8f4458828d325e4a7f78e6d24",
     "App/Pulse/PulseHomeCards.swift": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb",
-    ".github/workflows/ios-layout.yml": "d470232a6b200f93f31a887a8e1c11e6da6bb271dda24f6f12e6b0c5fc976af2"
+    ".github/workflows/ios-layout.yml": "96f8a0cf1460c17d85d443abcceb5f37c853411301a75f0bde2364d7e8308066"
   },
   "export_formats": [
     "personalized JSON",
@@ -101,7 +101,7 @@
   "chosen_values_separate_from_measured_highlights": true,
   "legacy_backups_supported": true,
   "example_days_in_exported_highlights": false,
-  "apple_sdk_build": true,
+  "apple_sdk_build": false,
   "native_persistence_test": false,
   "native_file_exporter_test": false,
   "exact_visual_match": false,
@@ -123,21 +123,26 @@
     "native_build": "passed",
     "physical_device_test": false
   },
-  "unsigned_ipa_produced": true,
+  "unsigned_ipa_produced": false,
   "previous_native_device_build": {
     "provider": "GitHub Actions",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43758576089",
-    "source_commit": "9b7fda9",
-    "result": "device build and packaging passed",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125",
+    "source_commit": "de922d8bccf856c7cd86bab93f2be2b04d20fd76",
+    "result": "success",
+    "runner": "macos-15-intel",
+    "duration": "7m 5s",
+    "device_build": "passed",
+    "device_package_validation": "passed",
     "architecture": "arm64",
     "platform": "iOS device",
-    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43758576089/artifacts/14179517413",
-    "artifact_size": "3.92 MB",
-    "artifact_archive_sha256": "b59ebbf1e65a4c222695c2617ea9109ed43a9230bb36b2b88262003741d470b6",
+    "artifact_name": "WHOOP-unsigned-iphone-ipa",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/artifacts/14180410638",
+    "artifact_size": "3.93 MB",
+    "artifact_archive_sha256": "92edecbea9b6cb1d4e5955f2a8561024d7ab28fe5c5acb2bdb04d7f26d51175f",
     "signed": false,
     "physical_device_test": false
   },
-  "current_native_build": "success",
+  "current_native_build": "pending visual refinements",
   "zip_import": {
     "offline": true,
     "official_csv_files": [
@@ -178,7 +183,16 @@
   "layout": {
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
-    "native_screenshot": "Not produced: Intel simulator attempt timed out after 12 minutes. Apple Silicon Release retry is a separate workflow; device IPA is verified."
+    "native_screenshot": {
+      "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43761990313",
+      "source_commit": "4c03520642e13ec35260d1c0508c5857a7ee2592",
+      "actual_images": true,
+      "onboarding_inspected": true,
+      "home_inspected": true,
+      "synthetic_fixture": true,
+      "directory": "design/home/native-review-01",
+      "next_iteration": "Icon, background, edge and review-height refinements pending native build."
+    }
   },
   "nutrition_tests": {
     "calculator_and_routes_passed": 20,
@@ -189,23 +203,5 @@
   "packaging_tests": {
     "passed": 13,
     "failures": 0
-  },
-  "native_device_build": {
-    "provider": "GitHub Actions",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125",
-    "source_commit": "de922d8bccf856c7cd86bab93f2be2b04d20fd76",
-    "result": "success",
-    "runner": "macos-15-intel",
-    "duration": "7m 5s",
-    "device_build": "passed",
-    "device_package_validation": "passed",
-    "architecture": "arm64",
-    "platform": "iOS device",
-    "artifact_name": "WHOOP-unsigned-iphone-ipa",
-    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/artifacts/14180410638",
-    "artifact_size": "3.93 MB",
-    "artifact_archive_sha256": "92edecbea9b6cb1d4e5955f2a8561024d7ab28fe5c5acb2bdb04d7f26d51175f",
-    "signed": false,
-    "physical_device_test": false
   }
 }

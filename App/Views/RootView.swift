@@ -155,7 +155,7 @@ struct RootView: View {
                 })
 
         }
-        .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground() } }
+        .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground(healthGlow: store.tab == .health) } }
         .overlay(alignment: .bottom) { floatingNavigation.padding(.bottom, 8) }
         .onChange(of: store.tab) { _, _ in compactMetrics = false }
         .preferredColorScheme(.dark)
@@ -212,7 +212,7 @@ struct RootView: View {
                         Circle().fill(LinearGradient(colors: [Color(red: 1, green: 0.69, blue: 0.43), Color(red: 1, green: 0.52, blue: 0.47)], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: 30, height: 30).overlay(Text(store.profile.initials(fallback: "YOU")).font(WFont.body(12).weight(.bold)).foregroundStyle(.black))
                         HStack(spacing: 6) {
-                            Image(systemName: "flame.fill").foregroundStyle(.orange).font(.system(size: 15))
+                            Text("🔥").font(.system(size: 15))
                             Text(streak.formatted()).font(WFont.number(14, bold: true)).lineLimit(1).minimumScaleFactor(0.5)
                         }.padding(.horizontal, 10).frame(height: 30).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12)).padding(.leading, -4)
                     }.frame(minHeight: 44)
@@ -240,8 +240,7 @@ struct RootView: View {
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { store.tab = tab }
                     } label: {
                         VStack(spacing: 4) {
-                            Image(systemName: tab == .home ? "house" : tab == .health ? "heart.text.square" : tab.symbol)
-                                .font(.system(size: 21, weight: .light))
+                            WhoopNavigationIcon(tab: tab)
                             Text(tab.title).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
                         }.foregroundStyle(selected ? Color.white : WColor.muted)
                             .frame(maxWidth: .infinity, minHeight: 58)

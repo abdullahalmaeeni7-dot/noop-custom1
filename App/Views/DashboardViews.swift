@@ -68,7 +68,7 @@ struct HomeView: View {
                     Text(reviewTitle).font(WFont.body(14).weight(.semibold))
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
-                }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
+                }.padding(.horizontal, 15).padding(.vertical, 9).frame(maxWidth: .infinity, minHeight: 44)
                     .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
             }.buttonStyle(.plain)
             tonight

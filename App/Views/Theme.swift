@@ -37,7 +37,7 @@ struct AppGlassSurface<S: Shape>: View {
         Group {
             if reduceTransparency { shape.fill(solid) }
             else { material }
-        }.overlay(shape.stroke(LinearGradient(colors: [.white.opacity(contrast == .increased ? 0.40 : 0.20), .white.opacity(0.035), .white.opacity(0.08)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.75))
+        }.overlay(shape.stroke(LinearGradient(colors: [.white.opacity(contrast == .increased ? 0.40 : 0.08), .white.opacity(0.02), .white.opacity(0.04)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.5))
             .allowsHitTesting(false)
     }
     @ViewBuilder private var material: some View {
@@ -206,11 +206,13 @@ struct ScoreRing: View {
 }
 
 struct WhoopBackground: View {
+    var healthGlow = false
     var body: some View {
         ZStack {
             LinearGradient(colors: [WColor.backgroundTop, WColor.background, WColor.background], startPoint: .top, endPoint: .bottom)
-            RadialGradient(colors: [WColor.blue.opacity(0.16), .clear], center: .topTrailing, startRadius: 10, endRadius: 410)
-            RadialGradient(colors: [WColor.purple.opacity(0.09), .clear], center: .bottomLeading, startRadius: 10, endRadius: 360)
+            if healthGlow {
+                RadialGradient(colors: [PulseColor.mint.opacity(0.16), .clear], center: .topTrailing, startRadius: 10, endRadius: 410)
+            }
         }.ignoresSafeArea()
     }
 }
@@ -229,4 +231,25 @@ func utcDateText(_ date: Date, style: Date.FormatStyle) -> String {
 @MainActor
 func selectedDayExists(in store: AppStore) -> Bool {
     store.days.contains { DayCalendar.utc.isDate($0.date, inSameDayAs: store.selectedDate) }
+}
+
+struct WhoopNavigationIcon: View {
+    let tab: AppTab
+    var body: some View {
+        Group {
+            switch tab {
+            case .home:
+                PulseHomeTabShape().stroke(style: StrokeStyle(lineWidth: 1.25, lineCap: .round, lineJoin: .round)).frame(width: 22, height: 22)
+            case .health:
+                ZStack {
+                    Image(systemName: "heart").font(.system(size: 24, weight: .light))
+                    Image(systemName: "waveform.path.ecg").font(.system(size: 12, weight: .light)).offset(y: -1)
+                }.frame(width: 24, height: 24)
+            case .community:
+                Image(systemName: "person.3").font(.system(size: 21, weight: .light))
+            default:
+                Image(systemName: tab.symbol).font(.system(size: 21, weight: .light))
+            }
+        }.frame(width: 26, height: 26).accessibilityHidden(true)
+    }
 }
