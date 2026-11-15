@@ -46,6 +46,14 @@
     "zip-glass-core-tests.log": {
       "path": "Validation/zip-glass-core-tests.log",
       "sha256": "7c58a9b2e0d8e47edb48e203a713f63c13266017453aa8ce1fc03c24f994ac36"
+    },
+    "layout-camera-tooling-tests.log": {
+      "path": "Validation/layout-camera-tooling-tests.log",
+      "sha256": "b01a4e18ab591ce5029451202c3fee85c86c2a25d0662bc1a55a5b6cdbd61d07"
+    },
+    "layout-camera-package-tests.log": {
+      "path": "Validation/layout-camera-package-tests.log",
+      "sha256": "52c14bfb494184853be24b5094816ce778c7f3d5116fba8eef9d68a6c02e4736"
     }
   },
   "changed_source_sha256": {
@@ -77,8 +85,9 @@
     "App/Views/NutritionViews.swift": "f5725c643fdacfbb0a78c13999d6791a11e2f989f65b65f59655c2248e995ab1",
     "App/Views/ReferenceComponents.swift": "9a757bf913b06bf7dff93b77303193454c5ff5cf22a79aff7f4048951451e998",
     "Configuration/Info.plist": "a017a42c32f980156a7d63f6a8b3677f7834627b4b9c2581199bbcd99d8e958f",
-    ".github/workflows/ios-ipa.yml": "21bbaf62309b8faf5052c8fae2098f3f425bdfa4562c2c539c896da0abbecb88",
-    "App/Pulse/PulseHomeCards.swift": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb"
+    ".github/workflows/ios-ipa.yml": "6bde25515a3a7c0b3dc31db188b6a2ce84251ba8f4458828d325e4a7f78e6d24",
+    "App/Pulse/PulseHomeCards.swift": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb",
+    ".github/workflows/ios-layout.yml": "d470232a6b200f93f31a887a8e1c11e6da6bb271dda24f6f12e6b0c5fc976af2"
   },
   "export_formats": [
     "personalized JSON",
@@ -92,7 +101,7 @@
   "chosen_values_separate_from_measured_highlights": true,
   "legacy_backups_supported": true,
   "example_days_in_exported_highlights": false,
-  "apple_sdk_build": false,
+  "apple_sdk_build": true,
   "native_persistence_test": false,
   "native_file_exporter_test": false,
   "exact_visual_match": false,
@@ -114,7 +123,7 @@
     "native_build": "passed",
     "physical_device_test": false
   },
-  "unsigned_ipa_produced": false,
+  "unsigned_ipa_produced": true,
   "previous_native_device_build": {
     "provider": "GitHub Actions",
     "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43758576089",
@@ -128,7 +137,7 @@
     "signed": false,
     "physical_device_test": false
   },
-  "current_native_build": "pending",
+  "current_native_build": "success",
   "zip_import": {
     "offline": true,
     "official_csv_files": [
@@ -163,12 +172,13 @@
     "permission_recovery": true,
     "physical_device_test": false,
     "production_ai_provider_test": false,
-    "requires_server_credentials": true
+    "requires_server_credentials": true,
+    "native_compile": "passed on the iOS device SDK"
   },
   "layout": {
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
-    "native_screenshot": "First simulator build exited 65; no screenshot produced. Retrying with explicit simulator SDK and public error annotations."
+    "native_screenshot": "Not produced: Intel simulator attempt timed out after 12 minutes. Apple Silicon Release retry is a separate workflow; device IPA is verified."
   },
   "nutrition_tests": {
     "calculator_and_routes_passed": 20,
@@ -179,5 +189,23 @@
   "packaging_tests": {
     "passed": 13,
     "failures": 0
+  },
+  "native_device_build": {
+    "provider": "GitHub Actions",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125",
+    "source_commit": "de922d8bccf856c7cd86bab93f2be2b04d20fd76",
+    "result": "success",
+    "runner": "macos-15-intel",
+    "duration": "7m 5s",
+    "device_build": "passed",
+    "device_package_validation": "passed",
+    "architecture": "arm64",
+    "platform": "iOS device",
+    "artifact_name": "WHOOP-unsigned-iphone-ipa",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/artifacts/14180410638",
+    "artifact_size": "3.93 MB",
+    "artifact_archive_sha256": "92edecbea9b6cb1d4e5955f2a8561024d7ab28fe5c5acb2bdb04d7f26d51175f",
+    "signed": false,
+    "physical_device_test": false
   }
 }

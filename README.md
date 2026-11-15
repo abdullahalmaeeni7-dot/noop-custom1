@@ -6,7 +6,7 @@ Home now follows the supplied reference hierarchy, with three animated score rin
 
 Nutrition includes a real Take Photo capture flow, photo-library selection, preview and editable AI estimates. Capture works independently of the server. **AI photo/text analysis requires a configured HTTPS account bridge with server-only `AI_API_KEY`, `AI_API_URL` and a vision-capable `AI_MODEL`.** No credentials or production service are bundled. Connection settings and manual-entry recovery are available directly from the food form.
 
-See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). Current native build and screenshot links will be recorded after the workflow completes.
+See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). The [final iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/job/132953369430). Download the [updated unsigned IPA ZIP](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/artifacts/14180410638), extract it, and sign/install with Sideloadly. The binary includes the camera lifecycle guard. Physical camera capture and a production AI provider remain untested.
 
 ---
 
