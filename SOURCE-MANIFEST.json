@@ -8,8 +8,8 @@
     },
     {
       "path": ".github/workflows/ios-ipa.yml",
-      "bytes": 2593,
-      "sha256": "ad30b41799479a7643ea4629dc45ec076613b32163a2407dc2269ffda117bdd9"
+      "bytes": 3580,
+      "sha256": "8341fc18f98f67a23460faeaaad290aa141bb06567f6618764b18b39f00a619b"
     },
     {
       "path": ".gitignore",

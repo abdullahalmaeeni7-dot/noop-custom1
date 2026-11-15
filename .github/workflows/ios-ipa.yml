@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   device-ipa:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +54,30 @@ jobs:
           python3 -m unittest discover -s Scripts/tests -v
       - name: Build real arm64 device application and package
         working-directory: ${{ steps.project.outputs.directory }}
-        run: bash Scripts/package-ipa-on-mac.sh
+        shell: bash
+        run: |
+          if bash Scripts/package-ipa-on-mac.sh; then
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          def escape(value):
+              return value.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          seen = set()
+          for log in Path('build').glob('device-build.*/xcodebuild.log'):
+              for source, line, column, message in re.findall(r'^(.+\.swift):(\d+):(\d+): error: (.+)$', log.read_text(errors='replace'), re.M):
+                  diagnostic = (source, line, column, message)
+                  if diagnostic in seen:
+                      continue
+                  seen.add(diagnostic)
+                  try:
+                      source = str(Path(source).relative_to(Path.cwd()))
+                  except ValueError:
+                      pass
+                  print(f'::error file={escape(source)},line={line},col={column}::{escape(message)}')
+          PY
+          exit 1
       - name: Upload unsigned IPA for device signing
         uses: actions/upload-artifact@v4
         with:
