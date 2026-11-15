@@ -195,7 +195,7 @@ struct RootView: View {
                             Text(streak.formatted()).font(WFont.number(14, bold: true)).lineLimit(1).minimumScaleFactor(0.5)
                         }.padding(.horizontal, 10).frame(height: 30).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12)).padding(.leading, -4)
                     }.frame(minHeight: 44)
-                }.buttonStyle(.plain).accessibilityLabel("Profile, \(streak) day streak")
+                }.buttonStyle(.plain).frame(width: 92, alignment: .leading).accessibilityLabel("Profile, \(streak) day streak")
                 Spacer(minLength: 145)
                 Button { sheet = recorder.isRecording ? .workout : .device } label: {
                     ZStack(alignment: .topTrailing) {
@@ -228,7 +228,8 @@ struct RootView: View {
             }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
             Button { sheet = .review } label: {
                 WhoopMonogram()
-                    .frame(width: 28, height: 28).padding(13)
+                    .frame(width: 23, height: 23).padding(15.5)
+                    .overlay(Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1).padding(11))
             }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))
                 .accessibilityLabel("Open your day in review")
         }.padding(.horizontal, 12).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)

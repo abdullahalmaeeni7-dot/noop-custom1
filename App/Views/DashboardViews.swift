@@ -353,6 +353,7 @@ struct HealthMonitorView: View {
     let openMetric: (ScoreMetric) -> Void
     let importData: () -> Void
     let openHealthImport: () -> Void
+    var showImportActions = true
     private var day: DailySnapshot { store.selectedDay }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -380,8 +381,10 @@ struct HealthMonitorView: View {
                 healthTile("SKIN TEMP", value: "—", unit: "°C", symbol: "thermometer.medium", available: false)
                 healthTile("SLEEP", value: day.sleepMinutes > 0 ? durationText(day.sleepMinutes) : "—", unit: "", symbol: "moon", available: day.sleepMinutes > 0)
             }
-            Button("IMPORT FROM APPLE HEALTH", action: openHealthImport).buttonStyle(WButton())
-            Button("IMPORT DAY DATA FILE", action: importData).buttonStyle(WButton(filled: false))
+            if showImportActions {
+                Button("IMPORT FROM APPLE HEALTH", action: openHealthImport).buttonStyle(WButton())
+                Button("IMPORT DAY DATA FILE", action: importData).buttonStyle(WButton(filled: false))
+            }
         }
     }
     private func healthTile(_ title: String, value: String, unit: String, symbol: String, available: Bool) -> some View {
@@ -523,7 +526,7 @@ struct HealthView: View {
             Button("IMPORT YOUR WHOOP DATA", action: importData).buttonStyle(WButton(filled: false))
         }.sheet(isPresented: $showingMonitor) {
             SheetScaffold(title: "HEALTH MONITOR") {
-                HealthMonitorView(openMetric: openMetric, importData: importData, openHealthImport: openHealthImport)
+                HealthMonitorView(openMetric: openMetric, importData: importData, openHealthImport: openHealthImport, showImportActions: false)
             }
         }.sheet(isPresented: $showingStress) { StressMonitorView() }
             .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
