@@ -2,7 +2,7 @@
 
 Import the original WHOOP web-export ZIP directly from setup or **More → Your data → Import WHOOP ZIP / day data**. Cycle, primary-sleep and workout CSVs are read offline, without a secure bridge. The date is removed from Live's preview and exported overlays. Shared app surfaces and controls use native iOS 26 glass with a system-material fallback for older iOS.
 
-The requested skill is installed in `.agents/skills/gpui-liquid-glass`; its desktop GPUI guidance is adapted to this existing SwiftUI project. See [implementation, supported data and checks](Docs/ZIP-AND-GLASS.md). **159 core tests** and **13 packaging tests** pass. The updated Apple build is pending; real-device appearance is not yet verified.
+The requested skill is installed in `.agents/skills/gpui-liquid-glass`; its desktop GPUI guidance is adapted to this existing SwiftUI project. See [implementation, supported data and checks](Docs/ZIP-AND-GLASS.md). **160 core tests** and **13 packaging tests** pass. The updated Apple build is pending; real-device appearance is not yet verified.
 
 ---
 

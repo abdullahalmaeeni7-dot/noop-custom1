@@ -21,7 +21,7 @@ public enum WhoopExportImporter {
     private static let recognizedNames: Set<String> = ["physiological_cycles.csv", "sleeps.csv", "workouts.csv", "journal_entries.csv"]
 
     public static func recognizesCSV(_ data: Data) -> Bool {
-        guard let text = String(data: data.prefix(4096), encoding: .utf8) else { return false }
+        let text = String(decoding: data.prefix(4096), as: UTF8.self)
         let header = normalize(String(text.prefix { $0 != "\n" && $0 != "\r" }))
         return header.contains("cyclestarttime") || header.contains("workoutstarttime")
     }

@@ -38,6 +38,14 @@ final class WhoopZIPImportTests: XCTestCase {
         XCTAssertEqual(direct.days, archive.days)
         XCTAssertEqual(try ImportReader.read(Data(cycles.utf8), filename: "cycles.csv"), direct.days)
     }
+    func testUnicodeRowCrossingHeaderProbeBoundaryStillImports() throws {
+        let header = "Cycle start time,Workout start time,Workout end time,Cycle timezone,Activity name,Activity Strain,Notes\n"
+        let row = "2026-03-10 00:30:00,2026-03-10 17:00:00,2026-03-10 17:45:00,UTC+04:00,Running,8.7,"
+        let prefix = header + row
+        let csv = prefix + String(repeating: "x", count: 4095 - prefix.utf8.count) + "é\n"
+        let result = try MeasurementExport.readImport(Data(csv.utf8), filename: "workouts.csv")
+        XCTAssertEqual(result.activities.count, 1)
+    }
     func testRepeatedWorkoutImportHasStableIdentityEvenWhenScoreChanges() throws {
         let first = try MeasurementExport.readImport(zip([("workouts.csv", workout)]), filename: "export.zip")
         let next = try MeasurementExport.readImport(zip([("workouts.csv", workout.replacingOccurrences(of: ",8.7", with: ",9.1"))]), filename: "export.zip")

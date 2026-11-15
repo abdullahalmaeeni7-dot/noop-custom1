@@ -22,6 +22,6 @@ AppGlassSurface is called by WCard, PulseCard, primary/secondary buttons, tracke
 
 ## Verification
 
-159 portable core tests pass, including 13 new official ZIP/CSV tests for metrics, UTC offsets, IANA zones, naps, stable workout IDs, invalid data, checksums, duplicates, path safety and expanded-size bounds. All 13 packaging tests pass. Swift frontend syntax, direct shared-core imports, Xcode project structure, and workflow Bash/Python/YAML syntax are checked. The native workflow explicitly selects an installed Xcode 26 SDK and runs a real arm64 iPhone build with package validation.
+160 portable core tests pass, including 14 new official ZIP/CSV tests for metrics, UTC offsets, IANA zones, naps, stable workout IDs, invalid data, checksums, duplicates, path safety and expanded-size bounds. All 13 packaging tests pass. Swift frontend syntax, direct shared-core imports, Xcode project structure, and workflow Bash/Python/YAML syntax are checked. The native workflow explicitly selects an installed Xcode 26 SDK and runs a real arm64 iPhone build with package validation.
 
 The current Apple build is pending. Real iPhone material sampling, older-iOS fallback, accessibility settings, file picking and physical tracker compatibility require device execution; compilation alone is not recorded as a visual test. The user's own export ZIP was not provided; supported schemas are exercised with synthetic official-format fixtures.

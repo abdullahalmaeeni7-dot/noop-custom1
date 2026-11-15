@@ -3,10 +3,10 @@
   "checked_at": "2026-11-15",
   "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
-    "tests_passed": 159,
+    "tests_passed": 160,
     "new_profile_tests": 13,
     "failures": 0,
-    "new_zip_tests": 13
+    "new_zip_tests": 14
   },
   "swift_frontend_syntax": "passed",
   "project_structure": "passed",
@@ -45,27 +45,28 @@
     },
     "zip-glass-core-tests.log": {
       "path": "Validation/zip-glass-core-tests.log",
-      "sha256": "3713fc44ba6ce212a0173c9383bce6bf28feedcefee7b68ea3efbb81be780137"
+      "sha256": "7c58a9b2e0d8e47edb48e203a713f63c13266017453aa8ce1fc03c24f994ac36"
     }
   },
   "changed_source_sha256": {
     "Core/Models.swift": "1493abe0fdd3be63ccdbb41f98be1bfdc1e3230e27761b5f668ae568dccc5739",
-    "Core/MeasurementExport.swift": "be5b70ed4f793dbfcf3291285c80ca3009bb9a887570808fe8210d16db59fd01",
+    "Core/MeasurementExport.swift": "d37aba9f138fe6ce66707d0ec2d50e638bd98e720ff930254248589c0b4d8187",
     "Core/LocalBackup.swift": "d947d96aaf2763e7d643e9c436e14442424c1baa7c938d62f01b1958b7210582",
-    "App/AppStore.swift": "7903fc8f6432f31879b3c58ac10ab7b20c7ac861f51ec2a0e4b03de9a3ea8a05",
+    "App/AppStore.swift": "c3f25e0f49fe6da4cb961c6cacb0fb099f19660d8a0b11639db1e12c2e1fe57d",
     "App/Pulse/PulseHomeView.swift": "8c56c069bd85d5d5a86251cfa3bed07b399f48e68f6fb8712127cd98266dac11",
     "App/Pulse/PulseHomePanels.swift": "99617732159d26f71f2d291c17d07532d16cb8ba05b182805cfa02ac51ccc328",
-    "App/Pulse/PulseComponents.swift": "d7488e4d58a8132cdcc7abbe4c6e420af46ec56deac36ae5ce2b2c33bdd14655",
+    "App/Pulse/PulseComponents.swift": "8753e12b71a570871577b9fa7c98500d2c6a0f601728b1abcbd3eaf24771fa05",
     "App/Views/MeasurementExportView.swift": "9fcd0185e898389f92c7eed9dd046cd88d3c256e048573045d71e48b9626d62d",
-    "App/Views/RootView.swift": "d01b28273959fba4d3962671dc58be05eaef5f992f30148249d50fd837dbb111",
+    "App/Views/RootView.swift": "ccf446a25daf3c9f09bb1a445b49ba595d4f02f7a74c28264a43c325d65b7038",
     "Tests/WHOOPCoreTests/MeasurementExportTests.swift": "b8a2d0080c5dba13b3068f90cacf6146d21db5dbad41266779ae1faf9115b326",
     "App/DeviceModel.swift": "4b18856e060fba6209d0af8cbe4017c52cf1137d5b9515ee89e1efcc8460d2af",
-    "App/Pulse/PulseTrackerView.swift": "48ad0b7b792cc2f5088c00274613f8532492e8e6e1787cd7e559911d259d616d",
+    "App/Pulse/PulseTrackerView.swift": "c5e53a52c345dbd6822ab9c251e28a735f6cfdb01d0d00026f3a2cf7fa58ad7d",
     "App/Views/DashboardViews.swift": "8c4b75b5a7c60d07793ac7ca3a016112da4bcf9cb97cc4de81af7e32114a8dda",
-    "App/Views/SecondaryViews.swift": "27c5d69f1c7679e24eb88bbcb589c5584d4ded2b9a1bfb435d4e73aaf8051900",
-    "App/Views/Theme.swift": "6c1732b96f3aa92ae17173efe1eb104ada2b915120a8254897b29d15dfea4d40",
-    "App/WHOOPApp.swift": "1f28e18fb55087794bc3d0429c71d8cf037edebce548d8b8961fd805ef90eccd",
-    "Tests/WHOOPCoreTests/CoreTests.swift": "a2825390a834f6d5ef40d7a785845492a5b84e2583466604cc84d6d93d74b171"
+    "App/Views/SecondaryViews.swift": "7d3c83ee97dbc8ba683913719135d6e37702a67cd3e6bcd7c30ef62b3c258f84",
+    "App/Views/Theme.swift": "7bf28ded017be7aece0da856735a62ab92195e874e420cb7a48c38cb3d1346eb",
+    "App/WHOOPApp.swift": "a3ec84d690e302d433fdd7a04beb9a9e3a12b3ed42816dc7beb7124ad53617dc",
+    "Tests/WHOOPCoreTests/CoreTests.swift": "8a63fc29cd98971b506cf08a4c4918569b4233605bc130e0ea7bccae4e10ed4a",
+    "Core/ImportReader.swift": "bde642579ae97b55e61abd04f44d9553878f905e238afd1c5d0ce477df9e82a9"
   },
   "export_formats": [
     "personalized JSON",
