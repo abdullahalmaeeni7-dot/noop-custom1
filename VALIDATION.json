@@ -101,7 +101,7 @@
   "chosen_values_separate_from_measured_highlights": true,
   "legacy_backups_supported": true,
   "example_days_in_exported_highlights": false,
-  "apple_sdk_build": false,
+  "apple_sdk_build": true,
   "native_persistence_test": false,
   "native_file_exporter_test": false,
   "exact_visual_match": false,
@@ -123,7 +123,7 @@
     "native_build": "passed",
     "physical_device_test": false
   },
-  "unsigned_ipa_produced": false,
+  "unsigned_ipa_produced": true,
   "previous_native_device_build": {
     "provider": "GitHub Actions",
     "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125",
@@ -142,7 +142,7 @@
     "signed": false,
     "physical_device_test": false
   },
-  "current_native_build": "pending visual refinements",
+  "current_native_build": "success",
   "zip_import": {
     "offline": true,
     "official_csv_files": [
@@ -184,14 +184,20 @@
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
     "native_screenshot": {
-      "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43761990313",
-      "source_commit": "4c03520642e13ec35260d1c0508c5857a7ee2592",
+      "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324388",
+      "source_commit": "12cba1ea5d478b323494b185951478e705c01246",
+      "capture_outcome": "success",
       "actual_images": true,
       "onboarding_inspected": true,
       "home_inspected": true,
       "synthetic_fixture": true,
-      "directory": "design/home/native-review-01",
-      "next_iteration": "Icon, background, edge and review-height refinements pending native build."
+      "directory": "design/home/native-review-02",
+      "dimensions_pixels": [
+        1179,
+        2556
+      ],
+      "before_after": "design/home/native-review-02/before-after.jpg",
+      "exact_parity_verified": false
     }
   },
   "nutrition_tests": {
@@ -203,5 +209,24 @@
   "packaging_tests": {
     "passed": 13,
     "failures": 0
+  },
+  "native_device_build": {
+    "provider": "GitHub Actions",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324402",
+    "source_commit": "12cba1ea5d478b323494b185951478e705c01246",
+    "result": "success",
+    "runner": "macos-15-intel",
+    "duration": "6m 52s",
+    "portable_test_step": "passed",
+    "device_build": "passed",
+    "device_package_validation": "passed",
+    "architecture": "arm64",
+    "platform": "iOS device",
+    "artifact_name": "WHOOP-unsigned-iphone-ipa",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324402/artifacts/14182026860",
+    "artifact_size": "3.94 MB",
+    "artifact_archive_sha256": "4ec1185465e13be74ef08986c7545f574e717f6c1efb71662303abf8430bfb6b",
+    "signed": false,
+    "physical_device_test": false
   }
 }
