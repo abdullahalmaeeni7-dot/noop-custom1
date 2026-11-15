@@ -49,20 +49,23 @@ enum LiveOverlayRenderer {
             _ = context
         }
     }
-    static func photo(_ data: Data, snapshot: LiveOverlaySnapshot) throws -> UIImage {
+    static func photo(_ data: Data, snapshot: LiveOverlaySnapshot?) throws -> UIImage {
         guard data.count <= 30 * 1024 * 1024,
               let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary),
               let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 2_048] as CFDictionary) else { throw LiveCameraError.photo }
         let base = UIImage(cgImage: thumbnail)
         let originalSize = CGSize(width: CGFloat(thumbnail.width), height: CGFloat(thumbnail.height))
         let cropWidth = min(originalSize.width, originalSize.height * 9 / 16)
-        let size = snapshot.referenceMode == nil ? originalSize : CGSize(width: cropWidth, height: cropWidth * 16 / 9)
+        let size = snapshot?.referenceMode == nil ? originalSize : CGSize(width: cropWidth, height: cropWidth * 16 / 9)
         let scale = max(size.width / originalSize.width, size.height / originalSize.height)
         let drawRect = CGRect(x: (size.width - originalSize.width * scale) / 2,
                               y: (size.height - originalSize.height * scale) / 2,
                               width: originalSize.width * scale, height: originalSize.height * scale)
         let format = UIGraphicsImageRendererFormat(); format.scale = 1
-        return UIGraphicsImageRenderer(size: size, format: format).image { _ in base.draw(in: drawRect); image(snapshot: snapshot, size: size, transparent: false).draw(in: CGRect(origin: .zero, size: size)) }
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            base.draw(in: drawRect)
+            if let snapshot { image(snapshot: snapshot, size: size, transparent: false).draw(in: CGRect(origin: .zero, size: size)) }
+        }
     }
 }
 enum LiveCameraError: LocalizedError, Sendable {
@@ -83,7 +86,7 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
     private let video = AVCaptureVideoDataOutput()
     private let audio = AVCaptureAudioDataOutput()
     private let photoOutput = AVCapturePhotoOutput()
-    private var pendingPhoto: (id: UUID, requestID: Int64, state: LiveOverlaySnapshot, completion: @Sendable (Result<URL, LiveCameraError>) -> Void)?
+    private var pendingPhoto: (id: UUID, requestID: Int64, state: LiveOverlaySnapshot?, completion: @Sendable (Result<URL, LiveCameraError>) -> Void)?
     private var hasAudio = false
     private var configured = false
     private var requested = false
@@ -177,7 +180,7 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
         guard let device = input?.device, device.hasTorch else { return }
         do { try device.lockForConfiguration(); device.torchMode = .off; device.unlockForConfiguration() } catch { }
     }
-    func capturePhoto(state: LiveOverlaySnapshot, completion: @escaping @Sendable (Result<URL, LiveCameraError>) -> Void) {
+    func capturePhoto(state: LiveOverlaySnapshot?, completion: @escaping @Sendable (Result<URL, LiveCameraError>) -> Void) {
         queue.async {
             guard self.configured, self.session.isRunning, !self.requested, !self.finishing,
                   self.pendingPhoto == nil, self.photoOutput.connection(with: .video) != nil else { completion(.failure(.unavailable)); return }

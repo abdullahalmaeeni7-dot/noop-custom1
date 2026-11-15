@@ -12,10 +12,14 @@ struct NutritionRootView: View {
     @EnvironmentObject private var account: AccountModel
     @State private var route: NutritionRoute?
     @State private var reviewTask: Task<Void, Never>?
+    @State private var showingMealCamera = false
+    @State private var mealPhoto: Data?
     var body: some View {
         VStack(alignment: .leading, spacing: 21) {
             HStack {
                 NHeading(title: "Nutrition", subtitle: "Your day, fueled.")
+                Button { mealPhoto = nil; showingMealCamera = true } label: { Image(systemName: "camera").font(.system(size: 21)).frame(width: 44, height: 44) }
+                    .accessibilityLabel("Scan a meal with the camera").accessibilityIdentifier("nutritionQuickCamera")
                 Button { route = .settings } label: { Image(systemName: "slider.horizontal.3").font(.system(size: 20)).frame(width: 44, height: 44) }.accessibilityLabel("Nutrition settings")
             }
             dateStrip
@@ -36,7 +40,7 @@ struct NutritionRootView: View {
                 case .calories: NutritionDeepDive(kind: .calories)
                 case .protein: NutritionDeepDive(kind: .protein)
                 case .deficit: NutritionDeepDive(kind: .deficit)
-                case .addFood: NutritionFoodForm()
+                case .addFood: NutritionFoodForm(initialPhoto: mealPhoto)
                 case .activity: NutritionExerciseForm()
                 case .weight: NutritionWeightView()
                 case .settings: NutritionSettingsView()
@@ -47,6 +51,9 @@ struct NutritionRootView: View {
                     }
                 }
             }
+            .fullScreenCover(isPresented: $showingMealCamera, onDismiss: {
+                if mealPhoto != nil { route = .addFood }
+            }) { NutritionCameraView { data in mealPhoto = data; showingMealCamera = false } }
             .onDisappear { reviewTask?.cancel() }
     }
     private var dateStrip: some View {
@@ -99,7 +106,7 @@ struct NutritionRootView: View {
             }
         }
         HStack(spacing: 10) {
-            Button("ADD FOOD") { route = .addFood }.buttonStyle(NButton())
+            Button("ADD FOOD") { mealPhoto = nil; route = .addFood }.buttonStyle(NButton())
             Button("ACTIVITY") { route = .activity }.buttonStyle(NButton(secondary: true))
         }
         meals(result)

@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 import WHOOPCore
 
 /// View-only comparisons use the previous UTC day of the same provenance.
@@ -71,7 +72,7 @@ struct ReferenceActivityRow: View {
         WCard(padding: 8) {
             HStack(spacing: 11) {
                 HStack(spacing: 5) {
-                    Image(systemName: "figure.run").font(.system(size: 17, weight: .light))
+                    Image(systemName: activity.name.localizedCaseInsensitiveContains("walk") ? "figure.walk" : activity.name.localizedCaseInsensitiveContains("soccer") ? "figure.soccer" : "figure.run").font(.system(size: 20, weight: .light))
                     Text(activity.strain.map { decimalText($0) } ?? "—").font(WFont.number(17, bold: true))
                 }.frame(width: 79, height: 39).background(WColor.blue.opacity(0.8), in: RoundedRectangle(cornerRadius: 4))
                 VStack(alignment: .leading, spacing: 3) {
@@ -81,7 +82,7 @@ struct ReferenceActivityRow: View {
                 Spacer(minLength: 4)
                 VStack(alignment: .trailing, spacing: 3) {
                     Text(utcDateText(activity.start, style: .dateTime.hour().minute())).font(WFont.number(10))
-                    Text(durationText(activity.durationMinutes)).font(WFont.number(10)).foregroundStyle(WColor.muted)
+                    Text(utcDateText(activity.start.addingTimeInterval(Double(activity.durationMinutes) * 60), style: .dateTime.hour().minute())).font(WFont.number(10)).foregroundStyle(WColor.muted)
                 }
             }
         }
@@ -122,18 +123,23 @@ struct ReferenceDashboard: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("My Dashboard").font(WFont.number(21, bold: true))
+                Text("My Dashboard").font(WFont.body(25).weight(.semibold))
                 Spacer()
                 Button { customizing = true } label: {
-                    Text("CUSTOMIZE ✦").font(WFont.label(8)).tracking(0.6).foregroundStyle(.black)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(Color(red: 0.85, green: 0.66, blue: 0.80), in: Capsule())
+                    Label("CUSTOMIZE", systemImage: "pencil").font(WFont.label(10)).tracking(0.6).foregroundStyle(.white).frame(minHeight: 44)
                 }
             }
-            ForEach(DashboardItem.allCases.filter { mask & $0.bit != 0 }) { item in
+            ForEach([DashboardItem.calories, .steps, .restingHeartRate].filter { mask & $0.bit != 0 }) { item in
                 WCard(padding: 12) {
-                    ReferenceMetricRow(title: item.title, value: item.value(in: store.selectedDay),
-                                       previous: precedingDay(in: store).map { item.value(in: $0) }, compact: true)
+                    ReferenceMetricRow(title: item.title, value: item.value(in: store.selectedDay), symbol: dashboardSymbol(item),
+                                       previous: precedingDay(in: store).map { item.value(in: $0) }, compact: false)
+                }
+            }
+            WeeklyReadinessChart()
+            ForEach([DashboardItem.hrv, .zonesLow, .zonesHigh, .vo2, .stress].filter { mask & $0.bit != 0 }) { item in
+                WCard(padding: 14) {
+                    ReferenceMetricRow(title: item.title, value: item.value(in: store.selectedDay), symbol: dashboardSymbol(item),
+                                       previous: precedingDay(in: store).map { item.value(in: $0) }, compact: false)
                 }
             }
             if mask == 0 {
@@ -156,6 +162,18 @@ struct ReferenceDashboard: View {
             }.preferredColorScheme(.dark)
         }
     }
+    private func dashboardSymbol(_ item: DashboardItem) -> String {
+        switch item {
+        case .calories: return "flame"
+        case .steps: return "shoeprints.fill"
+        case .restingHeartRate: return "heart"
+        case .hrv: return "waveform.path.ecg"
+        case .zonesLow, .zonesHigh: return "heart.text.square"
+        case .vo2: return "lungs"
+        case .stress: return "waveform.path"
+        }
+    }
+
 }
 
 struct DetailInsight: View {
@@ -178,13 +196,15 @@ struct DetailInsight: View {
 }
 
 struct HealthAgeCard: View {
+    @EnvironmentObject private var store: AppStore
+    private let gold = Color(red: 0.84, green: 0.66, blue: 0.22)
     var body: some View {
         WCard {
             VStack(spacing: 9) {
                 Text("HEALTH").font(WFont.label(10)).tracking(1.4)
                 ZStack {
-                    Circle().fill(RadialGradient(colors: [Color.clear, Color.teal.opacity(0.10), Color.teal.opacity(0.70), Color.clear], center: .center, startRadius: 18, endRadius: 108))
-                    Circle().stroke(Color.teal.opacity(0.35), lineWidth: 0.7).padding(13)
+                    Circle().fill(RadialGradient(colors: [Color.clear, gold.opacity(0.10), gold.opacity(0.70), Color.clear], center: .center, startRadius: 18, endRadius: 108))
+                    Circle().stroke(gold.opacity(0.35), lineWidth: 0.7).padding(13)
                     Canvas { context, size in
                         for index in 0..<90 {
                             let angle = Double(index) * 2.399963
@@ -192,16 +212,16 @@ struct HealthAgeCard: View {
                             let point = CGPoint(x: Double(size.width) / 2 + cos(angle) * radius,
                                                 y: Double(size.height) / 2 + sin(angle) * radius)
                             let diameter = CGFloat(index % 3 == 0 ? 2.5 : 1)
-                            context.fill(Path(ellipseIn: CGRect(x: point.x, y: point.y, width: diameter, height: diameter)), with: .color(.mint.opacity(index % 4 == 0 ? 0.9 : 0.4)))
+                            context.fill(Path(ellipseIn: CGRect(x: point.x, y: point.y, width: diameter, height: diameter)), with: .color(.yellow.opacity(index % 4 == 0 ? 0.9 : 0.4)))
                         }
                     }
                     VStack(spacing: 4) {
-                        Text("—").font(WFont.number(48, bold: true))
+                        Text(store.profile.whoopAge.isEmpty ? "NO DATA" : store.profile.whoopAge).font(WFont.number(store.profile.whoopAge.isEmpty ? 25 : 48, bold: true)).lineLimit(1).minimumScaleFactor(0.4)
                         Text("WHOOP AGE").font(WFont.label(11)).tracking(0.8)
-                        Text("Not available").font(WFont.body(12)).foregroundStyle(WColor.muted)
+                        Text(store.profile.whoopAge.isEmpty ? "Not available" : "Personalized display").font(WFont.body(12)).foregroundStyle(WColor.muted)
                     }
                 }.frame(width: 220, height: 220)
-                Text("An age score is not included in your current data.")
+                Text(store.profile.whoopAge.isEmpty ? "An age score is not included in your current data. You can personalize its display in Profile." : "Your chosen profile value. This is not a calculated health-age measurement.")
                     .font(WFont.body(12)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
             }.frame(maxWidth: .infinity).padding(.vertical, 6)
         }.accessibilityElement(children: .combine)
@@ -231,5 +251,99 @@ struct StressMonitorView: View {
                 }
             }
         }
+    }
+}
+
+/// A local, factual review. This never substitutes a canned response for an AI service.
+struct DayReviewView: View {
+    @EnvironmentObject private var store: AppStore
+    private var day: DailySnapshot { store.selectedDay }
+    var body: some View {
+        SheetScaffold(title: "DAY IN REVIEW") {
+            VStack(alignment: .leading, spacing: 22) {
+                Text(utcDateText(store.selectedDate, style: .dateTime.weekday(.wide).month(.abbreviated).day())).font(WFont.body(16)).foregroundStyle(WColor.muted)
+                Text(store.profile.displayName.isEmpty ? "Your day, in focus" : "Your day, \(store.profile.displayName)").font(WFont.body(26).weight(.semibold))
+                WCard(padding: 18) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if !selectedDayExists(in: store) {
+                            Text("Import your measurements to review your sleep, Recovery and Strain here.")
+                        } else {
+                            if let recovery = day.recovery { Text("Your recorded Recovery is \(recovery)%.") }
+                            if let strain = day.strain { Text("You reached \(decimalText(strain)) day Strain.") }
+                            if day.sleepMinutes > 0 { Text("You logged \(durationText(day.sleepMinutes)) of sleep.") }
+                            if day.steps > 0 { Text("You recorded \(day.steps.formatted()) steps.") }
+                            if let hrv = day.hrv { Text("Your HRV was \(decimalText(hrv, places: 0)) ms.") }
+                        }
+                        Text("\(store.dayActivities.count) saved activities for this day.")
+                    }.font(WFont.body(18)).lineSpacing(5)
+                }
+                if !store.dayActivities.isEmpty {
+                    ForEach(store.dayActivities) { ReferenceActivityRow(activity: $0) }
+                }
+                Text("Summary of saved measurements · no AI interpretation").font(WFont.body(12)).foregroundStyle(WColor.muted)
+            }
+        }
+    }
+}
+
+struct WeeklyReadinessChart: View {
+    @EnvironmentObject private var store: AppStore
+    private var dates: [Date] {
+        (-6...0).compactMap { DayCalendar.utc.date(byAdding: .day, value: $0, to: DayCalendar.start(of: store.selectedDate)) }
+    }
+    private var recorded: [DailySnapshot] {
+        dates.compactMap { date in store.days.first { $0.source == store.selectedDay.source && DayCalendar.utc.isDate($0.date, inSameDayAs: date) } }
+    }
+    var body: some View {
+        WCard(padding: 15) {
+            VStack(alignment: .leading, spacing: 22) {
+                HStack {
+                    Text("STRAIN & RECOVERY").font(WFont.label(12)).tracking(0.8)
+                    Spacer()
+                    Image(systemName: "info.circle").foregroundStyle(WColor.muted).accessibilityLabel("Strain uses a 0 to 21 scale; Recovery uses 0 to 100 percent")
+                }
+                if recorded.contains(where: { $0.strain != nil || $0.recovery != nil }) {
+                    chart.frame(height: 220)
+                    HStack(spacing: 20) {
+                        Label("STRAIN · 0–21", systemImage: "circle.fill").foregroundStyle(WColor.blue)
+                        Label("RECOVERY · 0–100%", systemImage: "circle.fill").foregroundStyle(WColor.yellow)
+                    }.font(WFont.label(8))
+                } else { MissingInline(symbol: "chart.xyaxis.line", message: "Import a recorded week to see Strain and Recovery trends.") }
+            }
+        }
+    }
+    private var chart: some View {
+        Chart {
+            ForEach(dates, id: \.self) { date in
+                if let day = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: date) }) {
+                    if let strain = day.strain {
+                        PointMark(x: .value("Day", date), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
+                            .annotation(position: .top) { Text(decimalText(strain)).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
+                    }
+                    if let recovery = day.recovery {
+                        PointMark(x: .value("Day", date), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
+                            .annotation(position: .bottom) { Text("\(recovery)%").font(WFont.number(10, bold: true)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))) }
+                    }
+                }
+            }
+            ForEach(0..<6, id: \.self) { index in
+                let left = dates[index]
+                let right = dates[index + 1]
+                if let a = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: left) }),
+                   let b = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: right) }) {
+                    if let av = a.strain, let bv = b.strain {
+                        LineMark(x: .value("Day", left), y: .value("Strain", av), series: .value("Segment", "s" + left.description)).foregroundStyle(WColor.blue.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+                        LineMark(x: .value("Day", right), y: .value("Strain", bv), series: .value("Segment", "s" + left.description)).foregroundStyle(WColor.blue.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+                    }
+                    if let av = a.recovery, let bv = b.recovery {
+                        LineMark(x: .value("Day", left), y: .value("Recovery", Double(av) * 21 / 100), series: .value("Segment", "r" + left.description)).foregroundStyle(WColor.muted.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+                        LineMark(x: .value("Day", right), y: .value("Recovery", Double(bv) * 21 / 100), series: .value("Segment", "r" + left.description)).foregroundStyle(WColor.muted.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+                    }
+                }
+            }
+        }.chartYScale(domain: 0...21).chartXScale(domain: (dates.first ?? store.selectedDate)...(dates.last ?? store.selectedDate))
+            .chartYAxis { AxisMarks(values: [0, 7, 14, 21]) { AxisGridLine().foregroundStyle(WColor.line); AxisValueLabel().foregroundStyle(WColor.blue) } }
+            .chartXAxis { AxisMarks(values: dates) { AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: false).foregroundStyle(WColor.muted) } }
+            .accessibilityLabel("Seven-day Strain and Recovery chart. Missing days are not joined.")
     }
 }

@@ -82,7 +82,7 @@ struct PulseTrackerView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("WHAT THIS CONNECTION CAN DO").font(PulseFont.label()).tracking(0.6)
                             Text("Listen for standard Bluetooth heart-rate broadcasts, or try the selected WHOOP service families already implemented. Individual WHOOP 4.0, 5.0 and MG compatibility has not been verified on physical devices.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-                            Text("Home scores remain sample data. This connection does not sync device history or calculate measured Recovery, Sleep Performance, daily Strain, ECG or blood pressure.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                            Text("Home scores come from your saved or imported measurements. This Bluetooth connection does not sync device history or calculate measured Recovery, Sleep Performance, daily Strain, ECG or blood pressure.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                         }
                     }
                     Button("OPEN BLUETOOTH PERMISSIONS") {
@@ -90,7 +90,7 @@ struct PulseTrackerView: View {
                     }.buttonStyle(PulseTrackerButton(secondary: true))
                 }.padding(16).frame(maxWidth: 580).frame(maxWidth: .infinity)
             }.scrollIndicators(.hidden).background(PulseColor.background)
-                .navigationTitle("Tracker").navigationBarTitleDisplayMode(.inline)
+                .navigationTitle("DEVICE SETTINGS").navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() }.frame(minWidth: 44, minHeight: 44) } }
                 .toolbarBackground(PulseColor.background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.font(PulseFont.body()).foregroundStyle(PulseColor.text).tint(PulseColor.sleep).preferredColorScheme(.dark)

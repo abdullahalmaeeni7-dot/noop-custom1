@@ -1,3 +1,7 @@
+# Current update: reference layout and Nutrition camera
+
+The functional Home and navigation now follow the supplied reference hierarchy. Nutrition includes real camera capture, a photo preview, permission recovery and direct analysis-connection settings. First-run setup, tracker search, ZIP import and exports remain available. Photo AI still requires your configured server; no key is bundled. See [details and verification](Docs/LAYOUT-AND-MEAL-CAMERA.md). Native compilation for this revision is in progress; earlier build links below refer to earlier source.
+
 # Current update: import WHOOP ZIPs and Liquid Glass
 
 Import the original WHOOP web-export ZIP directly from setup or **More → Your data → Import WHOOP ZIP / day data**. Cycle, primary-sleep and workout CSVs are read offline, without a secure bridge. The date is removed from Live's preview and exported overlays. Shared app surfaces and controls use native iOS 26 glass with a system-material fallback for older iOS.

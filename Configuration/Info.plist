@@ -62,7 +62,7 @@
 		</dict>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Record a video with your live workout measurements when you choose to open Live camera.</string>
+	<string>Photograph a meal for nutrition estimates, or record your workout with live measurements, when you choose to open the camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Include audio in your Live workout videos when you choose microphone recording.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

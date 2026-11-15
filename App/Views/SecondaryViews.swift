@@ -7,7 +7,7 @@ struct CommunityView: View {
     let importData: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("COMMUNITY").font(WFont.number(35, bold: true)).tracking(0.6)
+            Text("Build Your Community").font(WFont.body(26).weight(.semibold))
             Text("Better, together.").font(WFont.body(16)).foregroundStyle(WColor.muted)
             WCard {
                 VStack(alignment: .leading, spacing: 18) {
@@ -110,7 +110,6 @@ struct MenuView: View {
     @State private var referenceHome = false
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
-            Text("MORE").font(WFont.number(35, bold: true)).tracking(0.5)
             SectionHeading(title: "Your WHOOP")
             WCard {
                 VStack(spacing: 0) {

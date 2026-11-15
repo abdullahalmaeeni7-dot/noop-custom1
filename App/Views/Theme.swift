@@ -5,15 +5,15 @@ import WHOOPCore
 enum WColor {
     static let background = Color(red: 0.065, green: 0.080, blue: 0.089)
     static let backgroundTop = Color(red: 0.149, green: 0.192, blue: 0.212)
-    static let card = Color(red: 0.137, green: 0.169, blue: 0.188)
+    static let card = PulseColor.card
     static let elevated = Color(red: 0.192, green: 0.231, blue: 0.251)
     static let muted = Color(red: 0.60, green: 0.64, blue: 0.67)
     static let line = Color.white.opacity(0.085)
     static let green = Color(red: 0.12, green: 0.88, blue: 0.0)
     static let blue = Color(red: 0.0, green: 0.62, blue: 0.91)
-    static let sleep = Color(red: 0.51, green: 0.68, blue: 0.75)
+    static let sleep = PulseColor.sleep
     static let purple = Color(red: 0.62, green: 0.53, blue: 0.98)
-    static let yellow = Color(red: 0.94, green: 0.78, blue: 0.26)
+    static let yellow = PulseColor.recoveryYellow
 }
 
 enum WFont {
@@ -59,12 +59,12 @@ struct WCard<Content: View>: View {
     private let padding: CGFloat
     private let surface: Color?
     private let radius: CGFloat
-    init(padding: CGFloat = 14, surface: Color? = nil, cornerRadius: CGFloat = 10, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = 14, surface: Color? = nil, cornerRadius: CGFloat = 13, @ViewBuilder content: () -> Content) {
         self.padding = padding; self.surface = surface; self.radius = cornerRadius; self.content = content()
     }
     var body: some View {
         content.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: radius * 2, style: .continuous), tint: (surface ?? WColor.card).opacity(0.13), solid: surface ?? WColor.card))
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: radius, style: .continuous), tint: (surface ?? WColor.card).opacity(0.13), solid: surface ?? WColor.card))
     }
 }
 

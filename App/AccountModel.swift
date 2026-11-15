@@ -233,14 +233,27 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         catch { throw AccountProblem.invalidServer }
     }
 
+    var nutritionConnectionIssue: String? {
+        guard !bridgeURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return "Connect your nutrition service to analyze photos. Camera capture and manual food logging work offline."
+        }
+        guard let base = try? validatedBaseURL() else { return "Check the HTTPS service address in account settings." }
+        guard bearer != nil, isLinked, linkedBaseURL == base else { return "Reconnect your account to use nutrition analysis." }
+        return nil
+    }
+
     func nutritionPost<Input: Encodable, Output: Decodable>(path: String, input: Input) async throws -> Output {
         let allowed = ["analyze-meal", "parse-food", "estimate-exercise", "day-review"]
         guard allowed.contains(path) else { throw AccountProblem.invalidServer }
+        if let issue = nutritionConnectionIssue { throw NutritionError.invalid(issue) }
         let base = try validatedBaseURL()
-        guard let bearer, isLinked, linkedBaseURL == base else {
-            throw NutritionError.invalid("AI needs your existing account connection. Connect it from More; manual logging works offline.")
+        guard let bearer else { throw AccountProblem.expired }
+        let data: Data
+        do { data = try await rawRequest(base, path: "api/nutrition/" + path, method: "POST", encodedBody: JSONEncoder().encode(input), token: bearer) }
+        catch let error as URLError {
+            if error.code == .cancelled { throw CancellationError() }
+            throw NutritionError.invalid(error.code == .timedOut ? "Photo analysis took too long. Try again with a clearer, smaller meal photo." : "Couldn’t reach the nutrition service. Check your connection and service address, then retry. Your food drafts are still here.")
         }
-        let data = try await rawRequest(base, path: "api/nutrition/" + path, method: "POST", encodedBody: JSONEncoder().encode(input), token: bearer)
         do { return try JSONDecoder().decode(Output.self, from: data) }
         catch { throw NutritionError.invalid("The AI response could not be read. Try again or enter values manually.") }
     }
@@ -271,6 +284,8 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
             let message: String
             switch code {
             case "ai_not_configured": message = "Nutrition AI is not configured. Add AI_API_KEY and AI_API_URL on your server. Manual logging still works."
+            case "not_configured": message = "The account service is not configured. Check its server settings before connecting again."
+            case "ai_unavailable": message = "The nutrition provider is unavailable. Check the server’s AI credentials and vision-capable model, or retry later."
             case "rate_limited": message = "AI requests are temporarily limited. Wait a moment and try again."
             case "request_too_large": message = "Choose a smaller meal photo or shorter description."
             case "ai_invalid_response": message = "AI could not return usable estimates. Try a clearer photo or description, or enter values manually."

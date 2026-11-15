@@ -1,10 +1,13 @@
 import SwiftUI
 import PhotosUI
+import AVFoundation
+import UIKit
 import WHOOPCore
 
 private struct FoodDraft: Identifiable { let id = UUID(); var food: NutritionFood }
 private enum FoodInputMode: String, CaseIterable, Identifiable { case manual = "Manual", text = "AI text", photo = "AI photo"; var id: String { rawValue } }
 struct NutritionFoodForm: View {
+    private let initialPhoto: Data?
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var model: NutritionViewModel
     @EnvironmentObject private var account: AccountModel
@@ -15,10 +18,15 @@ struct NutritionFoodForm: View {
     @State private var description = ""
     @State private var photoItem: PhotosPickerItem?
     @State private var imageDataURL: String?
+    @State private var imagePreview: UIImage?
+    @State private var showingCamera = false
+    @State private var showingConnection = false
     @State private var busy = false
     @State private var error: String?
     @State private var favoritesOnly = false
     @State private var task: Task<Void, Never>?
+    @State private var loadedInitialPhoto = false
+    init(initialPhoto: Data? = nil) { self.initialPhoto = initialPhoto }
     var body: some View {
         NPage(title: "Add food") {
             Picker("Meal type", selection: $meal) { ForEach(NutritionMeal.allCases) { Text($0.title).tag($0) } }.pickerStyle(.segmented).frame(minHeight: 44).disabled(busy)
@@ -26,7 +34,13 @@ struct NutritionFoodForm: View {
             if mode == .text { textEntry }
             if mode == .photo { photoEntry }
             if busy { NLoadingCard(); ProgressView("Preparing editable estimates…").tint(NColor.cyan).frame(maxWidth: .infinity, minHeight: 44); Button("CANCEL") { task?.cancel() }.buttonStyle(NButton(secondary: true)) }
-            if let error { NError(message: error) }
+            if let error {
+                NError(message: error)
+                if mode != .manual {
+                    Button("CONNECTION SETTINGS") { showingConnection = true }.buttonStyle(NButton(secondary: true))
+                    Button("ENTER FOOD MANUALLY") { mode = .manual; self.error = nil }.buttonStyle(NButton(secondary: true))
+                }
+            }
             NHeading(title: mode == .manual ? "Your food" : "Review before saving", subtitle: "Check each portion, calorie value and macro. Nothing saves automatically.")
             ForEach($drafts) { $draft in
                 NCard {
@@ -48,6 +62,13 @@ struct NutritionFoodForm: View {
             Button(model.isSaving ? "SAVING…" : "SAVE FOOD") { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || drafts.isEmpty || drafts.contains { $0.food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
             library
         }.onDisappear { task?.cancel() }
+            .task {
+                if let initialPhoto, !loadedInitialPhoto { loadedInitialPhoto = true; mode = .photo; preparePhoto(initialPhoto) }
+            }
+            .sheet(isPresented: $showingConnection) { AccountView().preferredColorScheme(.dark) }
+            .fullScreenCover(isPresented: $showingCamera) {
+                NutritionCameraView { data in showingCamera = false; preparePhoto(data) }
+            }
             .onChange(of: photoItem) { _, item in
                 guard let item else { return }
                 busy = true; error = nil
@@ -56,7 +77,7 @@ struct NutritionFoodForm: View {
                     do {
                         guard let data = try await item.loadTransferable(type: Data.self) else { throw NutritionError.invalid("The selected photo could not be opened.") }
                         try Task.checkCancellation()
-                        imageDataURL = try NutritionPhoto.compress(data)
+                        try setPhoto(data)
                     } catch { if !Task.isCancelled { self.error = error.localizedDescription } }
                 }
             }
@@ -68,6 +89,7 @@ struct NutritionFoodForm: View {
                 TextField("2 eggs and a slice of toast", text: $description, axis: .vertical).lineLimit(3...6).font(NFont.body(15)).accessibilityLabel("Meal description")
                     .onChange(of: description) { _, value in if value.count > 2_000 { description = String(value.prefix(2_000)) } }
                 Text("Only this description is sent to the AI provider configured on your server.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+                connectionHelp
                 Button("ESTIMATE FOODS") { analyze() }.buttonStyle(NButton()).disabled(busy || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
@@ -76,11 +98,27 @@ struct NutritionFoodForm: View {
         NCard {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Scan a meal photo").font(NFont.label(14))
-                PhotosPicker(selection: $photoItem, matching: .images) { Label(imageDataURL == nil ? "CHOOSE PHOTO" : "CHANGE PHOTO", systemImage: "photo").frame(maxWidth: .infinity, minHeight: 44) }.disabled(busy)
+                HStack(spacing: 12) {
+                    Button { error = nil; showingCamera = true } label: { Label("TAKE PHOTO", systemImage: "camera").frame(maxWidth: .infinity, minHeight: 48) }
+                        .buttonStyle(NButton()).disabled(busy).accessibilityIdentifier("nutritionTakePhoto")
+                    PhotosPicker(selection: $photoItem, matching: .images) { Label("LIBRARY", systemImage: "photo").frame(maxWidth: .infinity, minHeight: 48) }
+                        .buttonStyle(NButton(secondary: true)).disabled(busy)
+                }
+                if let imagePreview {
+                    Image(uiImage: imagePreview).resizable().scaledToFit().frame(maxWidth: .infinity, maxHeight: 240)
+                        .clipShape(RoundedRectangle(cornerRadius: 16)).accessibilityLabel("Meal photo ready to analyze")
+                }
                 if imageDataURL != nil { Label("Photo compressed and ready", systemImage: "checkmark.circle").font(NFont.body(13)).foregroundStyle(NColor.green) }
                 Text("Photos are resized and re-encoded on this iPhone before upload. Tap Analyze to send the meal photo to your configured provider. Photos are not saved in your nutrition log.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+                connectionHelp
                 Button("ANALYZE PHOTO") { analyze() }.buttonStyle(NButton()).disabled(busy || imageDataURL == nil)
             }
+        }
+    }
+    @ViewBuilder private var connectionHelp: some View {
+        if let issue = account.nutritionConnectionIssue {
+            Text(issue).font(NFont.body(12)).foregroundStyle(NColor.muted)
+            Button("CONNECT NUTRITION SERVICE") { showingConnection = true }.buttonStyle(NButton(secondary: true))
         }
     }
     private var library: some View {
@@ -122,6 +160,19 @@ struct NutritionFoodForm: View {
     private func optionalNumber(_ title: String, value: Binding<Double?>) -> some View {
         HStack { Text(title).font(NFont.body(13)); Spacer(); TextField(title, value: value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 110, minHeight: 44).font(NFont.body(15)).accessibilityLabel(title) }
     }
+    private func setPhoto(_ data: Data) throws {
+        let encoded = try NutritionPhoto.compress(data)
+        imageDataURL = encoded
+        if let body = encoded.split(separator: ",", maxSplits: 1).last, let bytes = Data(base64Encoded: String(body)) { imagePreview = UIImage(data: bytes) }
+    }
+    private func preparePhoto(_ data: Data) {
+        error = nil; busy = true
+        task = Task { @MainActor in
+            defer { busy = false }
+            do { try Task.checkCancellation(); try setPhoto(data) }
+            catch { if !Task.isCancelled { self.error = error.localizedDescription } }
+        }
+    }
     private func analyze() {
         busy = true; error = nil
         task = Task { @MainActor in
@@ -147,6 +198,90 @@ struct NutritionFoodForm: View {
         task = Task { @MainActor in
             do { try await model.commit(store) { data in data.foods.append(contentsOf: foods.map { NutritionFoodEntry(day: day, meal: selectedMeal, food: $0) }) }; dismiss() }
             catch { self.error = error.localizedDescription }
+        }
+    }
+}
+
+struct NutritionCameraView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var phase
+    @StateObject private var camera = LiveCameraModel()
+    @State private var capturing = false
+    @State private var error: String?
+    let captured: (Data) -> Void
+    private var accessDenied: Bool {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        return status == .denied || status == .restricted
+    }
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            if camera.ready { ReferenceCameraPreview(session: camera.engine.session).ignoresSafeArea() }
+            VStack(spacing: 24) {
+                HStack {
+                    Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 48, height: 48) }
+                        .accessibilityLabel("Close meal camera")
+                    Spacer(); Text("MEAL CAMERA").font(NFont.label(13)).tracking(1.4); Spacer(); Color.clear.frame(width: 48, height: 48)
+                }.padding(.horizontal, 16)
+                Spacer()
+                if camera.ready {
+                    RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.75), style: StrokeStyle(lineWidth: 1.5, dash: [20, 180]))
+                        .frame(maxWidth: 330).frame(height: 280).padding(.horizontal, 30).accessibilityHidden(true)
+                    Text("Fit your meal in the frame").font(NFont.body(16)).padding(12).background(.black.opacity(0.45), in: Capsule())
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: accessDenied ? "camera.badge.exclamationmark" : "camera").font(.system(size: 38, weight: .light))
+                        Text(accessDenied ? "Allow camera access in iPhone Settings to photograph a meal." : camera.status)
+                            .font(NFont.body(16)).multilineTextAlignment(.center)
+                        if accessDenied {
+                            Button("OPEN IPHONE SETTINGS") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                            }.buttonStyle(NButton())
+                        } else {
+                            Button("OPEN CAMERA") { Task { await camera.open(microphone: false) } }.buttonStyle(NButton())
+                        }
+                    }.padding(28)
+                }
+                if let error { Text(error).font(NFont.body(14)).multilineTextAlignment(.center).padding(14).background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 16)) }
+                Spacer()
+                HStack {
+                    Color.clear.frame(width: 48, height: 48)
+                    Spacer()
+                    Button(action: capture) {
+                        ZStack {
+                            Circle().stroke(.white, lineWidth: 4).frame(width: 78, height: 78)
+                            Circle().fill(.white).frame(width: 64, height: 64)
+                            if capturing { ProgressView().tint(.black) }
+                        }.frame(width: 90, height: 90)
+                    }.disabled(!camera.ready || capturing).accessibilityLabel("Photograph meal").accessibilityIdentifier("nutritionCameraShutter")
+                    Spacer()
+                    Button { camera.engine.flip() } label: { Image(systemName: "camera.rotate").font(.system(size: 25)).frame(width: 48, height: 48) }
+                        .disabled(!camera.ready || capturing).accessibilityLabel("Switch meal camera")
+                }.padding(.horizontal, 28).padding(.bottom, 18)
+                Text("Review the photo before sending it for estimates.").font(NFont.body(12)).foregroundStyle(.white.opacity(0.8)).padding(.bottom, 12)
+            }.foregroundStyle(.white)
+        }.preferredColorScheme(.dark).statusBarHidden(true)
+            .task { await camera.open(microphone: false) }
+            .onChange(of: phase) { _, value in
+                if value == .active { Task { await camera.open(microphone: false) } }
+                else { camera.close() }
+            }
+            .onDisappear { camera.close() }
+    }
+    private func capture() {
+        guard camera.ready, !capturing else { return }
+        capturing = true; error = nil
+        camera.engine.capturePhoto(state: nil) { result in
+            Task { @MainActor in
+                capturing = false
+                do {
+                    let url = try result.get()
+                    defer { try? FileManager.default.removeItem(at: url) }
+                    let data = try Data(contentsOf: url)
+                    guard data.count <= 20 * 1024 * 1024 else { throw NutritionError.invalid("The photo is too large. Move closer to the meal and try again.") }
+                    captured(data); dismiss()
+                } catch { self.error = "The photo could not be captured. Try again, or choose a photo from your library." }
+            }
         }
     }
 }

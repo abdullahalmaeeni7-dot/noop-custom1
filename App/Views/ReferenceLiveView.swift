@@ -357,7 +357,7 @@ struct ReferenceLiveView: View {
     }
 }
 
-private struct ReferenceCameraPreview: UIViewRepresentable {
+struct ReferenceCameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }

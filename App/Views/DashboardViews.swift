@@ -17,67 +17,117 @@ struct HomeView: View {
     let openAccount: () -> Void
     private var day: DailySnapshot { store.selectedDay }
 
+    let openQuickActions: () -> Void
+    let openReview: () -> Void
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 19) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(store.profile.displayName.isEmpty ? "Your overview" : "Hi, \(store.profile.displayName)").font(WFont.number(28, bold: true))
-                    Text("Make today count.").font(WFont.body(15)).foregroundStyle(WColor.muted)
-                }
-                Spacer()
-                Button(action: openDevice) {
-                    Image(systemName: "sensor.tag.radiowaves.forward").font(.system(size: 23, weight: .light)).foregroundStyle(tracker.connectedName == nil ? WColor.muted : WColor.green).frame(width: 48, height: 48)
-                }.accessibilityLabel(tracker.connectedName == nil ? "Connect your tracker" : "Tracker connected, view device")
-            }
-            overview
+        VStack(alignment: .leading, spacing: 28) {
+            overview.padding(.top, 20).padding(.bottom, 9)
             if !selectedDayExists(in: store) { setupCard }
-            liveHeartRate
-            if day.hrv != nil { dailyHighlight }
-            HStack(spacing: 9) {
-                MonitorShortcut(title: "HEALTH MONITOR", value: "VIEW METRICS", symbol: "heart.text.square", color: WColor.sleep, action: openHealth)
-                MonitorShortcut(title: "NUTRITION", value: "LOG YOUR FOOD", symbol: "fork.knife", color: WColor.green, action: { store.tab = .nutrition })
+            else { dailyHighlight }
+            HStack(spacing: 11) {
+                monitor("HEALTH MONITOR", detail: "View your measurements", symbol: "heart.text.square", tint: WColor.sleep, action: openHealth)
+                monitor("STRESS MONITOR", detail: "About stress data", symbol: "waveform.path", tint: PulseColor.mint, action: openStress)
             }
-            VStack(alignment: .leading, spacing: 10) {
-                Text("My Day").font(WFont.number(22, bold: true))
-                Button { openMetric(.recovery) } label: {
-                    WCard(padding: 9) {
-                        HStack(spacing: 9) {
-                            Image(systemName: "w.circle").font(.system(size: 23, weight: .ultraLight)).foregroundStyle(WColor.muted)
-                            Text("Your Daily Outlook").font(WFont.body(14))
-                            Spacer()
-                            Image(systemName: "chevron.right").font(.system(size: 10)).foregroundStyle(WColor.muted)
-                        }.frame(minHeight: 27)
-                    }
+            VStack(alignment: .leading, spacing: 15) {
+                HStack {
+                    Text("My Day").font(WFont.body(25).weight(.semibold))
+                    Spacer()
+                    Button(action: openQuickActions) {
+                        Image(systemName: "plus").font(.system(size: 25, weight: .regular)).foregroundStyle(.black)
+                            .frame(width: 44, height: 44).background(.white, in: RoundedRectangle(cornerRadius: 13))
+                    }.accessibilityLabel("Add to your day")
+                }
+                Button(action: openReview) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
+                        Text(reviewTitle).font(WFont.body(17).weight(.semibold))
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
+                    }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
+                        .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
                 }.buttonStyle(.plain)
+                tonight
+                activities
+                journalCard
             }
-            activities
-            if day.sleepMinutes > 0 || day.sleepNeededMinutes > 0 { tonight }
-            Button(action: openJournal) {
-                WCard(padding: 13) {
+            plan
+            ReferenceDashboard()
+            if tracker.connectedName != nil { liveHeartRate }
+            discover
+        }
+    }
+    private var reviewTitle: String {
+        let first = store.profile.displayName.split(separator: " ").first.map(String.init)
+        return first.map { "\($0)’s Day In Review" } ?? "Your Day In Review"
+    }
+    private func monitor(_ title: String, detail: String, symbol: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            WCard(padding: 14) {
+                VStack(alignment: .leading, spacing: 18) {
                     HStack {
-                        Text("MY JOURNAL").font(WFont.label(10)).tracking(0.7)
-                        Spacer()
-                        Image(systemName: "book.closed").font(.system(size: 12))
-                        Text("FILL OUT").font(WFont.label(9)).tracking(0.7)
-                        Image(systemName: "chevron.right").font(.system(size: 9))
-                    }.foregroundStyle(.white)
+                        Text(title).font(WFont.label(11)).tracking(0.7).lineLimit(1).minimumScaleFactor(0.75)
+                        Spacer(minLength: 2)
+                        Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                    }
+                    HStack(spacing: 8) {
+                        Image(systemName: symbol).font(.system(size: 18, weight: .light)).foregroundStyle(tint)
+                        Text(detail).font(WFont.body(12)).foregroundStyle(WColor.muted)
+                    }
+                }.frame(minHeight: 58)
+            }
+        }.buttonStyle(.plain)
+    }
+    private var journalCard: some View {
+        Button(action: openJournal) {
+            WCard(padding: 15) {
+                VStack(spacing: 25) {
+                    HStack {
+                        Text("MY JOURNAL").font(WFont.label(12)).tracking(0.8)
+                        Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                    }
+                    HStack(spacing: 0) {
+                        ForEach(0..<7) { index in
+                            if let date = DayCalendar.utc.date(byAdding: .day, value: index - 6, to: store.selectedDate) {
+                                VStack(spacing: 9) {
+                                    Text(utcDateText(date, style: .dateTime.weekday(.abbreviated)).uppercased()).font(WFont.label(9))
+                                    ZStack {
+                                        Circle().stroke(index == 6 ? .white.opacity(0.8) : WColor.muted.opacity(0.45), lineWidth: 1).frame(width: 20, height: 20)
+                                        if store.hasJournal(on: date) { Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(PulseColor.mint) }
+                                    }
+                                }.foregroundStyle(index == 6 ? .white : WColor.muted).frame(maxWidth: .infinity)
+                            }
+                        }
+                    }.padding(.horizontal, 10)
+                    Label("LOG YOUR BEHAVIORS", systemImage: "lightbulb").font(WFont.label(11)).tracking(0.8)
+                        .frame(maxWidth: .infinity, minHeight: 40).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
+                }
+            }
+        }.buttonStyle(.plain)
+    }
+    private var plan: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("My Plan").font(WFont.body(25).weight(.semibold))
+            Button { store.tab = .nutrition } label: {
+                WCard(padding: 18) {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Build Your Best Self").font(WFont.body(18).weight(.semibold))
+                            Text("Set nutrition goals and track the habits that support your training.").font(WFont.body(14)).foregroundStyle(WColor.muted)
+                            Label("EXPLORE NUTRITION", systemImage: "arrow.right").font(WFont.label(11)).tracking(0.8).foregroundStyle(WColor.sleep)
+                        }
+                        PulsePlanArtwork().frame(width: 90, height: 100).accessibilityHidden(true)
+                    }
                 }
             }.buttonStyle(.plain)
-            ReferenceDashboard()
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Heart Rate").font(WFont.number(21, bold: true))
-                WCard {
-                    if day.heartRates.isEmpty {
-                        MissingInline(symbol: "waveform.path.ecg", message: "No heart-rate samples for this day.")
-                    } else {
-                        HStack(alignment: .firstTextBaseline, spacing: 5) {
-                            Text(decimalText(averageHeartRate, places: 0)).font(WFont.number(28, bold: true))
-                            Text("BPM AVG").font(WFont.label(9)).foregroundStyle(WColor.muted)
-                        }
-                        HeartRateChart(samples: day.heartRates).frame(height: 145).padding(.top, 12)
-                    }
-                }
-            }
+        }
+    }
+    private var discover: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Text("Discover More").font(WFont.body(25).weight(.semibold))
+            monitor("YOUR CONNECTED TRACKER", detail: "Find a sensor, check its status and record your next session.", symbol: "applewatch", tint: WColor.blue, action: openDevice)
+            monitor("YOUR HEALTH HISTORY", detail: "Import measurements from Apple Health.", symbol: "heart.text.square", tint: PulseColor.mint, action: openHealthImport)
+            monitor("YOUR WHOOP ACCOUNT", detail: "Connect to sync your saved WHOOP measurements.", symbol: "person.crop.circle", tint: WColor.sleep, action: openAccount)
         }
     }
 
@@ -119,23 +169,17 @@ struct HomeView: View {
     }
 
     private var overview: some View {
-        VStack(spacing: 13) {
-            WhoopWordmark().frame(width: 52, height: 9).padding(.top, 3).opacity(0.8)
+        VStack(spacing: 24) {
+            WhoopWordmark().frame(width: 66, height: 12)
             HStack(alignment: .top, spacing: 24) {
                 ForEach(ScoreMetric.allCases) { metric in
-                    Button { openMetric(metric) } label: {
-                        VStack(spacing: 12) {
-                            ScoreRing(metric: metric, day: day,
-                                      comparisonFraction: precedingDay(in: store).flatMap { metric.value($0) == nil ? nil : metric.fraction($0) })
-                                .frame(maxWidth: 99)
-                            HStack(spacing: 3) {
-                                Text(metric.title).font(WFont.label(10)).tracking(0.8)
-                                Image(systemName: "chevron.right").font(.system(size: 7, weight: .bold))
-                            }.foregroundStyle(.white)
-                        }.frame(maxWidth: .infinity)
-                    }.buttonStyle(.plain)
+                    PulseRing(value: metric.value(day) == nil ? "NO DATA" : metric.text(day), fraction: metric.fraction(day),
+                              previous: precedingDay(in: store).flatMap { metric.value($0) == nil ? nil : metric.fraction($0) },
+                              tint: metric == .recovery ? PulseColor.recoveryScore(day.recovery.map(Double.init)) : metric.color,
+                              label: metric.title, action: { openMetric(metric) })
                 }
             }.padding(.horizontal, 8)
+
             Text(!selectedDayExists(in: store) ? "NO DATA FOR THIS DAY" : day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : "IMPORTED MEASUREMENTS")
                 .font(WFont.label(7)).tracking(0.8).foregroundStyle(WColor.muted)
         }.padding(.bottom, 1)
@@ -146,8 +190,8 @@ struct HomeView: View {
             WCard(padding: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text("Heart Rate Variability").font(WFont.number(19, bold: true))
-                        Text(highlightText).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                        Text("Your day, in focus").font(WFont.body(17).weight(.semibold))
+                        Text(highlightText).font(WFont.body(16)).foregroundStyle(WColor.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
@@ -155,12 +199,15 @@ struct HomeView: View {
                         Image(systemName: "chart.line.uptrend.xyaxis").font(.system(size: 17, weight: .light))
                         Text(decimalText(day.hrv, places: 0)).font(WFont.number(15, bold: true))
                     }.foregroundStyle(WColor.sleep)
-                }.frame(minHeight: 73, alignment: .top)
+                }.frame(minHeight: 80, alignment: .top)
             }
         }.buttonStyle(.plain)
     }
 
     private var highlightText: String {
+        if let recovery = day.recovery, let strain = day.strain {
+            return "Your Recovery is \(recovery)% and your day Strain is \(decimalText(strain)). Review your sleep and recorded activities for the full picture."
+        }
         guard let hrv = day.hrv else { return "Your HRV will appear here when a measurement is available. Tap to view your Recovery details." }
         if let previous = precedingDay(in: store)?.hrv, previous > 0 {
             let percent = (hrv - previous) / previous * 100
@@ -171,9 +218,10 @@ struct HomeView: View {
     }
 
     private var activities: some View {
-        VStack(spacing: 9) {
+        WCard(padding: 12) {
+        VStack(spacing: 11) {
             HStack {
-                Text("TODAY’S ACTIVITIES").font(WFont.label(10)).tracking(0.8)
+                Text("TODAY’S ACTIVITIES").font(WFont.label(12)).tracking(0.8)
                 Spacer()
                 Button("VIEW ALL", action: openActivities).font(WFont.label(8)).foregroundStyle(WColor.muted)
                     .accessibilityLabel("View all saved activities")
@@ -193,14 +241,15 @@ struct HomeView: View {
                     }
                 }.buttonStyle(.plain)
             }
-            ForEach(store.dayActivities) { activity in ReferenceActivityRow(activity: activity) }
+            ForEach(store.dayActivities.sorted { $0.start < $1.start }) { activity in ReferenceActivityRow(activity: activity) }
             if day.sleepMinutes == 0 && store.dayActivities.isEmpty {
                 Text("No activities recorded for this day.").font(WFont.body(13)).foregroundStyle(WColor.muted).padding(.vertical, 7)
             }
             HStack(spacing: 9) {
                 compactAction("+  ADD ACTIVITY", action: openActivity)
-                compactAction("▶  START ACTIVITY", action: openWorkout)
-            }
+                compactAction("START ACTIVITY", action: openWorkout)
+            }.padding(.top, 7)
+        }
         }
     }
 
@@ -209,7 +258,7 @@ struct HomeView: View {
             WCard {
                 VStack(alignment: .leading, spacing: 15) {
                     HStack {
-                        Text("TONIGHT’S SLEEP").font(WFont.label(10)).tracking(0.7)
+                        Text("SLEEP OVERVIEW").font(WFont.label(12)).tracking(0.7)
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 9)).foregroundStyle(WColor.muted)
                     }
@@ -224,6 +273,8 @@ struct HomeView: View {
                             Text("RECORDED SLEEP").font(WFont.label(8)).foregroundStyle(WColor.muted)
                         }
                     }
+                    Text("VIEW SLEEP DETAILS").font(WFont.label(11)).tracking(0.8)
+                        .frame(maxWidth: .infinity, minHeight: 40).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 9))
                 }
             }
         }.buttonStyle(.plain)
@@ -297,7 +348,7 @@ struct ActivityRow: View {
     }
 }
 
-struct HealthView: View {
+struct HealthMonitorView: View {
     @EnvironmentObject private var store: AppStore
     let openMetric: (ScoreMetric) -> Void
     let importData: () -> Void
@@ -305,18 +356,6 @@ struct HealthView: View {
     private var day: DailySnapshot { store.selectedDay }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 0) {
-                ForEach(ScoreMetric.allCases) { metric in
-                    Button { openMetric(metric) } label: {
-                        HStack(spacing: 5) {
-                            Circle().trim(from: 0, to: metric.fraction(day)).stroke(metric.color, lineWidth: 2).rotationEffect(.degrees(-90)).frame(width: 16, height: 16)
-                            Text(metric.title).font(WFont.label(9)).tracking(0.5)
-                        }.frame(maxWidth: .infinity)
-                    }.buttonStyle(.plain)
-                }
-            }.padding(.vertical, 5)
-            SourceBadge(source: day.source, isEmpty: !selectedDayExists(in: store))
-            HealthAgeCard()
             SectionHeading(title: "Health monitor", subtitle: "Measurements recorded for this day")
             WCard {
                 VStack(alignment: .leading, spacing: 7) {
@@ -429,5 +468,73 @@ struct HeartRateChart: View {
             }
         }
         .accessibilityLabel("Heart rate overview from \(samples.count) samples")
+    }
+}
+
+struct HealthView: View {
+    @EnvironmentObject private var store: AppStore
+    let openMetric: (ScoreMetric) -> Void
+    let importData: () -> Void
+    let openHealthImport: () -> Void
+    @State private var showingMonitor = false
+    @State private var showingStress = false
+    @State private var showingProfile = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            HealthAgeCard()
+            WCard(padding: 18, surface: Color(red: 0.11, green: 0.19, blue: 0.24)) {
+                Label("Your imported scores appear below. Your profile’s WHOOP Age is a personal display setting; the proprietary aging calculation is not supplied by the data import.", systemImage: "info.circle")
+                    .font(WFont.body(14)).foregroundStyle(WColor.sleep)
+            }
+            WCard(padding: 18) {
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("PACE OF AGING").font(WFont.label(12)).tracking(1)
+                    Text("Not included in your connected data").font(WFont.body(18))
+                    Button("PERSONALIZE YOUR PROFILE") { showingProfile = true }.buttonStyle(WButton(filled: false))
+                }
+            }
+            Button { showingMonitor = true } label: {
+                WCard(padding: 16) {
+                    VStack(alignment: .leading, spacing: 22) {
+                        HStack { Text("HEALTH MONITOR").font(WFont.label(12)).tracking(0.8); Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted) }
+                        HStack(spacing: 0) {
+                            healthStatus("RESP", symbol: "lungs", available: store.selectedDay.respiratoryRate != nil)
+                            healthStatus("SpO₂", symbol: "drop", available: false)
+                            healthStatus("RHR", symbol: "heart", available: store.selectedDay.restingHeartRate != nil)
+                            healthStatus("HRV", symbol: "waveform.path.ecg", available: store.selectedDay.hrv != nil)
+                            healthStatus("TEMP", symbol: "thermometer.medium", available: false)
+                        }
+                        Text("Indicators show available measurements, not a medical range assessment.").font(WFont.body(12)).foregroundStyle(WColor.muted)
+                    }
+                }
+            }.buttonStyle(.plain)
+            Button { showingStress = true } label: {
+                WCard(padding: 18) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("STRESS MONITOR").font(WFont.label(12)).tracking(0.8)
+                            Text("Stress measurements are not included in your current data.").font(WFont.body(17)).foregroundStyle(WColor.muted)
+                        }
+                        Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                    }
+                }
+            }.buttonStyle(.plain)
+            Button("IMPORT FROM APPLE HEALTH", action: openHealthImport).buttonStyle(WButton())
+            Button("IMPORT YOUR WHOOP DATA", action: importData).buttonStyle(WButton(filled: false))
+        }.sheet(isPresented: $showingMonitor) {
+            SheetScaffold(title: "HEALTH MONITOR") {
+                HealthMonitorView(openMetric: openMetric, importData: importData, openHealthImport: openHealthImport)
+            }
+        }.sheet(isPresented: $showingStress) { StressMonitorView() }
+            .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
+    }
+    private func healthStatus(_ label: String, symbol: String, available: Bool) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: symbol).font(.system(size: 23, weight: .light)).foregroundStyle(WColor.muted)
+            Text(label).font(WFont.label(9)).tracking(0.6)
+            Image(systemName: available ? "checkmark" : "minus").font(.system(size: 13, weight: .bold))
+                .foregroundStyle(available ? PulseColor.mint : WColor.muted).frame(width: 22, height: 22)
+                .background((available ? PulseColor.mint : WColor.muted).opacity(0.12), in: RoundedRectangle(cornerRadius: 3))
+        }.frame(maxWidth: .infinity).accessibilityElement(children: .ignore).accessibilityLabel("\(label), \(available ? "measurement available" : "not available")")
     }
 }

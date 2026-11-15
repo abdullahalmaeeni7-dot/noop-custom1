@@ -4,7 +4,7 @@ import WHOOPCore
 
 enum AppTab: String, CaseIterable, Identifiable {
     case home, sleep, recovery, strain, nutrition, menu, health, community, profile
-    static let navigationTabs: [AppTab] = [.home, .sleep, .recovery, .strain, .nutrition, .menu]
+    static let navigationTabs: [AppTab] = [.home, .health, .nutrition, .community, .menu]
     var id: String { rawValue }
     var title: String { self == .menu ? "More" : rawValue.capitalized }
     var symbol: String {
@@ -34,7 +34,7 @@ final class AppStore: ObservableObject {
     @Published var persistenceError: String?
     @Published private(set) var isImporting = false
     @Published private(set) var lastImportSummary: String?
-    private var journal: [JournalEntry]
+    @Published private var journal: [JournalEntry]
     private let storageURL: URL
     private var storageWritable = true
     private static var utc: Calendar {
@@ -95,6 +95,7 @@ final class AppStore: ObservableObject {
                       restingHeartRate: nil, hrv: nil, respiratoryRate: nil, steps: 0,
                       energyKcal: 0, heartRates: [], source: .imported)
     }
+    func hasJournal(on date: Date) -> Bool { journal.contains { Self.utc.isDate($0.date, inSameDayAs: date) } }
     var currentJournal: JournalEntry {
         journal.first { Self.utc.isDate($0.date, inSameDayAs: selectedDate) } ?? JournalEntry(date: selectedDate)
     }

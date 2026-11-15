@@ -40,7 +40,7 @@ struct PulseCard<Content: View>: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 13, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
     }
 }
 struct PulseRing: View {

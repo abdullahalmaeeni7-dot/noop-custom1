@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 import WHOOPCore
 
 private enum AppSheet: String, Identifiable {
-    case journal, activity, device, data, about, reference, healthImport, workout, activities, account, stress, live, tier, measurementExport
+    case journal, activity, device, data, about, reference, healthImport, workout, activities, account, stress, live, tier, measurementExport, review
     var id: String { rawValue }
 }
 
@@ -26,6 +26,7 @@ struct RootView: View {
     @State private var pendingBackup: LocalBackup?
     @State private var exportName = "WHOOP-day-data"
     @State private var showingLive = false
+    @State private var showingProfile = false
     @State private var attemptedReconnect = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -106,6 +107,7 @@ struct RootView: View {
                 case .live: LiveView()
                 case .tier: ExperienceTierView()
                 case .measurementExport: MeasurementExportView()
+                case .review: DayReviewView()
                 }
             }.preferredColorScheme(.dark).presentationDragIndicator(.visible)
         }
@@ -114,6 +116,7 @@ struct RootView: View {
                 .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
                 .environment(\.calendar, DayCalendar.utc)
         }
+        .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
         .fullScreenCover(isPresented: $showingLive) { ReferenceLiveView(reference: nil) }
         .confirmationDialog("Start activity", isPresented: $showingStartOptions, titleVisibility: .visible) {
             Button("Record workout without camera") { sheet = .workout }
@@ -137,15 +140,7 @@ struct RootView: View {
                     .frame(maxWidth: 680).frame(maxWidth: .infinity)
             }.scrollIndicators(.hidden)
                 .id(store.tab)
-                .overlay(alignment: .bottomTrailing) {
-                    if store.tab != .nutrition {
-                    Button { showingQuickActions = true } label: {
-                        Image(systemName: "plus").font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(Color.black).frame(width: 48, height: 48)
-                            .background(Color.white, in: Circle()).shadow(color: .black.opacity(0.25), radius: 8, y: 3)
-                    }.padding(.trailing, 17).padding(.bottom, 15).accessibilityLabel("Add activity or journal")
-                    }
-                }
+
         }
         .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground() } }
         .safeAreaInset(edge: .bottom, spacing: 0) { floatingNavigation }
@@ -159,7 +154,7 @@ struct RootView: View {
     @ViewBuilder private var selectedScreen: some View {
         switch store.tab {
         case .home:
-            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account })
+            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openQuickActions: { showingQuickActions = true }, openReview: { sheet = .review })
         case .sleep: MetricDetailView(metric: .sleep, embedded: true)
         case .recovery: MetricDetailView(metric: .recovery, embedded: true)
         case .strain: MetricDetailView(metric: .strain, embedded: true)
@@ -184,47 +179,59 @@ struct RootView: View {
     }
 
     private var header: some View {
-        HStack {
-            Button { store.tab = .profile } label: {
-                Image(systemName: "person.crop.circle").font(.system(size: 24, weight: .light))
-                    .foregroundStyle(.white).frame(width: 44, height: 44)
-            }.accessibilityLabel("Your profile").frame(width: 54, alignment: .leading)
-            Spacer()
-            DaySelector(compact: true).frame(maxWidth: 174)
-            Spacer()
-            if recorder.isRecording {
-                Button { sheet = .workout } label: { Image(systemName: "record.circle").foregroundStyle(.red).font(.system(size: 23)) }
-                    .accessibilityLabel("Return to recording")
+        ZStack {
+            if [.home, .sleep, .recovery, .strain].contains(store.tab) {
+                DaySelector(compact: true).frame(width: 132)
+            } else {
+                Text(store.tab.title.uppercased()).font(WFont.label(14)).tracking(1.5)
             }
-            Button { sheet = .device } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: device.connectedName == nil ? "sensor.tag.radiowaves.forward" : "sensor.tag.radiowaves.forward.fill")
-                        .font(.system(size: 20, weight: .light))
-                }.foregroundStyle(device.connectedName == nil ? WColor.muted : WColor.green)
-                    .frame(minWidth: 44, minHeight: 44)
-            }.accessibilityLabel(device.connectedName == nil ? "Connect a device" : "View connected device")
-                .frame(width: 54, alignment: .trailing)
-        }.padding(.horizontal, 15).padding(.top, 5).padding(.bottom, 6)
+            HStack(spacing: 0) {
+                Button { showingProfile = true } label: {
+                    HStack(spacing: 0) {
+                        Circle().fill(LinearGradient(colors: [Color(red: 1, green: 0.69, blue: 0.43), Color(red: 1, green: 0.52, blue: 0.47)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: 30, height: 30).overlay(Text(store.profile.initials(fallback: "YOU")).font(WFont.body(12).weight(.bold)).foregroundStyle(.black))
+                        HStack(spacing: 6) {
+                            Image(systemName: "flame.fill").foregroundStyle(.orange).font(.system(size: 15))
+                            Text(streak.formatted()).font(WFont.number(14, bold: true)).lineLimit(1).minimumScaleFactor(0.5)
+                        }.padding(.horizontal, 10).frame(height: 30).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12)).padding(.leading, -4)
+                    }.frame(minHeight: 44)
+                }.buttonStyle(.plain).accessibilityLabel("Profile, \(streak) day streak")
+                Spacer(minLength: 145)
+                Button { sheet = recorder.isRecording ? .workout : .device } label: {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: recorder.isRecording ? "record.circle" : "applewatch").font(.system(size: 25, weight: .light)).foregroundStyle(.white)
+                        Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : PulseColor.mint).frame(width: 6, height: 6)
+                    }.frame(width: 44, height: 44)
+                }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker")
+            }
+        }.frame(height: 48).padding(.horizontal, 18).padding(.top, 5).padding(.bottom, 10)
     }
-
+    private var streak: Int {
+        store.profile.dayStreakOverride ?? ProfileHighlightsCalculator.calculate(days: store.days).currentLoggedDayStreak
+    }
     private var floatingNavigation: some View {
-        HStack(spacing: 0) {
-            ForEach(AppTab.navigationTabs) { tab in
-                let selected = store.tab == tab || ([AppTab.health, .community, .profile].contains(store.tab) && tab == .menu)
-                Button {
-                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { store.tab = tab }
-                } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab == .home ? "house" : tab == .health ? "heart" : tab.symbol)
-                            .font(.system(size: 20, weight: selected ? .medium : .regular))
-                        Text(tab.title).font(store.tab == .nutrition ? NFont.body(8) : WFont.body(9)).lineLimit(1)
-                    }.foregroundStyle(selected ? Color.white : WColor.muted)
-                        .frame(maxWidth: .infinity).padding(.vertical, 10)
-                        .background { if selected { Capsule().fill(.white.opacity(0.12)).padding(4) } }
-                }.accessibilityAddTraits(selected ? .isSelected : [])
-            }
-        }.padding(.horizontal, 5).background(AppGlassSurface(shape: Capsule(), interactive: true))
-            .padding(.horizontal, 12).padding(.vertical, 6).frame(maxWidth: .infinity)
+        HStack(spacing: 10) {
+            HStack(spacing: 0) {
+                ForEach(AppTab.navigationTabs) { tab in
+                    let selected = store.tab == tab || (store.tab == .profile && tab == .menu)
+                    Button {
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { store.tab = tab }
+                    } label: {
+                        VStack(spacing: 4) {
+                            Image(systemName: tab == .home ? "house" : tab == .health ? "heart.text.square" : tab.symbol)
+                                .font(.system(size: 21, weight: .light))
+                            Text(tab.title).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
+                        }.foregroundStyle(selected ? Color.white : WColor.muted)
+                            .frame(maxWidth: .infinity, minHeight: 56)
+                    }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
+                }
+            }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
+            Button { sheet = .review } label: {
+                WhoopMonogram()
+                    .frame(width: 28, height: 28).padding(13)
+            }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))
+                .accessibilityLabel("Open your day in review")
+        }.padding(.horizontal, 12).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)
     }
 
     private func openMetric(_ metric: ScoreMetric) {
@@ -270,25 +277,30 @@ struct DaySelector: View {
     @State private var pickingDate = false
     var compact = false
     var body: some View {
-        HStack {
-            Button { store.moveDay(-1) } label: { Image(systemName: "chevron.left").font(.system(size: compact ? 11 : 16)).frame(width: 44, height: 44) }
-                .accessibilityLabel("Previous day")
-            Spacer()
-            Button { pickingDate = true } label: {
-                HStack(spacing: 8) {
-                    Text(DayCalendar.utc.isDateInToday(store.selectedDate) ? "TODAY" : utcDateText(store.selectedDate, style: compact ? .dateTime.month(.abbreviated).day() : .dateTime.weekday(.wide)).uppercased())
-                        .font(WFont.label(compact ? 10 : 12)).tracking(1.2)
-                    if !compact {
-                        Text(utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day())).font(WFont.body(13)).foregroundStyle(WColor.muted)
-                        Image(systemName: "chevron.down").font(.system(size: 8, weight: .bold)).foregroundStyle(WColor.muted)
-                    }
-                }.frame(minHeight: 44)
-            }.accessibilityLabel("Choose date, \(utcDateText(store.selectedDate, style: Date.FormatStyle(date: .complete, time: .omitted)))")
-            Spacer()
-            Button { store.moveDay(1) } label: { Image(systemName: "chevron.right").font(.system(size: compact ? 11 : 16)).frame(width: 44, height: 44) }
-                .disabled(DayCalendar.utc.isDateInToday(store.selectedDate)).accessibilityLabel("Next day")
+        Group {
+            if compact {
+                HStack(spacing: 0) {
+                    dayArrow(-1)
+                    Button { pickingDate = true } label: {
+                        Text(dayTitle).font(WFont.label(11)).tracking(0.7).lineLimit(1).minimumScaleFactor(0.75).frame(maxWidth: .infinity, minHeight: 44)
+                    }.accessibilityLabel("Choose date, \(dayTitle)")
+                    dayArrow(1)
+                }.background(AppGlassSurface(shape: Capsule(), interactive: true))
+            } else {
+                HStack {
+                    dayArrow(-1)
+                    Spacer()
+                    Button { pickingDate = true } label: {
+                        VStack(spacing: 4) {
+                            Text(dayTitle).font(WFont.label(12)).tracking(1.2)
+                            Text(utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day())).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                        }.frame(minHeight: 44)
+                    }.accessibilityLabel("Choose date, \(dayTitle)")
+                    Spacer()
+                    dayArrow(1)
+                }
+            }
         }.foregroundStyle(.white)
-            .background { if compact { AppGlassSurface(shape: Capsule(), interactive: true) } }
             .sheet(isPresented: $pickingDate) {
                 SheetScaffold(title: "Choose a day") {
                     DatePicker("Day", selection: $store.selectedDate, in: ...Date(), displayedComponents: .date)
@@ -296,4 +308,14 @@ struct DaySelector: View {
                 }.presentationDetents([.medium, .large])
             }
     }
+    private var dayTitle: String {
+        DayCalendar.utc.isDateInToday(store.selectedDate) ? "TODAY" : utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day()).uppercased()
+    }
+    private func dayArrow(_ offset: Int) -> some View {
+        Button { store.moveDay(offset) } label: {
+            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right").font(.system(size: 14, weight: .bold)).frame(width: 44, height: 44)
+        }.disabled(offset > 0 && DayCalendar.utc.isDateInToday(store.selectedDate))
+            .accessibilityLabel(offset < 0 ? "Previous day" : "Next day")
+    }
+
 }
