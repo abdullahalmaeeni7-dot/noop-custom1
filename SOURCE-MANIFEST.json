@@ -1,5 +1,5 @@
 {
-  "scope": "WHOOP iOS with first-run setup, offline WHOOP ZIP/CSV import, date-free Live, native SwiftUI glass surfaces and personalized saved-data exports. No credentials or compiled IPA in this source archive.",
+  "scope": "WHOOP with personalized profile, saved-data highlights, Live camera and measurement export in the existing iOS project, with legacy reconstruction source retained. No signed iPhone binary or account credentials.",
   "files": [
     {
       "path": ".agents/skills/gpui-liquid-glass/SKILL.md",
@@ -48,8 +48,13 @@
     },
     {
       "path": ".github/workflows/ios-ipa.yml",
-      "bytes": 4303,
-      "sha256": "6bde25515a3a7c0b3dc31db188b6a2ce84251ba8f4458828d325e4a7f78e6d24"
+      "bytes": 12004,
+      "sha256": "21bbaf62309b8faf5052c8fae2098f3f425bdfa4562c2c539c896da0abbecb88"
+    },
+    {
+      "path": ".github/workflows/ios-layout.yml",
+      "bytes": 9731,
+      "sha256": "96f8a0cf1460c17d85d443abcceb5f37c853411301a75f0bde2364d7e8308066"
     },
     {
       "path": ".gitignore",
@@ -62,19 +67,14 @@
       "sha256": "7bd9bfb702233d1c239b6e6a905952ddd3f47c2d2a4066c214da9b55dc7886ee"
     },
     {
-      "path": "ATTRIBUTION.md",
-      "bytes": 7161,
-      "sha256": "ef1a2c0ebf39a0d5bcdf7b892bfccd69a50366113eb3cdcbc154c4d94ac8530e"
-    },
-    {
       "path": "App/AccountModel.swift",
-      "bytes": 22774,
-      "sha256": "78d8d4870211f2cbde8672f50798867c25d026a69ec751bcfc9de1c153e8c9e6"
+      "bytes": 23975,
+      "sha256": "9da7db116922172ead863c6d9c3afb6fd6a7009d8a17a9e9adc3d9a857152b7e"
     },
     {
       "path": "App/AppStore.swift",
-      "bytes": 20285,
-      "sha256": "d5491e94ef5efdbbc17d405fad06c73ed7865926648ef51e45640dbd81de8bc6"
+      "bytes": 20401,
+      "sha256": "f5db60a35025999ab14724f370ea8f426d42e1979bdb0fe667b44c5f8b24cccd"
     },
     {
       "path": "App/DeviceModel.swift",
@@ -93,8 +93,8 @@
     },
     {
       "path": "App/LiveCamera.swift",
-      "bytes": 28328,
-      "sha256": "6f3a38a2ead22f77c4090c980fb0bfb5dde459d451ef75d601d6304712335ba0"
+      "bytes": 28716,
+      "sha256": "f4b8aa25d793ec4a65bb3b31bb9011e89da621f93fbdefe758ce0b44da90f8e1"
     },
     {
       "path": "App/NutritionModel.swift",
@@ -103,13 +103,13 @@
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
-      "bytes": 13406,
-      "sha256": "8753e12b71a570871577b9fa7c98500d2c6a0f601728b1abcbd3eaf24771fa05"
+      "bytes": 13432,
+      "sha256": "18f0ea353c99ae1ab12bd6b20df537c7fb666bb4deb53e7c33b5629f0907980e"
     },
     {
       "path": "App/Pulse/PulseHomeCards.swift",
-      "bytes": 7241,
-      "sha256": "b133a9dc59190acad5f07cfe1663ec5c30c49c05373c1338c22aa6595ceca555"
+      "bytes": 7279,
+      "sha256": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb"
     },
     {
       "path": "App/Pulse/PulseHomeCharts.swift",
@@ -133,8 +133,8 @@
     },
     {
       "path": "App/Pulse/PulseTrackerView.swift",
-      "bytes": 8517,
-      "sha256": "c5e53a52c345dbd6822ab9c251e28a735f6cfdb01d0d00026f3a2cf7fa58ad7d"
+      "bytes": 8562,
+      "sha256": "5c4360a1bfcc57eda0877183800a866425dcfee2479c531697db795e53dd8434"
     },
     {
       "path": "App/Resources/BrandColors.xcassets/Contents.json",
@@ -218,8 +218,8 @@
     },
     {
       "path": "App/Views/DashboardViews.swift",
-      "bytes": 23357,
-      "sha256": "8c4b75b5a7c60d07793ac7ca3a016112da4bcf9cb97cc4de81af7e32114a8dda"
+      "bytes": 31554,
+      "sha256": "b866db87b04cb8f463620f4dbc798900c0f95ba9e5f7c17ddccb2aaba9f8c179"
     },
     {
       "path": "App/Views/DetailViews.swift",
@@ -253,8 +253,8 @@
     },
     {
       "path": "App/Views/NutritionForms.swift",
-      "bytes": 14262,
-      "sha256": "0652e1ae7f6c689a35dd21de05aa1d7beba92eb744efbd8f66849141490791a4"
+      "bytes": 21973,
+      "sha256": "b777ad626141efd78abd4f64505ca86e64d78cbf19afc9805e743bba138976e0"
     },
     {
       "path": "App/Views/NutritionSettings.swift",
@@ -263,33 +263,33 @@
     },
     {
       "path": "App/Views/NutritionViews.swift",
-      "bytes": 16350,
-      "sha256": "126b84438a0e77704a6a3cd968fed38831f9746305d06f803b720ae5a06fd4f8"
+      "bytes": 16986,
+      "sha256": "f5725c643fdacfbb0a78c13999d6791a11e2f989f65b65f59655c2248e995ab1"
     },
     {
       "path": "App/Views/ReferenceComponents.swift",
-      "bytes": 11675,
-      "sha256": "342866efe0556a47f1cc3b1f1f88dfcc0ee57f212a4bbf3fa9fce7f0ea9524b6"
+      "bytes": 21696,
+      "sha256": "9a757bf913b06bf7dff93b77303193454c5ff5cf22a79aff7f4048951451e998"
     },
     {
       "path": "App/Views/ReferenceLiveView.swift",
-      "bytes": 24621,
-      "sha256": "0efae2268d8e319c2ec9961166f01e1fb2ffc97b5aa46264167a7adf42570287"
+      "bytes": 24613,
+      "sha256": "5d900154983fd3ca77ae23da806f238a6cad5b83e011be9aaceaf780c20bdac0"
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 17113,
-      "sha256": "270224d48f7c98ef2ea51b346dd1de948d1bc2be1e7c477ab48b6d73cece3b84"
+      "bytes": 20174,
+      "sha256": "f6f324b493132c7cde9e0e4872b79b5ec9f83747b574789f3444afd8e4220a18"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 19566,
-      "sha256": "7d3c83ee97dbc8ba683913719135d6e37702a67cd3e6bcd7c30ef62b3c258f84"
+      "bytes": 19493,
+      "sha256": "63c5d2409863a3c9ae319db5a8031d6a6da41ff4f53049db7c7118658cf76440"
     },
     {
       "path": "App/Views/Theme.swift",
-      "bytes": 10947,
-      "sha256": "7bf28ded017be7aece0da856735a62ab92195e874e420cb7a48c38cb3d1346eb"
+      "bytes": 11715,
+      "sha256": "e23cffa3751b0d3a5ffee60c942b324e454d1dd86cfecfe98816f45e120276ad"
     },
     {
       "path": "App/Views/WorkoutView.swift",
@@ -323,8 +323,8 @@
     },
     {
       "path": "Configuration/Info.plist",
-      "bytes": 2528,
-      "sha256": "73798abb7154a803facb6db15ea4517a304d09b74bd28161ee3fb28999629ce2"
+      "bytes": 2566,
+      "sha256": "a017a42c32f980156a7d63f6a8b3677f7834627b4b9c2581199bbcd99d8e958f"
     },
     {
       "path": "Configuration/WHOOP.entitlements",
@@ -425,11 +425,6 @@
       "path": "Core/WhoopLiveSession.swift",
       "bytes": 2952,
       "sha256": "89b489fd3b5e712e1237c6c337e8b5ffe389675fd2f4574ec44ba48a6149cfa2"
-    },
-    {
-      "path": "DISCLAIMER.md",
-      "bytes": 7283,
-      "sha256": "c53322038f7f95a61633c1af6ea21d30754e5b465dee3786796d72593ad67b71"
     },
     {
       "path": "Docs/ACCOUNT-SYNC.md",
@@ -542,6 +537,11 @@
       "sha256": "828ef9ade1cfae3935a347ba226007d1f3ede92e80b80d551cba9645f1421cf6"
     },
     {
+      "path": "Docs/LAYOUT-AND-MEAL-CAMERA.md",
+      "bytes": 3711,
+      "sha256": "a411757ec39add432eea8b0d91355b2dee3b33c724bc5639cd6ead328b358029"
+    },
+    {
       "path": "Docs/LIVE-MEDIA.md",
       "bytes": 4717,
       "sha256": "3a8edd9f44c14e1787b98c3b5f035fca3df34ef916bf1100d0683f20bcb6679e"
@@ -637,11 +637,6 @@
       "sha256": "abf522ee25d5eb580c83c95fe3406e19d9df4b1cc7f97d7cfc7008d8663f4076"
     },
     {
-      "path": "LICENSE",
-      "bytes": 5603,
-      "sha256": "6581224cd341c05996116bcb6c24e3b1fb36e03c3b0b3b78147a3ac17464542c"
-    },
-    {
       "path": "LiveActivityWidget/Info.plist",
       "bytes": 752,
       "sha256": "efb5963747e1d510f127918c846a32948545ea5e9c711fedc24c47a600a8da02"
@@ -650,11 +645,6 @@
       "path": "LiveActivityWidget/WorkoutLiveWidget.swift",
       "bytes": 3403,
       "sha256": "6177066814d96e0fa9599c9b1e4fc6aea34f337c6068f389902063867222724a"
-    },
-    {
-      "path": "NOTICE",
-      "bytes": 1651,
-      "sha256": "0c95b9341258f322b1f608d23b77e02fc23fc9d6009013c8d1eb74679ad4c934"
     },
     {
       "path": "Package.resolved",
@@ -673,8 +663,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13379,
-      "sha256": "8fd69ab9e3cb29d21af6ee209f83c823c1ac98ec041f01067edd38ce20c96355"
+      "bytes": 10728,
+      "sha256": "d41a08a0719ef3bdd2636c5bafd6961766c3e760e4aebabcf183c675f5ead973"
     },
     {
       "path": "STATUS.md",
@@ -848,8 +838,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 8239,
-      "sha256": "00a3bec6dad1e282a6a814a4ae819149c40efc150d35be4bf7557387026dda74"
+      "bytes": 10754,
+      "sha256": "42481dc13865f531c0f7fa5e6671205def5933ebd7cd53d34aed2a6ef0423151"
     },
     {
       "path": "Validation/app-syntax.log",
@@ -900,6 +890,16 @@
       "path": "Validation/ipa-validator-tests.log",
       "bytes": 1903,
       "sha256": "5492b822db0061b7872e593848702464e3b7bebcb2b99ec3f5d91c6a0b97fd9e"
+    },
+    {
+      "path": "Validation/layout-camera-package-tests.log",
+      "bytes": 2099,
+      "sha256": "52c14bfb494184853be24b5094816ce778c7f3d5116fba8eef9d68a6c02e4736"
+    },
+    {
+      "path": "Validation/layout-camera-tooling-tests.log",
+      "bytes": 5724,
+      "sha256": "b01a4e18ab591ce5029451202c3fee85c86c2a25d0662bc1a55a5b6cdbd61d07"
     },
     {
       "path": "Validation/live-reference-all-core-tests.log",
@@ -1152,6 +1152,51 @@
       "sha256": "e999d8cb52cf70e9c75a858c83b6494bec1cdf632de65c962dbeedd3c571e7dc"
     },
     {
+      "path": "design/home/native-review-01/01-first-launch.png",
+      "bytes": 621382,
+      "sha256": "6d4d26aa095cbf86889e0195129efda84cf69745ef27a69644af8e6d02632d26"
+    },
+    {
+      "path": "design/home/native-review-01/02-home.png",
+      "bytes": 1625731,
+      "sha256": "40f821fe52a7dc29ff6cedbc118cf2c4a0493cf8517a9a1391020845ee6e735d"
+    },
+    {
+      "path": "design/home/native-review-01/REVIEW.md",
+      "bytes": 1369,
+      "sha256": "45743d8cd4c1071b22ca64da2597f845bd842c7f3d9b6e7155f897afbdc77e67"
+    },
+    {
+      "path": "design/home/native-review-01/run.json",
+      "bytes": 178,
+      "sha256": "277cbf8420753680c2ea3e87b8874e001861632c8ad516484d56cc8b9d249900"
+    },
+    {
+      "path": "design/home/native-review-02/01-first-launch.png",
+      "bytes": 618127,
+      "sha256": "31ccea051a93d6c7dd6ea0da87423f118b48a5b0bab2f36c9b4ae217e4ad1bf9"
+    },
+    {
+      "path": "design/home/native-review-02/02-home.png",
+      "bytes": 868742,
+      "sha256": "42dfbdd00a66110c580cbd5668cf7edc93accf4e3234a2a71510c55e52f8ff74"
+    },
+    {
+      "path": "design/home/native-review-02/REVIEW.md",
+      "bytes": 1812,
+      "sha256": "b464d8e8ebe4e4b4509bd51f1cf8dca1c2d4847e72d6301452c71a5be49d7857"
+    },
+    {
+      "path": "design/home/native-review-02/before-after.jpg",
+      "bytes": 126856,
+      "sha256": "cbfc98fa3a66a9b30d12ec64820063164e7df1b49997da1044893f611fc711ab"
+    },
+    {
+      "path": "design/home/native-review-02/run.json",
+      "bytes": 178,
+      "sha256": "8045b80d58d17fefecbe1f1fdedb6e80b82075ac0dfcc278255b5e98c798a5d3"
+    },
+    {
       "path": "design/home/pulse-icon.svg",
       "bytes": 423,
       "sha256": "dbebe83f03ad37a213d921dff19e6a2d0aa33437929a249e24d0356ddcfda1b1"
@@ -1393,8 +1438,8 @@
     },
     {
       "path": "design/tokens/home.json",
-      "bytes": 4090,
-      "sha256": "df8afcf2acf78ad25b5ae03dcca4cd90e4c9e03a458f8dc51d533852747b48c9"
+      "bytes": 4429,
+      "sha256": "8c16bdf7e26b972b9f7db99f79b227d2bc21d36f69be3381cf51312f984ba352"
     },
     {
       "path": "design/tokens/live.json",
