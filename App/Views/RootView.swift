@@ -226,7 +226,7 @@ struct RootView: View {
                 }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker")
             }
             }
-        }.frame(height: 48).padding(.horizontal, 18).padding(.top, 5).padding(.bottom, 10)
+        }.frame(height: 44).padding(.horizontal, 18)
     }
     private var streak: Int {
         store.profile.dayStreakOverride ?? ProfileHighlightsCalculator.calculate(days: store.days).currentLoggedDayStreak
@@ -244,7 +244,7 @@ struct RootView: View {
                                 .font(.system(size: 21, weight: .light))
                             Text(tab.title).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
                         }.foregroundStyle(selected ? Color.white : WColor.muted)
-                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .frame(maxWidth: .infinity, minHeight: 58)
                     }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
@@ -306,9 +306,10 @@ struct DaySelector: View {
                     dayArrow(-1)
                     Button { pickingDate = true } label: {
                         Text(dayTitle).font(WFont.label(11)).tracking(0.7).lineLimit(1).minimumScaleFactor(0.75).frame(maxWidth: .infinity, minHeight: 44)
+                            .background { Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28) }
                     }.accessibilityLabel("Choose date, \(dayTitle)")
                     dayArrow(1)
-                }.background(AppGlassSurface(shape: Capsule(), interactive: true))
+                }.background { AppGlassSurface(shape: Capsule(), interactive: true).frame(height: 28) }
             } else {
                 HStack {
                     dayArrow(-1)
@@ -336,7 +337,7 @@ struct DaySelector: View {
     }
     private func dayArrow(_ offset: Int) -> some View {
         Button { store.moveDay(offset) } label: {
-            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right").font(.system(size: 14, weight: .bold)).frame(width: 44, height: 44)
+            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right").font(.system(size: compact ? 11 : 16, weight: .bold)).frame(width: 44, height: 44)
         }.disabled(offset > 0 && DayCalendar.utc.isDateInToday(store.selectedDate))
             .accessibilityLabel(offset < 0 ? "Previous day" : "Next day")
     }

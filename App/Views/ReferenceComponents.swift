@@ -199,32 +199,29 @@ struct HealthAgeCard: View {
     @EnvironmentObject private var store: AppStore
     private let gold = Color(red: 0.84, green: 0.66, blue: 0.22)
     var body: some View {
-        WCard {
-            VStack(spacing: 9) {
-                Text("HEALTH").font(WFont.label(10)).tracking(1.4)
+        VStack(spacing: 18) {
                 ZStack {
-                    Circle().fill(RadialGradient(colors: [Color.clear, gold.opacity(0.10), gold.opacity(0.70), Color.clear], center: .center, startRadius: 18, endRadius: 108))
-                    Circle().stroke(gold.opacity(0.35), lineWidth: 0.7).padding(13)
+                    Circle().fill(RadialGradient(stops: [.init(color: .black, location: 0.45), .init(color: gold.opacity(0.16), location: 0.70), .init(color: gold.opacity(0.7), location: 1)], center: .center, startRadius: 0, endRadius: 95))
+                    Circle().stroke(gold.opacity(0.65), lineWidth: 1)
                     Canvas { context, size in
-                        for index in 0..<90 {
+                        for index in 0..<150 {
                             let angle = Double(index) * 2.399963
-                            let radius = Double(65 + (index * 19) % 34)
+                            let radius = Double(20 + (index * 19) % 72)
                             let point = CGPoint(x: Double(size.width) / 2 + cos(angle) * radius,
                                                 y: Double(size.height) / 2 + sin(angle) * radius)
                             let diameter = CGFloat(index % 3 == 0 ? 2.5 : 1)
-                            context.fill(Path(ellipseIn: CGRect(x: point.x, y: point.y, width: diameter, height: diameter)), with: .color(.yellow.opacity(index % 4 == 0 ? 0.9 : 0.4)))
+                            context.fill(Path(ellipseIn: CGRect(x: point.x, y: point.y, width: diameter, height: diameter)), with: .color(Color(red: 1, green: 0.91, blue: 0.61).opacity(index % 4 == 0 ? 0.9 : 0.5)))
                         }
                     }
                     VStack(spacing: 4) {
-                        Text(store.profile.whoopAge.isEmpty ? "NO DATA" : store.profile.whoopAge).font(WFont.number(store.profile.whoopAge.isEmpty ? 25 : 48, bold: true)).lineLimit(1).minimumScaleFactor(0.4)
+                        Text(store.profile.whoopAge.isEmpty ? "NO DATA" : store.profile.whoopAge).font(WFont.number(store.profile.whoopAge.isEmpty ? 20 : 34, bold: true)).lineLimit(1).minimumScaleFactor(0.4)
                         Text("WHOOP AGE").font(WFont.label(11)).tracking(0.8)
                         Text(store.profile.whoopAge.isEmpty ? "Not available" : "Personalized display").font(WFont.body(12)).foregroundStyle(WColor.muted)
                     }
-                }.frame(width: 220, height: 220)
+                }.frame(width: 190, height: 190)
                 Text(store.profile.whoopAge.isEmpty ? "An age score is not included in your current data. You can personalize its display in Profile." : "Your chosen profile value. This is not a calculated health-age measurement.")
                     .font(WFont.body(12)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
-            }.frame(maxWidth: .infinity).padding(.vertical, 6)
-        }.accessibilityElement(children: .combine)
+        }.frame(maxWidth: .infinity).padding(.vertical, 20).accessibilityElement(children: .combine)
     }
 }
 
@@ -318,18 +315,34 @@ struct WeeklyReadinessChart: View {
             ForEach(recorded) { day in points(day) }
             ForEach(0..<6, id: \.self) { index in segments(index) }
         }.chartYScale(domain: 0...21).chartXScale(domain: (dates.first ?? store.selectedDate)...(dates.last ?? store.selectedDate))
-            .chartYAxis { AxisMarks(values: [0, 7, 14, 21]) { AxisGridLine().foregroundStyle(WColor.line); AxisValueLabel().foregroundStyle(WColor.blue) } }
+            .chartYAxis {
+                AxisMarks(position: .leading, values: [0, 7, 14, 21]) {
+                    AxisGridLine().foregroundStyle(WColor.line)
+                    AxisValueLabel().foregroundStyle(WColor.blue)
+                }
+                AxisMarks(position: .trailing, values: [0.0, 6.93, 13.86, 21.0]) { value in
+                    AxisValueLabel {
+                        if let score = value.as(Double.self) {
+                            Text("\(Int((score / 21 * 100).rounded()))%").font(WFont.label(9)).foregroundStyle(PulseColor.recoveryScore(score / 21 * 100))
+                        }
+                    }
+                }
+            }
             .chartXAxis { AxisMarks(values: dates) { AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: false).foregroundStyle(WColor.muted) } }
             .accessibilityLabel("Seven-day Strain and Recovery chart. Missing days are not joined.")
     }
     @ChartContentBuilder private func points(_ day: DailySnapshot) -> some ChartContent {
         if let strain = day.strain {
-            PointMark(x: .value("Day", day.date), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
+            PointMark(x: .value("Day", DayCalendar.start(of: day.date)), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
                 .annotation(position: .top) { Text(decimalText(strain)).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
+                .accessibilityLabel(Text("Strain on " + utcDateText(day.date, style: .dateTime.month().day())))
+                .accessibilityValue(Text(decimalText(strain)))
         }
         if let recovery = day.recovery {
-            PointMark(x: .value("Day", day.date), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
+            PointMark(x: .value("Day", DayCalendar.start(of: day.date)), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
                 .annotation(position: .bottom) { Text("\(recovery)%").font(WFont.number(10, bold: true)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))) }
+                .accessibilityLabel(Text("Recovery on " + utcDateText(day.date, style: .dateTime.month().day())))
+                .accessibilityValue(Text("\(recovery)%"))
         }
     }
     @ChartContentBuilder private func segments(_ index: Int) -> some ChartContent {

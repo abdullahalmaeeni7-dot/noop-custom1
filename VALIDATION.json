@@ -57,17 +57,17 @@
     "App/Pulse/PulseHomePanels.swift": "99617732159d26f71f2d291c17d07532d16cb8ba05b182805cfa02ac51ccc328",
     "App/Pulse/PulseComponents.swift": "18f0ea353c99ae1ab12bd6b20df537c7fb666bb4deb53e7c33b5629f0907980e",
     "App/Views/MeasurementExportView.swift": "9fcd0185e898389f92c7eed9dd046cd88d3c256e048573045d71e48b9626d62d",
-    "App/Views/RootView.swift": "a30ab383e1e24eb86930482919f3ef883ff55ddfbe3ea6dfe0cdde5a25eaf25a",
+    "App/Views/RootView.swift": "cb2a91f5a71f16f4ddc23f1bff6fae9bbd35bae7447cb04bdc9dfb8aca07960e",
     "Tests/WHOOPCoreTests/MeasurementExportTests.swift": "b8a2d0080c5dba13b3068f90cacf6146d21db5dbad41266779ae1faf9115b326",
     "App/DeviceModel.swift": "4b18856e060fba6209d0af8cbe4017c52cf1137d5b9515ee89e1efcc8460d2af",
     "App/Pulse/PulseTrackerView.swift": "5c4360a1bfcc57eda0877183800a866425dcfee2479c531697db795e53dd8434",
-    "App/Views/DashboardViews.swift": "1d8ca4168680b48fc91f6e40b3c03a5d36a82ab2ca4dd01fae39604412941a1f",
+    "App/Views/DashboardViews.swift": "f3e52644e66ee422cc09a1d900a41b59dee68be54bba9d20485bacf97095d420",
     "App/Views/SecondaryViews.swift": "63c5d2409863a3c9ae319db5a8031d6a6da41ff4f53049db7c7118658cf76440",
     "App/Views/Theme.swift": "12812c95cc241907daa5fd3f20f0151968460533928e8795971e9e9e7fa29052",
     "App/WHOOPApp.swift": "a3ec84d690e302d433fdd7a04beb9a9e3a12b3ed42816dc7beb7124ad53617dc",
     "Tests/WHOOPCoreTests/CoreTests.swift": "8a63fc29cd98971b506cf08a4c4918569b4233605bc130e0ea7bccae4e10ed4a",
     "Core/ImportReader.swift": "bde642579ae97b55e61abd04f44d9553878f905e238afd1c5d0ce477df9e82a9",
-    "App/LiveCamera.swift": "b80a84cb2cdc44a652f909ebf597c163a3fc88ed672b11afaf9c17727c75a166",
+    "App/LiveCamera.swift": "f4b8aa25d793ec4a65bb3b31bb9011e89da621f93fbdefe758ce0b44da90f8e1",
     "App/Views/LiveView.swift": "ca9d3f9be359f0937add7921156d44ed788825dad151c337d0628913dab97174",
     "App/Views/NutritionComponents.swift": "eb4387bab97de6d89381d03cbf0c6a11948fdcaf55d2105d6788bd12bd16fc7b",
     "App/Views/ReferenceLiveView.swift": "5d900154983fd3ca77ae23da806f238a6cad5b83e011be9aaceaf780c20bdac0",
@@ -75,9 +75,9 @@
     "App/AccountModel.swift": "9da7db116922172ead863c6d9c3afb6fd6a7009d8a17a9e9adc3d9a857152b7e",
     "App/Views/NutritionForms.swift": "b777ad626141efd78abd4f64505ca86e64d78cbf19afc9805e743bba138976e0",
     "App/Views/NutritionViews.swift": "f5725c643fdacfbb0a78c13999d6791a11e2f989f65b65f59655c2248e995ab1",
-    "App/Views/ReferenceComponents.swift": "446f15eee2cb89169c2a547bc6d1bb11978258befec38f11d7e1fcca3d790d77",
+    "App/Views/ReferenceComponents.swift": "9a757bf913b06bf7dff93b77303193454c5ff5cf22a79aff7f4048951451e998",
     "Configuration/Info.plist": "a017a42c32f980156a7d63f6a8b3677f7834627b4b9c2581199bbcd99d8e958f",
-    ".github/workflows/ios-ipa.yml": "a29af2a3ad275833cf43d6de10f0c8debbc35fcaf84f0ad1a8e03465e5ff027d",
+    ".github/workflows/ios-ipa.yml": "21bbaf62309b8faf5052c8fae2098f3f425bdfa4562c2c539c896da0abbecb88",
     "App/Pulse/PulseHomeCards.swift": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb"
   },
   "export_formats": [
@@ -117,23 +117,16 @@
   "unsigned_ipa_produced": false,
   "previous_native_device_build": {
     "provider": "GitHub Actions",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43736442549",
-    "source_commit": "06efcc19cbbd8cb179a75dfed448105ff6cc0c2e",
-    "result": "success",
-    "runner": "macos-15-intel",
-    "SDK_selection": "Xcode 26",
-    "duration": "4m 35s",
-    "portable_test_step": "passed on Mac",
-    "device_build": "passed",
-    "device_package_validation": "passed",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43758576089",
+    "source_commit": "9b7fda9",
+    "result": "device build and packaging passed",
     "architecture": "arm64",
     "platform": "iOS device",
-    "artifact_name": "WHOOP-unsigned-iphone-ipa",
-    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43736442549/artifacts/14171160235",
-    "artifact_size": "3.76 MB",
-    "artifact_archive_sha256": "b141eb8e5c4809ce43179be5c6d8fffa89438ef1b2200761c67a5c4431d2eb12",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43758576089/artifacts/14179517413",
+    "artifact_size": "3.92 MB",
+    "artifact_archive_sha256": "b59ebbf1e65a4c222695c2617ea9109ed43a9230bb36b2b88262003741d470b6",
     "signed": false,
-    "physical_visual_test": false
+    "physical_device_test": false
   },
   "current_native_build": "pending",
   "zip_import": {
@@ -175,7 +168,7 @@
   "layout": {
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
-    "native_screenshot": "pending"
+    "native_screenshot": "First simulator build exited 65; no screenshot produced. Retrying with explicit simulator SDK and public error annotations."
   },
   "nutrition_tests": {
     "calculator_and_routes_passed": 20,

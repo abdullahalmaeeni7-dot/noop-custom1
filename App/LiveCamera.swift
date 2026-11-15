@@ -130,7 +130,7 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
                 self.session.commitConfiguration()
             }
             if !self.session.isRunning { self.session.startRunning() }
-            completion(true)
+            completion(self.session.isRunning)
         }
     }
     func flip() {
@@ -279,17 +279,25 @@ final class LiveCameraModel: ObservableObject {
     @Published private(set) var starting = false
     @Published private(set) var movie: URL?
     @Published private(set) var status = "Open the camera when you are ready."
+    private var openingID = UUID()
     func open(microphone: Bool) async {
+        let attempt = UUID(); openingID = attempt; ready = false; status = "Opening camera…"
         let allowed = await AVCaptureDevice.requestAccess(for: .video)
-        guard !Task.isCancelled else { return }
+        guard openingID == attempt, !Task.isCancelled else { return }
         guard allowed else { status = "Camera access is off. Allow it in iPhone Settings, or use the photo overlay instead."; return }
         let audio = microphone ? await AVCaptureDevice.requestAccess(for: .audio) : false
-        guard !Task.isCancelled else { return }
+        guard openingID == attempt, !Task.isCancelled else { return }
         engine.onFinish = { [weak self] result in Task { @MainActor in
             guard let self else { return }; self.recording = false
             switch result { case .success(let url): self.movie = url; self.status = "Video ready to save or share."; case .failure(let error): self.status = error.localizedDescription }
         } }
-        engine.prepare(audioAllowed: audio) { [weak self] ok in Task { @MainActor in self?.ready = ok; self?.status = ok ? (audio ? "Camera and microphone ready." : "Camera ready · video only.") : LiveCameraError.unavailable.localizedDescription } }
+        engine.prepare(audioAllowed: audio) { [weak self] ok in
+            Task { @MainActor in
+                guard let self, self.openingID == attempt else { return }
+                self.ready = ok
+                self.status = ok ? (audio ? "Camera and microphone ready." : "Camera ready.") : LiveCameraError.unavailable.localizedDescription
+            }
+        }
     }
     func start() {
         guard ready, !recording, !starting else { return }
@@ -300,7 +308,7 @@ final class LiveCameraModel: ObservableObject {
         } }
     }
     func stop() { guard recording else { return }; status = "Finishing video…"; engine.stop() }
-    func close() { engine.shutdown(); ready = false }
+    func close() { openingID = UUID(); engine.shutdown(); ready = false }
 }
 
 extension LiveOverlayRenderer {

@@ -24,7 +24,7 @@ struct HomeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
-            overview.padding(.top, 20).padding(.bottom, 9)
+            overview.padding(.top, 14).padding(.bottom, 7)
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
             HStack(spacing: 11) {
@@ -39,41 +39,42 @@ struct HomeView: View {
         }
     }
     private var myDay: some View {
-    VStack(alignment: .leading, spacing: 15) {
-        HStack {
-            Text("My Day").font(WFont.body(20).weight(.semibold))
-            Spacer()
-            Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { quickMenu.toggle() } } label: {
-                Image(systemName: quickMenu ? "xmark" : "plus").font(.system(size: 25, weight: .regular)).foregroundStyle(.black)
-                    .frame(width: 44, height: 44).background(.white, in: RoundedRectangle(cornerRadius: 13))
-            }.accessibilityLabel(quickMenu ? "Close day actions" : "Add to your day")
-        }.overlay(alignment: .bottomTrailing) {
-            if quickMenu {
-                PulseQuickMenu(strengthTitle: "RECORD WORKOUT") { panel in
-                    quickMenu = false
-                    switch panel {
-                    case .live: openLive()
-                    case .journal: openJournal()
-                    case .strength, .session: openWorkout()
-                    case .activity: openActivity()
-                    default: break
-                    }
-                }.offset(y: -55).transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .bottomTrailing)))
-            }
+        VStack(alignment: .leading, spacing: 15) {
+            HStack {
+                Text("My Day").font(WFont.body(20).weight(.semibold))
+                Spacer()
+                Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { quickMenu.toggle() } } label: {
+                    Image(systemName: quickMenu ? "xmark" : "plus").font(.system(size: 22, weight: .regular)).foregroundStyle(.black)
+                        .frame(width: 34, height: 34).background(.white, in: RoundedRectangle(cornerRadius: 11))
+                        .frame(width: 44, height: 44).contentShape(Rectangle())
+                }.accessibilityLabel(quickMenu ? "Close day actions" : "Add to your day")
+            }.overlay(alignment: .bottomTrailing) {
+                if quickMenu {
+                    PulseQuickMenu(strengthTitle: "RECORD WORKOUT") { panel in
+                        quickMenu = false
+                        switch panel {
+                        case .live: openLive()
+                        case .journal: openJournal()
+                        case .strength, .session: openWorkout()
+                        case .activity: openActivity()
+                        default: break
+                        }
+                    }.offset(y: -55).transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .bottomTrailing)))
+                }
+            }.zIndex(3)
+            Button(action: openReview) {
+                HStack(spacing: 10) {
+                    Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
+                    Text(reviewTitle).font(WFont.body(14).weight(.semibold))
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
+                }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
+                    .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
+            }.buttonStyle(.plain)
+            tonight
+            activities
+            journalCard
         }.zIndex(3)
-        Button(action: openReview) {
-            HStack(spacing: 10) {
-                Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
-                Text(reviewTitle).font(WFont.body(14).weight(.semibold))
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
-            }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
-                .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
-        }.buttonStyle(.plain)
-        tonight
-        activities
-        journalCard
-    }.zIndex(3)
     }
     private var reviewTitle: String {
         let first = store.profile.displayName.split(separator: " ").first.map(String.init)
@@ -187,7 +188,7 @@ struct HomeView: View {
     }
 
     private var overview: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             WhoopWordmark().frame(width: 66, height: 12)
             HStack(alignment: .top, spacing: 24) {
                 ForEach(ScoreMetric.allCases) { metric in
@@ -198,8 +199,9 @@ struct HomeView: View {
                 }
             }.padding(.horizontal, 8)
 
-            Text(!selectedDayExists(in: store) ? "NO DATA FOR THIS DAY" : day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : "IMPORTED MEASUREMENTS")
-                .font(WFont.label(7)).tracking(0.8).foregroundStyle(WColor.muted)
+            if day.source == .example {
+                Text("EXAMPLE DATA · NOT PERSONAL MEASUREMENTS").font(WFont.label(7)).tracking(0.8).foregroundStyle(WColor.muted)
+            }
         }.padding(.bottom, 1)
     }
 
