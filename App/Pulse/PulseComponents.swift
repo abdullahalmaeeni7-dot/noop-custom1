@@ -65,7 +65,7 @@ struct PulseRing: View {
                             .stroke(.white.opacity(0.75), lineWidth: 5.8).rotationEffect(.degrees(-90))
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
-                        Text(value.hasSuffix("%") ? String(value.dropLast()) : value).font(PulseFont.number(26))
+                        Text(value.hasSuffix("%") ? String(value.dropLast()) : value).font(PulseFont.number(value == "NO DATA" ? 12 : 26))
                             .contentTransition(.numericText(value: Double(value.replacingOccurrences(of: "%", with: "")) ?? 0))
                         if value.hasSuffix("%") { Text("%").font(PulseFont.number(17)) }
                     }.tracking(-0.8).monospacedDigit().minimumScaleFactor(0.7).padding(9)

@@ -107,12 +107,13 @@ struct PulseDiscoverCard: View {
     }
 }
 struct PulseQuickMenu: View {
+    var strengthTitle = "STRENGTH TRAINER"
     let action: (PulseHomePanel) -> Void
     var body: some View {
         VStack(spacing: 0) {
             row("CREATE WHOOP LIVE", "camera", .live)
             row("COMPLETE YOUR JOURNAL", "square.and.pencil", .journal)
-            row("STRENGTH TRAINER", "figure.strengthtraining.traditional", .strength)
+            row(strengthTitle, "figure.strengthtraining.traditional", .strength)
             row("ADD ACTIVITY", "plus", .activity)
             row("START ACTIVITY", "stopwatch", .session)
         }.padding(.horizontal, 20).padding(.vertical, 8).frame(width: 255)

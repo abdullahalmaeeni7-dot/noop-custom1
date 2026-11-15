@@ -7,6 +7,11 @@ private enum AppSheet: String, Identifiable {
     var id: String { rawValue }
 }
 
+private struct DashboardScrollOffset: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var device: DeviceModel
@@ -14,7 +19,6 @@ struct RootView: View {
     @EnvironmentObject private var liveActivity: LiveActivityDriver
     @State private var sheet: AppSheet?
     @State private var metricRoute: ScoreMetric?
-    @State private var showingQuickActions = false
     @State private var showingStartOptions = false
     @State private var importing = false
     @State private var exporting = false
@@ -28,6 +32,7 @@ struct RootView: View {
     @State private var showingLive = false
     @State private var showingProfile = false
     @State private var attemptedReconnect = false
+    @State private var compactMetrics = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -122,28 +127,37 @@ struct RootView: View {
             Button("Record workout without camera") { sheet = .workout }
             Button("Record with Live camera") { showingLive = true }
         }
-        .confirmationDialog("Add to your day", isPresented: $showingQuickActions, titleVisibility: .visible) {
-            Button("Add activity") { sheet = .activity }
-            Button("Start activity") { sheet = .workout }
-            Button("Record with Live camera") { showingLive = true }
-            Button("Fill out journal") { sheet = .journal }
-        }
+
     }
 
     private var appLayout: some View {
         VStack(spacing: 0) {
             if store.tab != .nutrition { header }
+            if store.tab == .home && compactMetrics {
+                HomeMetricStrip(openMetric: openMetric).padding(.horizontal, 25).frame(height: 39).transition(.opacity)
+            }
             ScrollView {
                 VStack(spacing: 22) {
                     selectedScreen
-                }.padding(.horizontal, 15).padding(.top, 8).padding(.bottom, 70)
+                }.padding(.horizontal, 15).padding(.top, 8).padding(.bottom, 100)
                     .frame(maxWidth: 680).frame(maxWidth: .infinity)
-            }.scrollIndicators(.hidden)
+                    .background(GeometryReader { proxy in Color.clear.preference(key: DashboardScrollOffset.self, value: proxy.frame(in: .named("dashboardScroll")).minY) })
+            }.coordinateSpace(name: "dashboardScroll").scrollIndicators(.hidden)
                 .id(store.tab)
+                .onPreferenceChange(DashboardScrollOffset.self) { offset in
+                    let next = store.tab == .home && offset < -155
+                    if next != compactMetrics { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { compactMetrics = next } }
+                }
+                .simultaneousGesture(DragGesture(minimumDistance: 55).onEnded { drag in
+                    guard store.tab == .home, abs(drag.translation.width) > abs(drag.translation.height) * 1.5 else { return }
+                    let offset = drag.translation.width < 0 ? 1 : -1
+                    if offset < 0 || !DayCalendar.utc.isDateInToday(store.selectedDate) { store.moveDay(offset) }
+                })
 
         }
         .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground() } }
-        .safeAreaInset(edge: .bottom, spacing: 0) { floatingNavigation }
+        .overlay(alignment: .bottom) { floatingNavigation.padding(.bottom, 8) }
+        .onChange(of: store.tab) { _, _ in compactMetrics = false }
         .preferredColorScheme(.dark)
         .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
         .environment(\.calendar, DayCalendar.utc)
@@ -154,7 +168,7 @@ struct RootView: View {
     @ViewBuilder private var selectedScreen: some View {
         switch store.tab {
         case .home:
-            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openQuickActions: { showingQuickActions = true }, openReview: { sheet = .review })
+            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openLive: { showingLive = true }, openReview: { sheet = .review })
         case .sleep: MetricDetailView(metric: .sleep, embedded: true)
         case .recovery: MetricDetailView(metric: .recovery, embedded: true)
         case .strain: MetricDetailView(metric: .strain, embedded: true)
@@ -185,6 +199,13 @@ struct RootView: View {
             } else {
                 Text(store.tab.title.uppercased()).font(WFont.label(14)).tracking(1.5)
             }
+            if store.tab == .menu {
+                HStack {
+                    Button { showingProfile = true } label: { Image(systemName: "gearshape").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel("Profile settings")
+                    Spacer()
+                    Link(destination: URL(string: "https://shop.whoop.com/")!) { Image(systemName: "cart").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel("Open the official WHOOP shop")
+                }
+            } else if store.tab != .health && store.tab != .community {
             HStack(spacing: 0) {
                 Button { showingProfile = true } label: {
                     HStack(spacing: 0) {
@@ -203,6 +224,7 @@ struct RootView: View {
                         Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : PulseColor.mint).frame(width: 6, height: 6)
                     }.frame(width: 44, height: 44)
                 }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker")
+            }
             }
         }.frame(height: 48).padding(.horizontal, 18).padding(.top, 5).padding(.bottom, 10)
     }

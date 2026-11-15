@@ -55,13 +55,13 @@
     "App/AppStore.swift": "f5db60a35025999ab14724f370ea8f426d42e1979bdb0fe667b44c5f8b24cccd",
     "App/Pulse/PulseHomeView.swift": "8c56c069bd85d5d5a86251cfa3bed07b399f48e68f6fb8712127cd98266dac11",
     "App/Pulse/PulseHomePanels.swift": "99617732159d26f71f2d291c17d07532d16cb8ba05b182805cfa02ac51ccc328",
-    "App/Pulse/PulseComponents.swift": "6554938e3282de3bccff9c14ee1a6657bd2b9dd831e386bf87e46eaf4aad05c8",
+    "App/Pulse/PulseComponents.swift": "18f0ea353c99ae1ab12bd6b20df537c7fb666bb4deb53e7c33b5629f0907980e",
     "App/Views/MeasurementExportView.swift": "9fcd0185e898389f92c7eed9dd046cd88d3c256e048573045d71e48b9626d62d",
-    "App/Views/RootView.swift": "3661d6ab6266c1adb81bfb0314459d531509cd10f1206c2877d263cd054c0e2a",
+    "App/Views/RootView.swift": "a30ab383e1e24eb86930482919f3ef883ff55ddfbe3ea6dfe0cdde5a25eaf25a",
     "Tests/WHOOPCoreTests/MeasurementExportTests.swift": "b8a2d0080c5dba13b3068f90cacf6146d21db5dbad41266779ae1faf9115b326",
     "App/DeviceModel.swift": "4b18856e060fba6209d0af8cbe4017c52cf1137d5b9515ee89e1efcc8460d2af",
     "App/Pulse/PulseTrackerView.swift": "5c4360a1bfcc57eda0877183800a866425dcfee2479c531697db795e53dd8434",
-    "App/Views/DashboardViews.swift": "f75eda496a10e25ec746d070a49e289faf5b31c0a424f38c1ab0d6c0a42d0308",
+    "App/Views/DashboardViews.swift": "1d8ca4168680b48fc91f6e40b3c03a5d36a82ab2ca4dd01fae39604412941a1f",
     "App/Views/SecondaryViews.swift": "63c5d2409863a3c9ae319db5a8031d6a6da41ff4f53049db7c7118658cf76440",
     "App/Views/Theme.swift": "12812c95cc241907daa5fd3f20f0151968460533928e8795971e9e9e7fa29052",
     "App/WHOOPApp.swift": "a3ec84d690e302d433fdd7a04beb9a9e3a12b3ed42816dc7beb7124ad53617dc",
@@ -75,9 +75,10 @@
     "App/AccountModel.swift": "9da7db116922172ead863c6d9c3afb6fd6a7009d8a17a9e9adc3d9a857152b7e",
     "App/Views/NutritionForms.swift": "b777ad626141efd78abd4f64505ca86e64d78cbf19afc9805e743bba138976e0",
     "App/Views/NutritionViews.swift": "f5725c643fdacfbb0a78c13999d6791a11e2f989f65b65f59655c2248e995ab1",
-    "App/Views/ReferenceComponents.swift": "2fc799ac6356ce2d74fa2f92959fb0e01fe413330fd687ddf87399397b160b24",
+    "App/Views/ReferenceComponents.swift": "446f15eee2cb89169c2a547bc6d1bb11978258befec38f11d7e1fcca3d790d77",
     "Configuration/Info.plist": "a017a42c32f980156a7d63f6a8b3677f7834627b4b9c2581199bbcd99d8e958f",
-    ".github/workflows/ios-ipa.yml": "a29af2a3ad275833cf43d6de10f0c8debbc35fcaf84f0ad1a8e03465e5ff027d"
+    ".github/workflows/ios-ipa.yml": "a29af2a3ad275833cf43d6de10f0c8debbc35fcaf84f0ad1a8e03465e5ff027d",
+    "App/Pulse/PulseHomeCards.swift": "f8a87d93072208b2923196747f432d873c5f67817a76dbf4c461dd637e6c72fb"
   },
   "export_formats": [
     "personalized JSON",
@@ -175,5 +176,15 @@
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
     "native_screenshot": "pending"
+  },
+  "nutrition_tests": {
+    "calculator_and_routes_passed": 20,
+    "server_passed": 35,
+    "failures": 0,
+    "provider": "synthetic, no production AI connection"
+  },
+  "packaging_tests": {
+    "passed": 13,
+    "failures": 0
   }
 }

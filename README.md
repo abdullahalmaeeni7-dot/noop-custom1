@@ -1,52 +1,12 @@
-# Current update: reference layout and Nutrition camera
+# WHOOP iPhone app
 
-The functional Home and navigation now follow the supplied reference hierarchy. Nutrition includes real camera capture, a photo preview, permission recovery and direct analysis-connection settings. First-run setup, tracker search, ZIP import and exports remain available. Photo AI still requires your configured server; no key is bundled. See [details and verification](Docs/LAYOUT-AND-MEAL-CAMERA.md). Native compilation for this revision is in progress; earlier build links below refer to earlier source.
+First launch opens Welcome → Profile → Find your tracker → Import data → Home. Later launches use your saved profile and measurements. Import the official WHOOP web-export ZIP directly; no account bridge is needed for ZIP imports.
 
-# Current update: import WHOOP ZIPs and Liquid Glass
+Home now follows the supplied reference hierarchy, with three animated score rings, paired monitor cards, My Day, sleep, activities, journal, plan and dashboard. Navigation includes Home, Health, Nutrition, Community and More. The floating day actions, compact rings on scroll and profile/export controls use the existing functional flows. The membership-expiry banner stays removed. Shared controls retain native iOS 26 Liquid Glass, system material on older iOS, and accessibility fallbacks. Exact official-app appearance and feature parity are not established.
 
-Import the original WHOOP web-export ZIP directly from setup or **More → Your data → Import WHOOP ZIP / day data**. Cycle, primary-sleep and workout CSVs are read offline, without a secure bridge. The date is removed from Live's preview and exported overlays. Shared app surfaces and controls use native iOS 26 glass with a system-material fallback for older iOS.
+Nutrition includes a real Take Photo capture flow, photo-library selection, preview and editable AI estimates. Capture works independently of the server. **AI photo/text analysis requires a configured HTTPS account bridge with server-only `AI_API_KEY`, `AI_API_URL` and a vision-capable `AI_MODEL`.** No credentials or production service are bundled. Connection settings and manual-entry recovery are available directly from the food form.
 
-The requested skill is installed in `.agents/skills/gpui-liquid-glass`; its desktop GPUI guidance is adapted to this existing SwiftUI project. See [implementation, supported data and checks](Docs/ZIP-AND-GLASS.md). **160 core tests** and **13 packaging tests** pass. The [updated iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43736442549). Download the [unsigned IPA ZIP](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43736442549/artifacts/14171160235), extract it and sign/install with Sideloadly. Real-device appearance and file picking still need iPhone testing.
-
----
-
-# Current launch: welcome, tracker setup and personal Home
-
-First launch now opens **Welcome → Profile → Find your tracker → Import data → Home**. Tracker search uses the existing Bluetooth adapter, and connecting/importing later is supported. Setup completion is remembered on this iPhone; later launches go to the functional Home dashboard with your saved data and fresh live readings. The supplied screenshot values are no longer the app's launch data. More keeps an explicit screenshot preview.
-
-See [startup behavior, migration and validation](Docs/APP-STARTUP.md). All **146 portable tests** and **13 packaging tests** pass; physical-device behavior requires iPhone testing. The [Apple device build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43727040591). Download **WHOOP-unsigned-iphone-ipa** from that run's Artifacts, extract the ZIP and sign the IPA for your iPhone. The GitHub workflow also runs after relevant updates to main.
-
----
-
-# Current update: personal profile and exported highlights
-
-Tap the Home avatar → **Edit** to set your name, username, age, WHOOP Age display and day streak. Ages have no numeric upper limit. Data Highlights show saved-data extrema and consecutive-day streaks in the reference Profile layout. **More → Export Data** now includes personalization and highlights in JSON, plus a profile/highlights CSV. Profile-only export and JSON re-import are supported.
-
-Read [personalization, export schema and verification](Docs/PROFILE-PERSONALIZATION.md) and [the browser gallery](design/profile/Profile-gallery.jpg). User-chosen values are labeled separately from calculated records. All 143 portable tests pass. Native Apple compilation, exact visual parity and Files/storage UI execution remain unverified; no IPA is included. Earlier update notes below are historical.
-
----
-
-# Current update: full-screen Live camera
-
-Home → **+ → Create WHOOP Live** now opens the full-screen camera layout from the supplied screenshot: Overview dials, large Strain/Recovery/Sleep gauges, native capture controls and a bottom mode selector. The existing camera, photo, recorder and Live Activities paths are reused. More → Export Data remains available.
-
-See [Live implementation and validation limits](Docs/LIVE-REFERENCE.md) and [the browser preview](design/live/01-Overview.png). Preview values are labeled examples; live HR requires fresh sensor data. All 130 portable tests pass. Native iPhone rendering and capture remain unverified. Earlier update notes below are historical.
-
----
-
-# Current update: in-app data export
-
-**More → Export Data** now saves non-example measurements as JSON, daily CSV or heart-rate CSV, with inclusive UTC date filters and the iOS Files picker. The existing storage and account connection are reused. Home mock values never enter these exports. Saved imports may combine providers, so this is not a verified WHOOP-only raw account archive.
-
-Read [data export and validation](Docs/DATA-EXPORT.md). All 123 portable Core tests pass, including 13 new export tests. Native iOS compilation and Files picker execution remain unverified. No IPA is included.
-
----
-
-# Current launch: WHOOP Home revision 05
-
-WHOOP display name, supplied wordmark/monogram, and DIN Pro / Proxima Nova typography are restored by explicit request. The expiry banner remains removed. Home's date control, floating navigation icon and motion are revised. Scores remain illustrative and real tracker readings stay separate.
-
-See [revision 05 and remaining differences](design/home/REVISION-05.md), [the current Home gallery](design/home/revision-05/Home-review-gallery.jpg), and [validation](VALIDATION.json). Exact visual/animation parity and native compilation are unverified. Other primary screens remain pending the requested Home review.
+See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). Current native build and screenshot links will be recorded after the workflow completes.
 
 ---
 
@@ -56,7 +16,7 @@ A standalone iOS 17+ SwiftUI project named **WHOOP**, with the original supplied
 
 ## Run on your Mac
 
-**Windows:** use the separate `WHOOP-Codemagic.zip` upload package and [Codemagic instructions](README-CODEMAGIC.md). Codemagic supplies the cloud Mac; no local Xcode is required. The included `codemagic.yaml` builds an unsigned IPA for later signing. Its cloud build has not been dispatched here.
+**Windows:** GitHub Actions builds the unsigned iPhone IPA automatically after relevant pushes to `main`. Open the latest successful [Build iPhone IPA run](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/workflows/ios-ipa.yml), download `WHOOP-unsigned-iphone-ipa`, extract the ZIP, then sign and install the IPA with Sideloadly. Codemagic is optional; see [its separate instructions](README-CODEMAGIC.md) if you prefer it.
 
 For an IPA, double-click **Build IPA.command** after extracting the project on a Mac with full Xcode. The detailed [iPhone installation guide](Docs/INSTALL-IPHONE.md) covers Sideloadly, signed Xcode export and the included manual GitHub Mac-runner workflow. No IPA has been built in this Linux executor.
 
@@ -64,7 +24,7 @@ For an IPA, double-click **Build IPA.command** after extracting the project on a
 2. Select the **WHOOP** scheme and an iPhone simulator, then Run.
 3. For your iPhone, select the device and your development team under **Signing & Capabilities**. The signing profile must support the included HealthKit entitlement. The display name stays WHOOP; its separate bundle identifier is `local.whoop.reconstruction`.
 
-The iOS project uses bundled resources and system frameworks. The server’s shared Nutrition routes require `npm ci` at the project root. The `WHOOPCore` package is local. Apple SDKs, code signing and device installation require a Mac with Xcode; this Linux workspace has not built an iPhone binary.
+The iOS project uses bundled resources, system frameworks and the pinned ZIPFoundation package. The server’s shared Nutrition routes require `npm ci` at the project root. The `WHOOPCore` package is local. Apple SDKs, code signing and device installation require a Mac with Xcode; this Linux workspace has not built an iPhone binary.
 
 ```bash
 ./Scripts/build-on-mac.sh

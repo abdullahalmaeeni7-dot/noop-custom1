@@ -28,7 +28,7 @@ struct ReferenceMetricRow: View {
             Spacer(minLength: 5)
             VStack(alignment: .trailing, spacing: 1) {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(value).font(WFont.number(compact ? 22 : 25, bold: true))
+                    Text(value == "—" ? "NO DATA" : value).font(WFont.number(value == "—" ? 12 : compact ? 20 : 22, bold: true))
                     if !unit.isEmpty && value != "—" { Text(unit).font(WFont.body(10)).foregroundStyle(WColor.muted) }
                 }
                 if let previous { Text(previous).font(WFont.number(10)).foregroundStyle(WColor.muted) }
@@ -123,7 +123,7 @@ struct ReferenceDashboard: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("My Dashboard").font(WFont.body(25).weight(.semibold))
+                Text("My Dashboard").font(WFont.body(20).weight(.semibold))
                 Spacer()
                 Button { customizing = true } label: {
                     Label("CUSTOMIZE", systemImage: "pencil").font(WFont.label(10)).tracking(0.6).foregroundStyle(.white).frame(minHeight: 44)
@@ -262,6 +262,7 @@ struct DayReviewView: View {
         SheetScaffold(title: "DAY IN REVIEW") {
             VStack(alignment: .leading, spacing: 22) {
                 Text(utcDateText(store.selectedDate, style: .dateTime.weekday(.wide).month(.abbreviated).day())).font(WFont.body(16)).foregroundStyle(WColor.muted)
+                SourceBadge(source: day.source, isEmpty: !selectedDayExists(in: store))
                 Text(store.profile.displayName.isEmpty ? "Your day, in focus" : "Your day, \(store.profile.displayName)").font(WFont.body(26).weight(.semibold))
                 WCard(padding: 18) {
                     VStack(alignment: .leading, spacing: 14) {
@@ -314,36 +315,60 @@ struct WeeklyReadinessChart: View {
     }
     private var chart: some View {
         Chart {
-            ForEach(dates, id: \.self) { date in
-                if let day = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: date) }) {
-                    if let strain = day.strain {
-                        PointMark(x: .value("Day", date), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
-                            .annotation(position: .top) { Text(decimalText(strain)).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
-                    }
-                    if let recovery = day.recovery {
-                        PointMark(x: .value("Day", date), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
-                            .annotation(position: .bottom) { Text("\(recovery)%").font(WFont.number(10, bold: true)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))) }
-                    }
-                }
-            }
-            ForEach(0..<6, id: \.self) { index in
-                let left = dates[index]
-                let right = dates[index + 1]
-                if let a = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: left) }),
-                   let b = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: right) }) {
-                    if let av = a.strain, let bv = b.strain {
-                        LineMark(x: .value("Day", left), y: .value("Strain", av), series: .value("Segment", "s" + left.description)).foregroundStyle(WColor.blue.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
-                        LineMark(x: .value("Day", right), y: .value("Strain", bv), series: .value("Segment", "s" + left.description)).foregroundStyle(WColor.blue.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
-                    }
-                    if let av = a.recovery, let bv = b.recovery {
-                        LineMark(x: .value("Day", left), y: .value("Recovery", Double(av) * 21 / 100), series: .value("Segment", "r" + left.description)).foregroundStyle(WColor.muted.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
-                        LineMark(x: .value("Day", right), y: .value("Recovery", Double(bv) * 21 / 100), series: .value("Segment", "r" + left.description)).foregroundStyle(WColor.muted.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
-                    }
-                }
-            }
+            ForEach(recorded) { day in points(day) }
+            ForEach(0..<6, id: \.self) { index in segments(index) }
         }.chartYScale(domain: 0...21).chartXScale(domain: (dates.first ?? store.selectedDate)...(dates.last ?? store.selectedDate))
             .chartYAxis { AxisMarks(values: [0, 7, 14, 21]) { AxisGridLine().foregroundStyle(WColor.line); AxisValueLabel().foregroundStyle(WColor.blue) } }
             .chartXAxis { AxisMarks(values: dates) { AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: false).foregroundStyle(WColor.muted) } }
             .accessibilityLabel("Seven-day Strain and Recovery chart. Missing days are not joined.")
+    }
+    @ChartContentBuilder private func points(_ day: DailySnapshot) -> some ChartContent {
+        if let strain = day.strain {
+            PointMark(x: .value("Day", day.date), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
+                .annotation(position: .top) { Text(decimalText(strain)).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
+        }
+        if let recovery = day.recovery {
+            PointMark(x: .value("Day", day.date), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
+                .annotation(position: .bottom) { Text("\(recovery)%").font(WFont.number(10, bold: true)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))) }
+        }
+    }
+    @ChartContentBuilder private func segments(_ index: Int) -> some ChartContent {
+        let left = dates[index]
+        let right = dates[index + 1]
+        if let a = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: left) }),
+           let b = recorded.first(where: { DayCalendar.utc.isDate($0.date, inSameDayAs: right) }) {
+            if let av = a.strain, let bv = b.strain {
+                segment(left, right, av, bv, id: "s" + left.description, tint: WColor.blue)
+            }
+            if let av = a.recovery, let bv = b.recovery {
+                segment(left, right, Double(av) * 21 / 100, Double(bv) * 21 / 100, id: "r" + left.description, tint: WColor.muted)
+            }
+        }
+    }
+    @ChartContentBuilder private func segment(_ left: Date, _ right: Date, _ a: Double, _ b: Double, id: String, tint: Color) -> some ChartContent {
+        LineMark(x: .value("Day", left), y: .value("Score", a), series: .value("Segment", id)).foregroundStyle(tint.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+        LineMark(x: .value("Day", right), y: .value("Score", b), series: .value("Segment", id)).foregroundStyle(tint.opacity(0.55)).lineStyle(StrokeStyle(lineWidth: 1.5))
+    }
+
+}
+
+struct HomeMetricStrip: View {
+    @EnvironmentObject private var store: AppStore
+    let openMetric: (ScoreMetric) -> Void
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(ScoreMetric.allCases) { metric in
+                Button { openMetric(metric) } label: {
+                    HStack(spacing: 7) {
+                        ZStack {
+                            Circle().stroke(.white.opacity(0.10), lineWidth: 2)
+                            Circle().trim(from: 0, to: metric.fraction(store.selectedDay))
+                                .stroke(metric == .recovery ? PulseColor.recoveryScore(store.selectedDay.recovery.map(Double.init)) : metric.color, lineWidth: 2).rotationEffect(.degrees(-90))
+                        }.frame(width: 21, height: 21)
+                        Text(metric.title).font(WFont.label(10)).tracking(0.8)
+                    }.frame(maxWidth: .infinity, minHeight: 44)
+                }.buttonStyle(.plain).accessibilityLabel("\(metric.title), \(metric.value(store.selectedDay) == nil ? "no data" : metric.text(store.selectedDay)). Open details")
+            }
+        }
     }
 }

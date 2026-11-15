@@ -17,7 +17,9 @@ struct HomeView: View {
     let openAccount: () -> Void
     private var day: DailySnapshot { store.selectedDay }
 
-    let openQuickActions: () -> Void
+    let openLive: () -> Void
+    @State private var quickMenu = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let openReview: () -> Void
 
     var body: some View {
@@ -29,33 +31,49 @@ struct HomeView: View {
                 monitor("HEALTH MONITOR", detail: "View your measurements", symbol: "heart.text.square", tint: WColor.sleep, action: openHealth)
                 monitor("STRESS MONITOR", detail: "About stress data", symbol: "waveform.path", tint: PulseColor.mint, action: openStress)
             }
-            VStack(alignment: .leading, spacing: 15) {
-                HStack {
-                    Text("My Day").font(WFont.body(25).weight(.semibold))
-                    Spacer()
-                    Button(action: openQuickActions) {
-                        Image(systemName: "plus").font(.system(size: 25, weight: .regular)).foregroundStyle(.black)
-                            .frame(width: 44, height: 44).background(.white, in: RoundedRectangle(cornerRadius: 13))
-                    }.accessibilityLabel("Add to your day")
-                }
-                Button(action: openReview) {
-                    HStack(spacing: 10) {
-                        Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
-                        Text(reviewTitle).font(WFont.body(17).weight(.semibold))
-                        Spacer(minLength: 0)
-                        Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
-                    }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
-                        .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
-                }.buttonStyle(.plain)
-                tonight
-                activities
-                journalCard
-            }
+            myDay
             plan
             ReferenceDashboard()
             if tracker.connectedName != nil { liveHeartRate }
             discover
         }
+    }
+    private var myDay: some View {
+    VStack(alignment: .leading, spacing: 15) {
+        HStack {
+            Text("My Day").font(WFont.body(20).weight(.semibold))
+            Spacer()
+            Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { quickMenu.toggle() } } label: {
+                Image(systemName: quickMenu ? "xmark" : "plus").font(.system(size: 25, weight: .regular)).foregroundStyle(.black)
+                    .frame(width: 44, height: 44).background(.white, in: RoundedRectangle(cornerRadius: 13))
+            }.accessibilityLabel(quickMenu ? "Close day actions" : "Add to your day")
+        }.overlay(alignment: .bottomTrailing) {
+            if quickMenu {
+                PulseQuickMenu(strengthTitle: "RECORD WORKOUT") { panel in
+                    quickMenu = false
+                    switch panel {
+                    case .live: openLive()
+                    case .journal: openJournal()
+                    case .strength, .session: openWorkout()
+                    case .activity: openActivity()
+                    default: break
+                    }
+                }.offset(y: -55).transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .bottomTrailing)))
+            }
+        }.zIndex(3)
+        Button(action: openReview) {
+            HStack(spacing: 10) {
+                Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
+                Text(reviewTitle).font(WFont.body(14).weight(.semibold))
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
+            }.padding(15).frame(maxWidth: .infinity, minHeight: 46)
+                .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
+        }.buttonStyle(.plain)
+        tonight
+        activities
+        journalCard
+    }.zIndex(3)
     }
     private var reviewTitle: String {
         let first = store.profile.displayName.split(separator: " ").first.map(String.init)
@@ -107,7 +125,7 @@ struct HomeView: View {
     }
     private var plan: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("My Plan").font(WFont.body(25).weight(.semibold))
+            Text("My Plan").font(WFont.body(20).weight(.semibold))
             Button { store.tab = .nutrition } label: {
                 WCard(padding: 18) {
                     HStack(spacing: 12) {
@@ -124,7 +142,7 @@ struct HomeView: View {
     }
     private var discover: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Discover More").font(WFont.body(25).weight(.semibold))
+            Text("Discover More").font(WFont.body(20).weight(.semibold))
             monitor("YOUR CONNECTED TRACKER", detail: "Find a sensor, check its status and record your next session.", symbol: "applewatch", tint: WColor.blue, action: openDevice)
             monitor("YOUR HEALTH HISTORY", detail: "Import measurements from Apple Health.", symbol: "heart.text.square", tint: PulseColor.mint, action: openHealthImport)
             monitor("YOUR WHOOP ACCOUNT", detail: "Connect to sync your saved WHOOP measurements.", symbol: "person.crop.circle", tint: WColor.sleep, action: openAccount)
@@ -190,8 +208,8 @@ struct HomeView: View {
             WCard(padding: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text("Your day, in focus").font(WFont.body(17).weight(.semibold))
-                        Text(highlightText).font(WFont.body(16)).foregroundStyle(WColor.muted)
+                        Text("Your day, in focus").font(WFont.body(15).weight(.semibold))
+                        Text(highlightText).font(WFont.body(13)).foregroundStyle(WColor.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
@@ -264,12 +282,12 @@ struct HomeView: View {
                     }
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(day.sleepNeededMinutes > 0 ? clockDuration(day.sleepNeededMinutes) : "—").font(WFont.number(28, bold: true)).foregroundStyle(WColor.sleep)
+                            Text(day.sleepNeededMinutes > 0 ? clockDuration(day.sleepNeededMinutes) : "NO TARGET").font(WFont.number(day.sleepNeededMinutes > 0 ? 28 : 16, bold: true)).foregroundStyle(WColor.sleep)
                             Text("SLEEP NEEDED").font(WFont.label(8)).foregroundStyle(WColor.muted)
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text(day.sleepMinutes > 0 ? clockDuration(day.sleepMinutes) : "—").font(WFont.number(28, bold: true))
+                            Text(day.sleepMinutes > 0 ? clockDuration(day.sleepMinutes) : "NO DATA").font(WFont.number(day.sleepMinutes > 0 ? 28 : 16, bold: true))
                             Text("RECORDED SLEEP").font(WFont.label(8)).foregroundStyle(WColor.muted)
                         }
                     }

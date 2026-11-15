@@ -84,7 +84,7 @@
     32
   ],
   "radii": {
-    "card": 11,
+    "card": 13,
     "chip": 5,
     "date": 20,
     "button": 6,
@@ -133,7 +133,7 @@
     "compactHeaderSeconds": 0.18,
     "numericTransition": "iOS 17 numericText"
   },
-  "requiredNativeComparison": "Blocked: Linux executor has no Xcode, xcrun or Apple simulator. No exact-match claim is made.",
+  "requiredNativeComparison": "GitHub Actions now attempts actual simulator screenshots; result recorded in VALIDATION.json. Physical-device glass and camera remain unverified.",
   "revision": 5,
   "sectionOrder": [
     "WHOOP wordmark and score rings",
@@ -152,5 +152,7 @@
     "WHOOP Peak footer"
   ],
   "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified.",
-  "membershipExpiryBanner": false
+  "membershipExpiryBanner": false,
+  "functional_layout_revision": 6,
+  "functional_layout_note": "Measured reference tokens now apply to real Home. Navigation adds the previously requested Nutrition tab. System glass, unavailable-data labels and functional service actions intentionally differ from static screenshots."
 }
