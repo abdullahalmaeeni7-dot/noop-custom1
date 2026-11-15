@@ -248,7 +248,7 @@ final class AppStore: ObservableObject {
     func completeSetup() throws {
         guard !isImporting else { throw ProfilePersonalizationError.invalid("Wait for your import to finish before opening Home.") }
         let before = stateSnapshot()
-        let initial = LaunchDayData(savedDays: days, selectedDate: Date())
+        let initial = LaunchDayData(savedDays: days, selectedDate: selectedDate)
         days = initial.days
         selectedDate = initial.selectedDate
         do { try writeState(); tab = .home }

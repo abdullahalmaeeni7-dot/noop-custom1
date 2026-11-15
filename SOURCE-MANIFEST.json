@@ -73,8 +73,8 @@
     },
     {
       "path": "App/AppStore.swift",
-      "bytes": 20279,
-      "sha256": "c3f25e0f49fe6da4cb961c6cacb0fb099f19660d8a0b11639db1e12c2e1fe57d"
+      "bytes": 20285,
+      "sha256": "d5491e94ef5efdbbc17d405fad06c73ed7865926648ef51e45640dbd81de8bc6"
     },
     {
       "path": "App/DeviceModel.swift",
@@ -278,8 +278,8 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 17084,
-      "sha256": "ccf446a25daf3c9f09bb1a445b49ba595d4f02f7a74c28264a43c325d65b7038"
+      "bytes": 17113,
+      "sha256": "270224d48f7c98ef2ea51b346dd1de948d1bc2be1e7c477ab48b6d73cece3b84"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
@@ -613,8 +613,8 @@
     },
     {
       "path": "Docs/ZIP-AND-GLASS.md",
-      "bytes": 4254,
-      "sha256": "f1f54bec8f90aa2f642cf841083a0244eb25736723073b0ef2a20dabe6a1a14a"
+      "bytes": 4523,
+      "sha256": "b1c48dd839681e63e679d77fb0a83489a491da57a39b40d885f8d9b6815223bd"
     },
     {
       "path": "EXPANSION-CONTRACT.md",
@@ -848,8 +848,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 6576,
-      "sha256": "571b4d00409a3330ee41aeb3d2d6af891d2bfa694f6f324b0a0b44eabf484831"
+      "bytes": 6857,
+      "sha256": "c722741e9831320a6ceaa76b97ee23cb88bc80f81553a1a70ec067efeb6e8b36"
     },
     {
       "path": "Validation/app-syntax.log",

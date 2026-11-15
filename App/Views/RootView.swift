@@ -30,55 +30,65 @@ struct RootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 0) {
-            if store.tab != .nutrition { header }
-            ScrollView {
-                VStack(spacing: 22) {
-                    switch store.tab {
-                    case .home:
-                        HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account })
-                    case .sleep: MetricDetailView(metric: .sleep, embedded: true)
-                    case .recovery: MetricDetailView(metric: .recovery, embedded: true)
-                    case .strain: MetricDetailView(metric: .strain, embedded: true)
-                    case .nutrition: NutritionRootView()
-                    case .health:
-                        HealthView(openMetric: openMetric, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport })
-                    case .community:
-                        CommunityView(openActivity: { sheet = .activity }, importData: { restoringBackup = false; importing = true })
-                    case .profile:
-                        ProfileView(openJournal: { sheet = .journal }, openDevice: { sheet = .device }, exportData: exportData)
-                    case .menu:
-                        MenuView(openDevice: { sheet = .device }, importData: { restoringBackup = false; importing = true }, exportData: exportData,
-                                 openDataHelp: { sheet = .data }, openAbout: { sheet = .about }, openReference: { sheet = .reference },
-                                 showExamples: {
-                                     if recorder.isRecording { message = "Finish or discard your recording before replacing local data." }
-                                     else { store.restoreExamples() }
-                                 }, clearData: { confirmClear = true },
-                                 openHealthImport: { sheet = .healthImport }, openWorkout: { sheet = .workout },
-                                 openActivities: { sheet = .activities }, exportBackup: exportBackup,
-                                 restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openAccount: { sheet = .account }, openHealth: { store.tab = .health }, openCommunity: { store.tab = .community }, openProfile: { store.tab = .profile }, openJournal: { sheet = .journal })
-                    }
-                }.padding(.horizontal, 15).padding(.top, 8).padding(.bottom, 70)
-                    .frame(maxWidth: 680).frame(maxWidth: .infinity)
-            }.scrollIndicators(.hidden)
-                .id(store.tab)
-                .overlay(alignment: .bottomTrailing) {
-                    if store.tab != .nutrition {
-                    Button { showingQuickActions = true } label: {
-                        Image(systemName: "plus").font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(Color.black).frame(width: 48, height: 48)
-                            .background(Color.white, in: Circle()).shadow(color: .black.opacity(0.25), radius: 8, y: 3)
-                    }.padding(.trailing, 17).padding(.bottom, 15).accessibilityLabel("Add activity or journal")
-                    }
-                }
+        dataInterface
+        .alert("Something needs attention", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+            Button("OK", role: .cancel) { message = nil }
+        } message: { Text(message ?? "") }
+        .alert("Import complete", isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
+            Button("OK") { importReport = nil }
+        } message: { Text(importReport ?? "") }
+        .confirmationDialog("Delete all day data, profile preferences, journal entries, activities and nutrition records from this iPhone?", isPresented: $confirmClear, titleVisibility: .visible) {
+            Button("Delete local data", role: .destructive) {
+                if recorder.isRecording { message = "Finish or discard your recording before deleting local data." }
+                else { do { try store.clearData() } catch { message = error.localizedDescription } }
+            }
         }
-        .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground() } }
-        .safeAreaInset(edge: .bottom, spacing: 0) { floatingNavigation }
-        .preferredColorScheme(.dark)
-        .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
-        .environment(\.calendar, DayCalendar.utc)
-        .font(WFont.body())
-        .tint(.white)
+        .confirmationDialog("Replace local data with this complete backup?", isPresented: Binding(get: { pendingBackup != nil }, set: { if !$0 { pendingBackup = nil } }), titleVisibility: .visible) {
+            Button("Restore backup", role: .destructive) {
+                if recorder.isRecording { message = "Finish or discard your recording before restoring a backup." }
+                else if let pendingBackup {
+                    do { try store.restoreBackup(pendingBackup) } catch { message = error.localizedDescription }
+                }
+                pendingBackup = nil
+            }
+        } message: { Text("This replaces saved day data, journal entries, activities and nutrition records. Save a full backup first if you want to keep the current data.") }
+        .task { recorder.bind(device); liveActivity.bind(recorder) }
+        .onAppear {
+            if !attemptedReconnect { attemptedReconnect = true; device.reconnectSavedDevice() }
+        }
+        .alert("Your data needs attention", isPresented: Binding(get: { store.persistenceError != nil }, set: { if !$0 { store.persistenceError = nil } })) {
+            Button("OK") { store.persistenceError = nil }
+        } message: { Text(store.persistenceError ?? "") }
+    }
+
+    private var dataInterface: some View {
+        presentedInterface
+        .fileImporter(isPresented: $importing, allowedContentTypes: restoringBackup ? [.json] : [.zip, .json, .commaSeparatedText], allowsMultipleSelection: false) { result in
+            Task { @MainActor in
+                do {
+                    guard let url = try result.get().first else { return }
+                    if restoringBackup { pendingBackup = try await store.readBackupFile(url) }
+                    else { try await store.importFile(url); importReport = store.lastImportSummary }
+                } catch { message = error.localizedDescription }
+            }
+        }
+        .disabled(store.isImporting)
+        .overlay {
+            if store.isImporting {
+                ZStack {
+                    Color.black.opacity(0.55).ignoresSafeArea()
+                    ProgressView("Importing your data…").tint(.white)
+                        .padding(28).background(WColor.elevated, in: RoundedRectangle(cornerRadius: 18))
+                }.accessibilityLabel("Importing data. Please wait.")
+            }
+        }
+        .fileExporter(isPresented: $exporting, document: exportDocument, contentType: .json, defaultFilename: exportName) { result in
+            if case .failure(let error) = result { message = error.localizedDescription }
+        }
+    }
+
+    private var presentedInterface: some View {
+        appLayout
         .sheet(item: $sheet) { route in
             Group {
                 switch route {
@@ -115,56 +125,62 @@ struct RootView: View {
             Button("Record with Live camera") { showingLive = true }
             Button("Fill out journal") { sheet = .journal }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: restoringBackup ? [.json] : [.zip, .json, .commaSeparatedText], allowsMultipleSelection: false) { result in
-            Task { @MainActor in
-                do {
-                    guard let url = try result.get().first else { return }
-                    if restoringBackup { pendingBackup = try await store.readBackupFile(url) }
-                    else { try await store.importFile(url); importReport = store.lastImportSummary }
-                } catch { message = error.localizedDescription }
-            }
-        }
-        .disabled(store.isImporting)
-        .overlay {
-            if store.isImporting {
-                ZStack {
-                    Color.black.opacity(0.55).ignoresSafeArea()
-                    ProgressView("Importing your data…").tint(.white)
-                        .padding(28).background(WColor.elevated, in: RoundedRectangle(cornerRadius: 18))
-                }.accessibilityLabel("Importing data. Please wait.")
-            }
-        }
-        .fileExporter(isPresented: $exporting, document: exportDocument, contentType: .json, defaultFilename: exportName) { result in
-            if case .failure(let error) = result { message = error.localizedDescription }
-        }
-        .alert("Something needs attention", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
-            Button("OK", role: .cancel) { message = nil }
-        } message: { Text(message ?? "") }
-        .alert("Import complete", isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
-            Button("OK") { importReport = nil }
-        } message: { Text(importReport ?? "") }
-        .confirmationDialog("Delete all day data, profile preferences, journal entries, activities and nutrition records from this iPhone?", isPresented: $confirmClear, titleVisibility: .visible) {
-            Button("Delete local data", role: .destructive) {
-                if recorder.isRecording { message = "Finish or discard your recording before deleting local data." }
-                else { do { try store.clearData() } catch { message = error.localizedDescription } }
-            }
-        }
-        .confirmationDialog("Replace local data with this complete backup?", isPresented: Binding(get: { pendingBackup != nil }, set: { if !$0 { pendingBackup = nil } }), titleVisibility: .visible) {
-            Button("Restore backup", role: .destructive) {
-                if recorder.isRecording { message = "Finish or discard your recording before restoring a backup." }
-                else if let pendingBackup {
-                    do { try store.restoreBackup(pendingBackup) } catch { message = error.localizedDescription }
+    }
+
+    private var appLayout: some View {
+        VStack(spacing: 0) {
+            if store.tab != .nutrition { header }
+            ScrollView {
+                VStack(spacing: 22) {
+                    selectedScreen
+                }.padding(.horizontal, 15).padding(.top, 8).padding(.bottom, 70)
+                    .frame(maxWidth: 680).frame(maxWidth: .infinity)
+            }.scrollIndicators(.hidden)
+                .id(store.tab)
+                .overlay(alignment: .bottomTrailing) {
+                    if store.tab != .nutrition {
+                    Button { showingQuickActions = true } label: {
+                        Image(systemName: "plus").font(.system(size: 22, weight: .medium))
+                            .foregroundStyle(Color.black).frame(width: 48, height: 48)
+                            .background(Color.white, in: Circle()).shadow(color: .black.opacity(0.25), radius: 8, y: 3)
+                    }.padding(.trailing, 17).padding(.bottom, 15).accessibilityLabel("Add activity or journal")
+                    }
                 }
-                pendingBackup = nil
-            }
-        } message: { Text("This replaces saved day data, journal entries, activities and nutrition records. Save a full backup first if you want to keep the current data.") }
-        .task { recorder.bind(device); liveActivity.bind(recorder) }
-        .onAppear {
-            if !attemptedReconnect { attemptedReconnect = true; device.reconnectSavedDevice() }
         }
-        .alert("Your data needs attention", isPresented: Binding(get: { store.persistenceError != nil }, set: { if !$0 { store.persistenceError = nil } })) {
-            Button("OK") { store.persistenceError = nil }
-        } message: { Text(store.persistenceError ?? "") }
+        .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground() } }
+        .safeAreaInset(edge: .bottom, spacing: 0) { floatingNavigation }
+        .preferredColorScheme(.dark)
+        .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
+        .environment(\.calendar, DayCalendar.utc)
+        .font(WFont.body())
+        .tint(.white)
+    }
+
+    @ViewBuilder private var selectedScreen: some View {
+        switch store.tab {
+        case .home:
+            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { store.tab = .health }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account })
+        case .sleep: MetricDetailView(metric: .sleep, embedded: true)
+        case .recovery: MetricDetailView(metric: .recovery, embedded: true)
+        case .strain: MetricDetailView(metric: .strain, embedded: true)
+        case .nutrition: NutritionRootView()
+        case .health:
+            HealthView(openMetric: openMetric, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport })
+        case .community:
+            CommunityView(openActivity: { sheet = .activity }, importData: { restoringBackup = false; importing = true })
+        case .profile:
+            ProfileView(openJournal: { sheet = .journal }, openDevice: { sheet = .device }, exportData: exportData)
+        case .menu:
+            MenuView(openDevice: { sheet = .device }, importData: { restoringBackup = false; importing = true }, exportData: exportData,
+                     openDataHelp: { sheet = .data }, openAbout: { sheet = .about }, openReference: { sheet = .reference },
+                     showExamples: {
+                         if recorder.isRecording { message = "Finish or discard your recording before replacing local data." }
+                         else { store.restoreExamples() }
+                     }, clearData: { confirmClear = true },
+                     openHealthImport: { sheet = .healthImport }, openWorkout: { sheet = .workout },
+                     openActivities: { sheet = .activities }, exportBackup: exportBackup,
+                     restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openAccount: { sheet = .account }, openHealth: { store.tab = .health }, openCommunity: { store.tab = .community }, openProfile: { store.tab = .profile }, openJournal: { sheet = .journal })
+        }
     }
 
     private var header: some View {
