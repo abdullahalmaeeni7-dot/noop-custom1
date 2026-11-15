@@ -1,6 +1,6 @@
 {
   "scope": "Welcome, personal setup, Bluetooth discovery and functional Home routing",
-  "checked_at": "2026-11-11",
+  "checked_at": "2026-11-15",
   "entry": "Welcome \u2192 Profile \u2192 Tracker search \u2192 Data \u2192 personal Home; returning users \u2192 Home",
   "portable_core": {
     "tests_passed": 146,
@@ -74,7 +74,7 @@
   "chosen_values_separate_from_measured_highlights": true,
   "legacy_backups_supported": true,
   "example_days_in_exported_highlights": false,
-  "apple_sdk_build": false,
+  "apple_sdk_build": true,
   "native_persistence_test": false,
   "native_file_exporter_test": false,
   "exact_visual_match": false,
@@ -93,7 +93,26 @@
       "configured WHOOP account bridge",
       "JSON or heart-rate CSV"
     ],
-    "native_build": "pending CI",
+    "native_build": "passed",
     "physical_device_test": false
+  },
+  "unsigned_ipa_produced": true,
+  "native_device_build": {
+    "provider": "GitHub Actions",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43727040591",
+    "source_commit": "f6a9f15a5135f2dd259dfe9b6413e2cf73c5daaa",
+    "result": "success",
+    "runner": "macos-15-intel",
+    "duration": "7m 31s",
+    "portable_test_step": "passed on the Mac runner",
+    "device_build": "passed",
+    "device_package_validation": "passed",
+    "architecture": "arm64",
+    "platform": "iOS device",
+    "artifact_name": "WHOOP-unsigned-iphone-ipa",
+    "artifact_size": "3.35 MB",
+    "artifact_archive_sha256": "2c8a1899cc25f1f91ed1a9b4f9e6d496517f821854d0f0a3f3efab1face8258d",
+    "signed": false,
+    "physical_device_execution": false
   }
 }

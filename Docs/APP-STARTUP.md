@@ -26,5 +26,6 @@ Screenshot Home is now an explicit More → Explore → Screenshot layout previe
 - All 35 app/widget Swift sources pass frontend parsing and direct shared-module import auditing.
 - Xcode project references, resources and widget embedding pass structural validation.
 - GitHub's iPhone workflow now runs on relevant main-branch updates as well as manual dispatch.
+- [The Intel Mac build](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43727040591) passed for `f6a9f15`, including the portable test step, real arm64 iOS device build, package validation and artifact upload. The unsigned IPA artifact is `WHOOP-unsigned-iphone-ipa` (3.35 MB).
 
-Linux checks do not verify SwiftUI execution, actual Bluetooth pairing, camera capture, HealthKit authorization, or signed installation. Apple build status is reported separately by the GitHub workflow or Codemagic.
+Linux checks do not verify SwiftUI execution, actual Bluetooth pairing, camera capture, HealthKit authorization, or signed installation. The Apple SDK device build passed; actual first-run UI interaction, Bluetooth pairing and signed installation still require iPhone testing.

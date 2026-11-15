@@ -2,7 +2,7 @@
 
 First launch now opens **Welcome → Profile → Find your tracker → Import data → Home**. Tracker search uses the existing Bluetooth adapter, and connecting/importing later is supported. Setup completion is remembered on this iPhone; later launches go to the functional Home dashboard with your saved data and fresh live readings. The supplied screenshot values are no longer the app's launch data. More keeps an explicit screenshot preview.
 
-See [startup behavior, migration and validation](Docs/APP-STARTUP.md). All **146 portable tests** and **13 packaging tests** pass; physical-device behavior requires iPhone testing. The GitHub workflow runs an Apple build after relevant updates to main.
+See [startup behavior, migration and validation](Docs/APP-STARTUP.md). All **146 portable tests** and **13 packaging tests** pass; physical-device behavior requires iPhone testing. The [Apple device build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43727040591). Download **WHOOP-unsigned-iphone-ipa** from that run's Artifacts, extract the ZIP and sign the IPA for your iPhone. The GitHub workflow also runs after relevant updates to main.
 
 ---
 

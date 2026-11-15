@@ -398,8 +398,8 @@
     },
     {
       "path": "Docs/APP-STARTUP.md",
-      "bytes": 3190,
-      "sha256": "1784fe00661a705804c7c75ef960be9b0949d0fbbd0da4c058ab1ff55e8f2890"
+      "bytes": 3548,
+      "sha256": "4ec976c4f75e6e04ca5bd6d2cd78b5a3fd8c000a39c07038878b1a28abb5ac97"
     },
     {
       "path": "Docs/APPLE-HEALTH.md",
@@ -618,8 +618,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12102,
-      "sha256": "582a70cb1ca01849ba428984f20a4acf997e909fa5eb20c3f937568922e00bd3"
+      "bytes": 12321,
+      "sha256": "8f8422f9122809d94debbc378b9e347b650b86b8c7c5d4b40fe5d15c8eceb06e"
     },
     {
       "path": "STATUS.md",
@@ -793,8 +793,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 4735,
-      "sha256": "2e125330888a919b63a11d63edf98a28db8f3bd781e7ca9828a8ffc2ed0bdb48"
+      "bytes": 5501,
+      "sha256": "628313645d78d8e5fba6ee1a3091f045586fbd96e509c7f438cbba4cd4f2ffe5"
     },
     {
       "path": "Validation/app-syntax.log",
