@@ -158,7 +158,7 @@ struct NutritionFoodForm: View {
         }
     }
     private func optionalNumber(_ title: String, value: Binding<Double?>) -> some View {
-        HStack { Text(L10n.text(title)).font(NFont.body(13)); Spacer(); TextField(L10n.text(title), value: value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 110, minHeight: 44).font(NFont.body(15)).accessibilityLabel(L10n.text(title)) }
+        HStack { Text(L10n.text(title)).font(NFont.body(13)); Spacer(); TextField(L10n.text(title), value: value, format: AppNumberStyle()).keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 110, minHeight: 44).font(NFont.body(15)).accessibilityLabel(L10n.text(title)) }
     }
     private func setPhoto(_ data: Data) throws {
         let encoded = try NutritionPhoto.compress(data)

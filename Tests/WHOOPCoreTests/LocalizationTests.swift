@@ -17,6 +17,17 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(AppLanguage.canonicalDigits("\u{200f}-١٢٫٥"), "-12.5")
         XCTAssertEqual(AppLanguage.canonicalDigits("123.4"), "123.4")
     }
+    func testArabicDecimalParsingNeverDropsFractionOrAcceptsAPrefix() throws {
+        let parser = AppNumberStyle().parseStrategy
+        XCTAssertEqual(try parser.parse("١٢٣٫٤"), 123.4)
+        XCTAssertEqual(try parser.parse("١٬٢٣٤٫٥"), 1234.5)
+        XCTAssertEqual(try parser.parse("۷۲.۳"), 72.3)
+        XCTAssertEqual(try parser.parse("123.4"), 123.4)
+        XCTAssertThrowsError(try parser.parse("123.4 calories"))
+        XCTAssertThrowsError(try parser.parse("NaN"))
+        XCTAssertThrowsError(try parser.parse("Infinity"))
+        XCTAssertEqual(try parser.parse(AppNumberStyle().format(1234.56789)), 1234.56789)
+    }
     func testTranslatedTemplatePreservesUserContent() {
         XCTAssertEqual(L10n.text("Recovery", language: .arabic), "التعافي")
         XCTAssertEqual(L10n.text("RECOVERY", language: .arabic), "التعافي")

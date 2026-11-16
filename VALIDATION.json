@@ -3,7 +3,7 @@
   "checked_at": "2026-11-16",
   "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
-    "tests_passed": 164,
+    "tests_passed": 165,
     "new_profile_tests": 13,
     "failures": 0,
     "new_zip_tests": 14
@@ -148,7 +148,7 @@
     "device_build": "passed",
     "package_validation": "passed",
     "signed": false,
-    "final_catalog_build": "pending"
+    "final_catalog_build": "pending final decimal-parser build"
   },
   "zip_import": {
     "offline": true,
@@ -244,8 +244,9 @@
     "saved_preference": "whoop.language.v1",
     "catalog_entries": 1032,
     "rtl": true,
-    "tests_passed": 4,
-    "sdk_typecheck": "passed in device build at 5f2f068; final catalog additions pending next native run"
+    "tests_passed": 5,
+    "sdk_typecheck": "passed in device build at 5f2f068; final catalog additions pending next native run",
+    "arabic_decimal_input": "strict full-string parsing; Arabic/Persian digits and decimal separator preserved, non-finite and trailing text rejected"
   },
   "gemini": {
     "native_rest_api": true,

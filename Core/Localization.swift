@@ -85,3 +85,22 @@ public struct NutritionLanguageRequest<Body: Encodable>: Encodable {
         try container.encode(language, forKey: .language)
     }
 }
+
+/// Strict parsing avoids NumberFormatStyle accepting only the integer prefix of Arabic decimals.
+public struct AppNumberStyle: ParseableFormatStyle {
+    public var parseStrategy = Strategy()
+    public init() { }
+    public func format(_ value: Double) -> String {
+        value.formatted(.number.locale(AppLanguage.current.locale).grouping(.never).precision(.fractionLength(0...6)))
+    }
+    public struct Strategy: ParseStrategy {
+        public init() { }
+        public func parse(_ value: String) throws -> Double {
+            let canonical = AppLanguage.canonicalDigits(value).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let number = Double(canonical), number.isFinite else {
+                throw NutritionError.invalid("Enter a valid number.")
+            }
+            return number
+        }
+    }
+}

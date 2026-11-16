@@ -205,7 +205,7 @@ struct NNumberField: View {
         HStack {
             Text(L10n.text(title)).font(NFont.body(13))
             Spacer()
-            TextField(L10n.text(title), value: $value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing)
+            TextField(L10n.text(title), value: $value, format: AppNumberStyle()).keyboardType(.decimalPad).multilineTextAlignment(.trailing)
                 .font(NFont.body(15)).frame(maxWidth: 120, minHeight: 44).accessibilityLabel(L10n.text(title))
         }
     }
