@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 import WHOOPCore
 
@@ -10,6 +11,30 @@ private enum AppSheet: String, Identifiable {
 private struct DashboardScrollOffset: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
+/// Measure the window's physical inset, independently of nested scroll-view safe areas.
+private struct WindowBottomInsetProbe: UIViewRepresentable {
+    let changed: (CGFloat) -> Void
+    func makeUIView(context: Context) -> Probe {
+        let view = Probe(frame: .zero); view.changed = changed; view.isUserInteractionEnabled = false
+        return view
+    }
+    func updateUIView(_ view: Probe, context: Context) { view.changed = changed; view.report() }
+    final class Probe: UIView {
+        var changed: (CGFloat) -> Void = { _ in }
+        override func didMoveToWindow() { super.didMoveToWindow(); report() }
+        override func safeAreaInsetsDidChange() { super.safeAreaInsetsDidChange(); report() }
+        override func layoutSubviews() { super.layoutSubviews(); report() }
+        func report() {
+            guard let window else { return }
+            let inset = window.safeAreaInsets.bottom
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.window != nil else { return }
+                self.changed(inset)
+            }
+        }
+    }
 }
 
 struct RootView: View {
@@ -33,6 +58,7 @@ struct RootView: View {
     @State private var showingProfile = false
     @State private var attemptedReconnect = false
     @State private var compactMetrics = false
+    @State private var windowBottomInset: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -155,9 +181,14 @@ struct RootView: View {
                 })
 
         }
-        .ignoresSafeArea(.container, edges: .bottom)
         .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground(healthGlow: store.tab == .health) } }
-        .overlay(alignment: .bottom) { floatingNavigation.padding(.bottom, 23) }
+        .background(WindowBottomInsetProbe { value in
+            if windowBottomInset != value { windowBottomInset = value }
+        })
+        .overlay(alignment: .bottom) {
+            // Floating row already contains 3 points of bottom padding.
+            floatingNavigation.offset(y: windowBottomInset + 3 - 26)
+        }
         .onChange(of: store.tab) { _, _ in compactMetrics = false }
         .preferredColorScheme(.dark)
         .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
