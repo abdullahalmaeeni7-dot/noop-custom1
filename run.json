@@ -1,0 +1,11 @@
+{
+  "source": "1f6ff96d26d557d659b866a5536365e57a0fc002",
+  "run": "43817936738",
+  "capture_outcome": "success",
+  "images": [
+    "01-first-launch-en.png",
+    "02-home-ar.png",
+    "01-first-launch-ar.png",
+    "02-home-en.png"
+  ]
+}
