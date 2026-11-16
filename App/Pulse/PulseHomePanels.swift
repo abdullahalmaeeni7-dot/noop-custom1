@@ -213,7 +213,7 @@ struct WHOOPProfileView: View {
                     .accessibilityIdentifier("profileEdit")
             }
             HStack(spacing: 8) {
-                WhoopMonogram().frame(width: 15, height: 13)
+                WhoopMonogram().environment(\.layoutDirection, .leftToRight).frame(width: 15, height: 13)
                 Text(L10n.text("PERSONAL PROFILE")).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 1)
                 Spacer(); Text(L10n.text("ON THIS IPHONE")).font(PulseFont.label(8)).foregroundStyle(PulseColor.muted)
             }.padding(12).background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
@@ -368,10 +368,10 @@ private struct ProfileHighlightDial: View {
         VStack(spacing: 9) {
             ZStack {
                 Circle().stroke(.white.opacity(0.12), lineWidth: 3.4)
-                if let record { Circle().trim(from: 0, to: min(1, max(0, record.value / maximum))).stroke(tint, style: StrokeStyle(lineWidth: 3.4, lineCap: .round)).rotationEffect(.degrees(-90)) }
+                if let record { Circle().trim(from: 0, to: min(1, max(0, record.value / maximum))).stroke(tint, style: StrokeStyle(lineWidth: 3.4, lineCap: .round)).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight) }
                 Text(L10n.text(record.map { $0.value.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(maximum == 21 ? 1 : 0))) + suffix } ?? "Sync"))
                     .font(PulseFont.number(record == nil ? 16 : 20)).lineLimit(1).minimumScaleFactor(0.7)
-            }.frame(width: 65, height: 65)
+            }.environment(\.layoutDirection, .leftToRight).frame(width: 65, height: 65)
             Text(L10n.text(title)).font(PulseFont.body(12)).multilineTextAlignment(.center)
         }.frame(maxWidth: .infinity).accessibilityElement(children: .ignore)
             .accessibilityLabel(title + ", " + (record.map { $0.value.formatted() + suffix } ?? "No saved data"))

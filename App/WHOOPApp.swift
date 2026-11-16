@@ -71,7 +71,7 @@ private struct FirstRunView: View {
             topBar
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text(L10n.text(step.title)).font(PulseFont.number(42)).fixedSize(horizontal: false, vertical: true)
+                    Text(L10n.text(step.title)).font(AppLanguage.isArabic ? .system(size: 42, weight: .bold) : PulseFont.number(42)).fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                     stepContent.id(step).transition(.opacity)
                     if let error { Label(error, systemImage: "exclamationmark.circle").foregroundStyle(.orange).font(PulseFont.body(14)).accessibilityIdentifier("setupError") }
@@ -113,11 +113,11 @@ private struct FirstRunView: View {
         case .welcome:
             ZStack {
                 Circle().stroke(PulseColor.sleep.opacity(0.25), lineWidth: 12).frame(width: 218, height: 218)
-                Circle().trim(from: 0, to: 0.74).stroke(PulseColor.load, style: StrokeStyle(lineWidth: 12, lineCap: .round)).frame(width: 218, height: 218).rotationEffect(.degrees(-90))
-                Circle().trim(from: 0, to: 0.61).stroke(PulseColor.mint, style: StrokeStyle(lineWidth: 10, lineCap: .round)).frame(width: 170, height: 170).rotationEffect(.degrees(-90))
-                Circle().trim(from: 0, to: 0.83).stroke(PulseColor.sleep, style: StrokeStyle(lineWidth: 8, lineCap: .round)).frame(width: 127, height: 127).rotationEffect(.degrees(-90))
+                Circle().trim(from: 0, to: 0.74).stroke(PulseColor.load, style: StrokeStyle(lineWidth: 12, lineCap: .round)).frame(width: 218, height: 218).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
+                Circle().trim(from: 0, to: 0.61).stroke(PulseColor.mint, style: StrokeStyle(lineWidth: 10, lineCap: .round)).frame(width: 170, height: 170).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
+                Circle().trim(from: 0, to: 0.83).stroke(PulseColor.sleep, style: StrokeStyle(lineWidth: 8, lineCap: .round)).frame(width: 127, height: 127).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
                 Image(systemName: "waveform.path.ecg").font(.system(size: 38, weight: .light))
-            }.frame(maxWidth: .infinity).padding(.vertical, 24).accessibilityHidden(true)
+            }.environment(\.layoutDirection, .leftToRight).frame(maxWidth: .infinity).padding(.vertical, 24).accessibilityHidden(true)
             Text(L10n.text("Understand your sleep, recovery and daily effort. Connect a tracker, bring in your measurements, and build your routine.")).foregroundStyle(PulseColor.muted)
             feature("Connect your wearable", symbol: "sensor.tag.radiowaves.forward", detail: "Find nearby heart-rate sensors over Bluetooth.")
             feature("Build your personal record", symbol: "chart.xyaxis.line", detail: "Your dashboard grows with the data you save.")

@@ -116,13 +116,13 @@ struct NDial: View {
             VStack(spacing: 12) {
                 ZStack {
                     Circle().stroke(Color.white.opacity(0.08), lineWidth: 9)
-                    Circle().trim(from: 0, to: fill).stroke(tint, style: StrokeStyle(lineWidth: 9, lineCap: .round)).rotationEffect(.degrees(-90))
+                    Circle().trim(from: 0, to: fill).stroke(tint, style: StrokeStyle(lineWidth: 9, lineCap: .round)).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
                     VStack(spacing: 3) {
                         Text(L10n.text(nText(dial.value))).font(NFont.number(23)).minimumScaleFactor(0.45).lineLimit(1)
                             .contentTransition(.numericText()).animation(reduceMotion ? nil : .easeInOut(duration: 0.45), value: dial.value)
                         Text(L10n.text(unit)).font(NFont.label(8)).foregroundStyle(NColor.muted)
                     }.padding(10)
-                }.aspectRatio(1, contentMode: .fit)
+                }.environment(\.layoutDirection, .leftToRight).aspectRatio(1, contentMode: .fit)
                 Text(L10n.text(title.uppercased())).font(NFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.7).foregroundStyle(NColor.muted).lineLimit(1).minimumScaleFactor(0.65)
                 Text(L10n.text(dial.status == "over" ? "OVER TARGET" : dial.status == "target" ? "ON TARGET" : dial.status == "close" ? "CLOSE" : "LOGGING"))
                     .font(NFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.4).foregroundStyle(NColor.status(dial.status, fallback: NColor.muted))

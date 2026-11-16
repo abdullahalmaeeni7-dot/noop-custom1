@@ -74,10 +74,10 @@ struct PulseRing: View {
                     Circle().inset(by: 3).stroke(.white.opacity(0.10), lineWidth: ReferenceSize.ringStroke)
                     Circle().inset(by: 3).trim(from: 0, to: progress)
                         .stroke(tint, style: StrokeStyle(lineWidth: ReferenceSize.ringStroke, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
+                        .rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
                     if let previous {
                         Circle().inset(by: 3).trim(from: max(0, previous - 0.002), to: min(1, previous + 0.002))
-                            .stroke(.white.opacity(0.75), lineWidth: ReferenceSize.ringStroke).rotationEffect(.degrees(-90))
+                            .stroke(.white.opacity(0.75), lineWidth: ReferenceSize.ringStroke).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
                         Text(L10n.text(value.hasSuffix("%") ? String(value.dropLast()) : value)).font(PulseFont.number(value == "NO DATA" ? 12 : 26))
@@ -85,7 +85,7 @@ struct PulseRing: View {
                         if value.hasSuffix("%") { Text("%").font(PulseFont.number(17)) }
                     }.environment(\.layoutDirection, .leftToRight).tracking(AppLanguage.isArabic ? 0 : -0.8).monospacedDigit().minimumScaleFactor(0.7).padding(9)
                         .animation(reduceMotion ? nil : .easeOut(duration: 0.7), value: value)
-                }.aspectRatio(1, contentMode: .fit).frame(maxWidth: ReferenceSize.ringDiameter)
+                }.environment(\.layoutDirection, .leftToRight).aspectRatio(1, contentMode: .fit).frame(maxWidth: ReferenceSize.ringDiameter)
                 HStack(spacing: 3) {
                     Text(L10n.text(label)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                     Image(systemName: "chevron.right").font(.system(size: 6, weight: .bold))
@@ -160,7 +160,7 @@ struct PulseTabBar: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 22).fill(LinearGradient(colors: [Color(pulseHex: 0x2D2946), PulseColor.top], startPoint: .topLeading, endPoint: .bottomTrailing))
                     Circle().stroke(LinearGradient(colors: [.purple, PulseColor.load], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.1).frame(width: 29, height: 29)
-                    WhoopMonogram().frame(width: 18, height: 15)
+                    WhoopMonogram().environment(\.layoutDirection, .leftToRight).frame(width: 18, height: 15)
                 }.frame(width: 58, height: 58).overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(0.08), lineWidth: 0.7))
             }.buttonStyle(.plain).accessibilityLabel(L10n.text("Open WHOOP Coach sample conversation"))
         }

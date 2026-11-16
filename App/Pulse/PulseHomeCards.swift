@@ -77,7 +77,7 @@ struct PulsePlanArtwork: View {
     private func orb(_ symbol: String, size: CGFloat) -> some View {
         ZStack {
             Circle().stroke(.white.opacity(0.08), lineWidth: 2)
-            Circle().trim(from: 0.12, to: 0.9).stroke(PulseColor.mint, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, dash: [13, 4])).rotationEffect(.degrees(-90))
+            Circle().trim(from: 0.12, to: 0.9).stroke(PulseColor.mint, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, dash: [13, 4])).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
             Image(systemName: symbol).font(.system(size: size * 0.40, weight: .light)).foregroundStyle(PulseColor.muted)
         }.frame(width: size, height: size)
     }

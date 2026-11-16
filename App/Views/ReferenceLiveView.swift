@@ -128,7 +128,7 @@ struct ReferenceLiveView: View {
                     Circle().fill(mode == .live ? Color.red : .white.opacity(0.4)).frame(width: 69, height: 69)
                     Circle().fill(.white).frame(width: 56, height: 56)
                     if camera.recording { RoundedRectangle(cornerRadius: 4).fill(.red).frame(width: 22, height: 22) }
-                    else { WhoopMonogram().fill(mode == .live ? .red : Color(white: 0.23)).frame(width: 25, height: 22) }
+                    else { WhoopMonogram().fill(mode == .live ? .red : Color(white: 0.23)).environment(\.layoutDirection, .leftToRight).frame(width: 25, height: 22) }
                 }.frame(width: width / 5, height: 76)
             }.accessibilityLabel(camera.recording ? "Stop video" : mode == .live && photoData == nil ? "Record video" : "Capture photo with stats")
                 .disabled(busy || camera.starting || (photoData == nil && !camera.ready))

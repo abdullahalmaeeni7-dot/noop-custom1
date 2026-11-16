@@ -248,7 +248,7 @@ struct RootView: View {
                 }
             }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
             Button { sheet = .review } label: {
-                WhoopMonogram()
+                WhoopMonogram().environment(\.layoutDirection, .leftToRight)
                     .frame(width: 23, height: 23).padding(15.5)
                     .overlay(Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1).padding(11))
             }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))

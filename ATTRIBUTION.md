@@ -73,7 +73,7 @@ And the line held from the other side:
   copy is NOOP's own — NOT WHOOP's decompiled strings."* Behaviour re-derived; the user-facing text
   written fresh.
 - **The `LINK_VALID` handshake**, rejected in
-  [`docs/BLE_REVERSE_ENGINEERING.md`](docs/BLE_REVERSE_ENGINEERING.md) — its reply payload is a
+  [`docs/BLE_REVERSE_ENGINEERING.md`](https://github.com/abdullahalmaeeni7-dot/noop-custom1/blob/backup/noop-before-whoop-5e7f970/docs/BLE_REVERSE_ENGINEERING.md) — its reply payload is a
   literal string lifted from the app. Expression, not a fact about the wire, so it stays out
   regardless of whether the handshake turns out to be real.
 

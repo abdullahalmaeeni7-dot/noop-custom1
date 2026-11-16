@@ -376,7 +376,7 @@ struct HomeMetricStrip: View {
                         ZStack {
                             Circle().stroke(.white.opacity(0.10), lineWidth: 2)
                             Circle().trim(from: 0, to: metric.fraction(store.selectedDay))
-                                .stroke(metric == .recovery ? PulseColor.recoveryScore(store.selectedDay.recovery.map(Double.init)) : metric.color, lineWidth: 2).rotationEffect(.degrees(-90))
+                                .stroke(metric == .recovery ? PulseColor.recoveryScore(store.selectedDay.recovery.map(Double.init)) : metric.color, lineWidth: 2).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
                         }.frame(width: 21, height: 21)
                         Text(L10n.text(metric.title)).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                     }.frame(maxWidth: .infinity, minHeight: 44)

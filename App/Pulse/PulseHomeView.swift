@@ -127,7 +127,7 @@ struct PulseHomeView: View {
     private func miniMetric(_ title: String, _ value: Double, _ color: Color, _ destination: PulseHomePanel) -> some View {
         Button { panel = destination } label: {
             HStack(spacing: 7) {
-                ZStack { Circle().stroke(.white.opacity(0.10), lineWidth: 2); Circle().trim(from: 0, to: value).stroke(color, lineWidth: 2).rotationEffect(.degrees(-90)) }.frame(width: 20, height: 20)
+                ZStack { Circle().stroke(.white.opacity(0.10), lineWidth: 2); Circle().trim(from: 0, to: value).stroke(color, lineWidth: 2).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight) }.environment(\.layoutDirection, .leftToRight).frame(width: 20, height: 20)
                 Text(L10n.text(title)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
             }.frame(minHeight: 39)
         }.buttonStyle(PulsePressStyle())

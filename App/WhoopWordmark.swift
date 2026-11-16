@@ -5,7 +5,7 @@ struct WhoopWordmark: View {
     var body: some View {
         GeometryReader { geometry in
             Self.drawingPath(in: CGRect(origin: .zero, size: geometry.size)).fill(.white)
-        }.accessibilityLabel("WHOOP")
+        }.environment(\.layoutDirection, .leftToRight).accessibilityLabel("WHOOP")
     }
     nonisolated static func drawingPath(in rect: CGRect) -> Path {
         let scale = min(rect.width / 247, rect.height / 40)
