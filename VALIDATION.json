@@ -1,9 +1,9 @@
 {
-  "scope": "Reference-aligned functional Home, navigation, Health and meal-camera capture with explicit nutrition-service errors",
+  "scope": "Arabic/RTL interface, shared reference geometry and private Gemini nutrition service",
   "checked_at": "2026-11-16",
   "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
-    "tests_passed": 160,
+    "tests_passed": 164,
     "new_profile_tests": 13,
     "failures": 0,
     "new_zip_tests": 14
@@ -142,7 +142,14 @@
     "signed": false,
     "physical_device_test": false
   },
-  "current_native_build": "success",
+  "current_native_build": {
+    "source": "5f2f068",
+    "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43816623740",
+    "device_build": "passed",
+    "package_validation": "passed",
+    "signed": false,
+    "final_catalog_build": "pending"
+  },
   "zip_import": {
     "offline": true,
     "official_csv_files": [
@@ -201,8 +208,8 @@
     }
   },
   "nutrition_tests": {
-    "calculator_and_routes_passed": 20,
-    "server_passed": 35,
+    "calculator_and_routes_passed": 22,
+    "server_passed": 38,
     "failures": 0,
     "provider": "synthetic, no production AI connection"
   },
@@ -228,5 +235,25 @@
     "artifact_archive_sha256": "4ec1185465e13be74ef08986c7545f574e717f6c1efb71662303abf8430bfb6b",
     "signed": false,
     "physical_device_test": false
+  },
+  "localization": {
+    "languages": [
+      "en",
+      "ar"
+    ],
+    "saved_preference": "whoop.language.v1",
+    "catalog_entries": 1032,
+    "rtl": true,
+    "tests_passed": 4,
+    "sdk_typecheck": "passed in device build at 5f2f068; final catalog additions pending next native run"
+  },
+  "gemini": {
+    "native_rest_api": true,
+    "standalone_service": "Server/nutrition-server.mjs",
+    "provider_key_in_client": false,
+    "deploy_blueprint": "render.yaml",
+    "deployed": false,
+    "live_provider_test": false,
+    "synthetic_tests_passed": true
   }
 }

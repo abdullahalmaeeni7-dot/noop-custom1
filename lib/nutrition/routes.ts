@@ -63,7 +63,7 @@ export function createNutritionAPI(config: NutritionConfig, transport: typeof fe
       if (configured.provider === 'gemini') {
         headers['x-goog-api-key'] = configured.key;
         requestBody = { systemInstruction: { parts: [{ text: instruction }] }, contents: [{ role: 'user', parts: [...geminiParts(content), ...(retry ? [{ text: retry }] : [])] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2_000, responseMimeType: 'application/json', ...(configured.model.startsWith('gemini-2.5-') ? { thinkingConfig: { thinkingBudget: 0 } } : {}) } };
+          generationConfig: { temperature: 0.2, maxOutputTokens: 2_000, responseMimeType: 'application/json', ...(configured.model.startsWith('gemini-2.5-flash') ? { thinkingConfig: { thinkingBudget: 0 } } : {}) } };
       } else {
         headers.Authorization = `Bearer ${configured.key}`;
         requestBody = { model: configured.model, temperature: 0.2, max_tokens: 1_500, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: instruction }, { role: 'user', content }, ...(retry ? [{ role: 'user', content: retry }] : [])] };

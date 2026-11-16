@@ -1,0 +1,93 @@
+
+> test
+> npm run build && node --test lib/nutrition/tests/*.test.mjs && npm test --prefix Server
+
+
+> build
+> node Scripts/build-nutrition.mjs && tsc --noEmit
+
+(node:206746) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Generated native offline nutrition calculator from the single TypeScript source.
+✔ Mifflin–St Jeor, sex coefficient, activity and goal offsets are explicit (8.201314ms)
+✔ imperial profile and later weight logs normalize before target calculation (1.271133ms)
+✔ manual overrides work without a profile and macro percentages are calculated centrally (0.449934ms)
+✔ unlogged days never fabricate deficits, fat changes or averages (0.484568ms)
+✔ meal totals, exercise and 7700-kcal energy equivalent use only matching dates (0.962574ms)
+✔ weekly totals include completed days only; incomplete eating still appears on intake chart (1.126321ms)
+✔ 7/30-day averages ignore missing logs; protein chart uses actual totals (1.795586ms)
+✔ logging streak deduplicates same-day foods and stops at calendar gaps (0.604934ms)
+✔ rolling weight averages use seven calendar days and retain recorded dates (15.618588ms)
+✔ malformed dates, duplicate IDs, unsupported ranges and nonfinite values fail before calculation (2.232835ms)
+✔ dial fill is bounded; status text accompanies over-target values (0.732133ms)
+✔ generated offline native bundle produces exactly the canonical response (26.085378ms)
+✔ zero manual macro targets are valid and over-target fill stays truthful (0.96578ms)
+✔ text, photo, exercise and review contracts are validated with typed output (68.115186ms)
+✔ invalid provider JSON retries exactly once and the second valid schema succeeds (4.279002ms)
+✔ invalid values never bypass zod; two failures return a friendly redacted error (2.580417ms)
+✔ missing keys do not contact any provider (0.404388ms)
+✔ HTTP rate limits and provider failures do not retry or expose their bodies (2.433091ms)
+✔ empty text, remote image URLs, invalid image headers and invalid weights are rejected before upstream access (1.198387ms)
+✔ review rejects impossible dates and negative energy totals before upstream access (0.9336ms)
+✔ Gemini uses its official native vision API and Arabic instructions without exposing the key in URLs (2.664184ms)
+✔ Gemini retries invalid JSON once and refuses non-Google hosts before sending a credential (2.042509ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 457.369351
+
+> test
+> node --test test/*.test.mjs
+
+✔ missing and malformed config stays unconfigured, health redacts values (105.892983ms)
+✔ real local routes: OAuth state, proof-bound native pairing, import and encrypted disconnect (91.103482ms)
+✔ provider and native TTLs expire; callback nonce and duplicates are checked (19.809655ms)
+✔ provider denial redirects with generic error and original app state, consumes state (12.699599ms)
+✔ concurrent callback and pairing replays exchange and persist only once (25.519639ms)
+✔ pagination uses fixed host, ISO bounds and nextToken; unknown targets rejected (22.594344ms)
+✔ repeated cursors and row/response bounds fail instead of truncating (15.412562ms)
+✔ expired access token refresh is single-flight during concurrent requests and rotation persists (45.462655ms)
+✔ upstream 401 refreshes once, concurrent stale responses share rotated access token (26.44383ms)
+✔ disconnect racing refresh never resurrects encrypted provider session (22.949584ms)
+✔ invalid refresh grant removes saved session, provider errors and exceptions are redacted (25.162536ms)
+✔ storage authenticates ciphertext, refuses permissive files and excludes multiple writers (19.277144ms)
+✔ malformed input, JSON size, auth, bounded pending state and rate limiting are enforced (42.519265ms)
+✔ session expiry is enforced and refreshed tokens cannot extend bridge bearer life (14.771274ms)
+▶ row, page, upstream response size and malformed envelopes are bounded with redacted errors
+  ✔ row-limit (14.1848ms)
+  ✔ page-limit (14.286191ms)
+  ✔ page-size (13.983675ms)
+  ✔ cursor-type (20.441926ms)
+  ✔ record-type (22.380968ms)
+  ✔ body-limit (24.866454ms)
+✔ row, page, upstream response size and malformed envelopes are bounded with redacted errors (112.02016ms)
+▶ upstream 429, 500, non-JSON and second 401 use generic errors
+  ✔ rate-limit (19.84859ms)
+  ✔ server-error (15.92476ms)
+  ✔ non-json (15.038059ms)
+  ✔ invalid-json (14.594358ms)
+  ✔ second-unauthorized (20.453078ms)
+✔ upstream 429, 500, non-JSON and second 401 use generic errors (87.561578ms)
+✔ whole import deadline aborts a stalled fake upstream without leaking its details (38.966756ms)
+✔ chunked JSON bodies enforce the 64 KiB limit without relying on Content-Length (8.415275ms)
+✔ historical end timestamp selects a bounded window for every upstream collection (21.168685ms)
+✔ historical end rejects invalid, duplicate, non-UTC, pre-2000 and future values before upstream access (31.693618ms)
+✔ historical end accepts exact boundary timestamps; absent end retains current default window (19.627303ms)
+✔ upstream literal unsafe integers and nonfinite numbers fail generically; fractional scores survive (42.847911ms)
+✔ nutrition routes reuse authenticated sessions and never forward a key to the client (63.87329ms)
+✔ authenticated nutrition missing-key and oversized-image failures stay friendly and bounded (41.203638ms)
+✔ private service health reveals no credentials and AI needs no WHOOP OAuth (87.528648ms)
+✔ service rejects malformed input, limits requests and recovers after its time window (62.152379ms)
+✔ missing Gemini config fails kindly without upstream calls and access codes must be strong (10.551609ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1307.686554
