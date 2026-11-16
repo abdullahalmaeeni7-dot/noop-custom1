@@ -376,9 +376,9 @@ struct DaySelector: View {
     }
     private func dayArrow(_ offset: Int) -> some View {
         Button { store.moveDay(offset) } label: {
-            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right").font(.system(size: compact ? 11 : 16, weight: .bold)).frame(width: 44, height: 44)
+            Image(systemName: offset < 0 ? "chevron.backward" : "chevron.forward").font(.system(size: compact ? 11 : 16, weight: .bold)).frame(width: 44, height: 44)
         }.disabled(offset > 0 && DayCalendar.utc.isDateInToday(store.selectedDate))
-            .accessibilityLabel(offset < 0 ? "Previous day" : "Next day")
+            .accessibilityLabel(L10n.text(offset < 0 ? "Previous day" : "Next day"))
     }
 
 }

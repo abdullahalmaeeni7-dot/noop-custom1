@@ -67,7 +67,7 @@ struct HomeView: View {
                     Image(systemName: "moon").font(.system(size: 23, weight: .light)).foregroundStyle(WColor.purple)
                     Text(L10n.text(reviewTitle)).font(WFont.body(14).weight(.semibold))
                     Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").foregroundStyle(WColor.blue)
+                    Image(systemName: "chevron.forward").foregroundStyle(WColor.blue)
                 }.padding(.horizontal, 15).padding(.vertical, 9).frame(maxWidth: .infinity, minHeight: 44)
                     .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
             }.buttonStyle(.plain)
@@ -87,7 +87,7 @@ struct HomeView: View {
                     HStack {
                         Text(L10n.text(title)).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.7).lineLimit(1).minimumScaleFactor(0.75)
                         Spacer(minLength: 2)
-                        Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                        Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
                     }
                     HStack(spacing: 8) {
                         Image(systemName: symbol).font(.system(size: 18, weight: .light)).foregroundStyle(tint)
@@ -103,7 +103,7 @@ struct HomeView: View {
                 VStack(spacing: 25) {
                     HStack {
                         Text(L10n.text("MY JOURNAL")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
-                        Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                        Spacer(); Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
                     }
                     HStack(spacing: 0) {
                         ForEach(0..<7) { index in
@@ -263,7 +263,7 @@ struct HomeView: View {
                             }.frame(width: 79, height: 39).background(WColor.sleep, in: RoundedRectangle(cornerRadius: 4))
                             Text(L10n.text("SLEEP")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                             Spacer()
-                            Image(systemName: "chevron.right").font(.system(size: 10)).foregroundStyle(WColor.muted)
+                            Image(systemName: "chevron.forward").font(.system(size: 10)).foregroundStyle(WColor.muted)
                         }
                     }
                 }.buttonStyle(.plain)
@@ -287,7 +287,7 @@ struct HomeView: View {
                     HStack {
                         Text(L10n.text("SLEEP OVERVIEW")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.7)
                         Spacer()
-                        Image(systemName: "chevron.right").font(.system(size: 9)).foregroundStyle(WColor.muted)
+                        Image(systemName: "chevron.forward").font(.system(size: 9)).foregroundStyle(WColor.muted)
                     }
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -526,7 +526,7 @@ struct HealthView: View {
             Button { showingMonitor = true } label: {
                 WCard(padding: 16) {
                     VStack(alignment: .leading, spacing: 22) {
-                        HStack { Text(L10n.text("HEALTH MONITOR")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted) }
+                        HStack { Text(L10n.text("HEALTH MONITOR")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.forward").foregroundStyle(WColor.muted) }
                         HStack(spacing: 0) {
                             healthStatus("RESP", symbol: "lungs", available: store.selectedDay.respiratoryRate != nil)
                             healthStatus("SpO₂", symbol: "drop", available: false)
@@ -545,7 +545,7 @@ struct HealthView: View {
                             Text(L10n.text("STRESS MONITOR")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                             Text(L10n.text("Stress measurements are not included in your current data.")).font(WFont.body(17)).foregroundStyle(WColor.muted)
                         }
-                        Spacer(); Image(systemName: "chevron.right").foregroundStyle(WColor.muted)
+                        Spacer(); Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
                     }
                 }
             }.buttonStyle(.plain)

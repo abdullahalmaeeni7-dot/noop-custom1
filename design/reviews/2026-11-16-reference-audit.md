@@ -43,3 +43,5 @@ Home is the first review screen, following the requested one-screen-at-a-time pr
 ## First native review findings
 
 Run `43928690328` produced actual English and Arabic frames at source `f5c6b53`. The opaque card surfaces, four-item bar and flatter date strip render correctly. The Arabic insight title lacked a translation; this is corrected. The five-second capture delay caught the ring animations part-way through filling, especially in Arabic. The capture helper now waits for startup and compares successive PNG pixel payloads before accepting a settled frame; a failure to settle is reported for manual review. The floating navigation gets a darker backing surface to reduce the visible text bleed from the card beneath it. No claim of pixel equality with the original attachments is made.
+
+Home/date navigation uses semantic forward/backward chevrons so directional controls follow Arabic layout. Physical ring paths and numbers remain left-to-right, as before.

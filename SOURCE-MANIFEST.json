@@ -118,8 +118,8 @@
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
-      "bytes": 14763,
-      "sha256": "0bc1941363500e4791686149a9f6b75bc04b6ace2976d32602432b81d16ef230"
+      "bytes": 14765,
+      "sha256": "8073376a41139a9388c0876977a578d3181bfc530ca71e6c41b7cd87497d1220"
     },
     {
       "path": "App/Pulse/PulseHomeCards.swift",
@@ -233,8 +233,8 @@
     },
     {
       "path": "App/Views/DashboardViews.swift",
-      "bytes": 33381,
-      "sha256": "e9d10d671a3576d55baaf79362a55fbd002249cde8928f030dbf49ab72ba8f2a"
+      "bytes": 33395,
+      "sha256": "0e191036331ba0e177837ebbb28fb53345326fc92f422325bca6a5ef1d0b6b2d"
     },
     {
       "path": "App/Views/DetailViews.swift",
@@ -293,8 +293,8 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 22775,
-      "sha256": "4a3045438e0d324ad5fdb5094e790e26f2be7df222c8b96c593c93f9b29258cd"
+      "bytes": 22792,
+      "sha256": "7c35e9a0d5d2bba362e493a682d0fae9188da9275aa71dfc5ce24b8f037bc2bf"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
@@ -1633,8 +1633,8 @@
     },
     {
       "path": "design/reviews/2026-11-16-reference-audit.md",
-      "bytes": 5951,
-      "sha256": "6e33297fa9437750ff8027c37c6f1c1a660eff95d84e26baea9d7589dfaed53e"
+      "bytes": 6124,
+      "sha256": "ce8e22dbe4fef354f44ea587d105f99fabbcbc2c3e73cb5214308592b5d43bf4"
     },
     {
       "path": "design/tokens/README.md",

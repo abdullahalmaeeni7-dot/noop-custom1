@@ -88,7 +88,7 @@ struct PulseRing: View {
                 }.environment(\.layoutDirection, .leftToRight).aspectRatio(1, contentMode: .fit).frame(maxWidth: ReferenceSize.ringDiameter)
                 HStack(spacing: 3) {
                     Text(L10n.text(label)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
-                    Image(systemName: "chevron.right").font(.system(size: 6, weight: .bold))
+                    Image(systemName: "chevron.forward").font(.system(size: 6, weight: .bold))
                 }
             }.frame(maxWidth: .infinity).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(PulseColor.text)
