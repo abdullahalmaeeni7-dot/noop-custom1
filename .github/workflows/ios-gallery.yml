@@ -8,7 +8,7 @@ permissions:
 jobs:
   gallery:
     runs-on: macos-15-intel
-    timeout-minutes: 40
+    timeout-minutes: 90
     permissions:
       contents: write
     steps:
@@ -37,7 +37,7 @@ jobs:
           echo "SIM_DEVICE=$SIM_DEVICE" >> "$GITHUB_ENV"
           xcrun simctl boot "$SIM_DEVICE"
           xcrun simctl bootstatus "$SIM_DEVICE" -b
-          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination "id=$SIM_DEVICE" -derivedDataPath build/GalleryDerived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/gallery/build.log 2>&1; then
+          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/GalleryDerived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/gallery/build.log 2>&1; then
             python3 - <<'PY'
           from pathlib import Path
           lines=Path('build/gallery/build.log').read_text(errors='replace').splitlines()
@@ -59,7 +59,7 @@ jobs:
           GALLERY_WORKTREE=$(mktemp -d)
           git worktree add --detach "$GALLERY_WORKTREE" HEAD
           git -C "$GALLERY_WORKTREE" switch --orphan "screen-gallery/$GITHUB_RUN_ID"
-          cp build/gallery/README.md build/gallery/index.html build/gallery/manifest.json build/gallery/sheet-*.jpg "$GALLERY_WORKTREE/"
+          cp build/gallery/WHOOP-all-screens.zip build/gallery/README.md build/gallery/index.html build/gallery/manifest.json build/gallery/sheet-*.jpg "$GALLERY_WORKTREE/"
           cp -R build/gallery/photos "$GALLERY_WORKTREE/"
           git -C "$GALLERY_WORKTREE" add .
           git -C "$GALLERY_WORKTREE" -c user.name='WHOOP screen gallery' -c user.email='gallery@users.noreply.github.com' commit -m "Native gallery at $GITHUB_SHA"

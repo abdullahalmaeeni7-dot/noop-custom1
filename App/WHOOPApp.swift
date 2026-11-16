@@ -32,8 +32,7 @@ struct AppLaunchView: View {
     @AppStorage("whoop.setup.completed.v1") private var completed = false
     var body: some View {
         #if targetEnvironment(simulator)
-        if let route = GalleryLaunch.route, !route.hasPrefix("onboarding-") { GalleryCaptureView(route: route) }
-        else if GalleryLaunch.active { FirstRunView { completed = true } }
+        if GalleryLaunch.active { SimulatorGalleryRouter() }
         else if completed { RootView() }
         else { FirstRunView { completed = true } }
         #else
@@ -42,6 +41,27 @@ struct AppLaunchView: View {
         #endif
     }
 }
+
+#if targetEnvironment(simulator)
+private struct SimulatorGalleryRouter: View {
+    @State private var route = GalleryLaunch.route ?? "home"
+    var body: some View {
+        Group {
+            if route.hasPrefix("onboarding-") { FirstRunView { } }
+            else { GalleryCaptureView(route: route) }
+        }.id(route).task {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("gallery-command.json")
+            while !Task.isCancelled {
+                if let data = try? Data(contentsOf: url), let command = try? JSONDecoder().decode([String: String].self, from: data), let next = command["route"], next != route {
+                    GalleryLaunch.overrideRoute = next
+                    route = next
+                }
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+        }
+    }
+}
+#endif
 
 private enum SetupStep: Int, CaseIterable {
     case welcome, profile, tracker, data
