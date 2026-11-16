@@ -1,0 +1,24 @@
+{
+  "native_source_commit": "d2e17a3",
+  "native_count": 4,
+  "earlier_design_preview_count": 33,
+  "native": [
+    {
+      "title": "First launch \u00b7 English",
+      "file": "native/01-first-launch-en.png"
+    },
+    {
+      "title": "Home \u00b7 English",
+      "file": "native/02-home-en.png"
+    },
+    {
+      "title": "First launch \u00b7 \u0627\u0644\u0639\u0631\u0628\u064a\u0629",
+      "file": "native/01-first-launch-ar.png"
+    },
+    {
+      "title": "Home \u00b7 \u0627\u0644\u0639\u0631\u0628\u064a\u0629",
+      "file": "native/02-home-ar.png"
+    }
+  ],
+  "full_native_gallery_status": "Queued on GitHub Mac runners; no full native capture claimed."
+}

@@ -1,0 +1,165 @@
+{
+  "scope": "33 browser design approximations, not native captures",
+  "files": [
+    {
+      "path": "01-home.png",
+      "sha256": "6b9912882e4cf9aece5686935362e4ba4f2060461a36c610c0aeb3c49d7201de"
+    },
+    {
+      "path": "01-main-screens.jpg",
+      "sha256": "84ffdb6a0fc48440c09c7fc31b25f6b660069ca620ba81add1710d1d0ec5aa7b"
+    },
+    {
+      "path": "02-forms-account.jpg",
+      "sha256": "6a61f1d2c2ad54e199d6337d12c826248437b2722fe5ac6139915cbfa20dfe6b"
+    },
+    {
+      "path": "02-sleep.png",
+      "sha256": "d484ddf2947e1929abaf712c90577e8444a8bbc03cd1d7e41c16df7e20a4a91a"
+    },
+    {
+      "path": "03-nutrition.jpg",
+      "sha256": "ecd8ca656fe26865708f6a0d086ba7449abf4de057bea1868926bab9c6154fce"
+    },
+    {
+      "path": "03-recovery.png",
+      "sha256": "ba5b06bddf45431eb586f85ec3cf6aa92f6e668ddd7ccc234c00c45a9368f630"
+    },
+    {
+      "path": "04-live.jpg",
+      "sha256": "b09932b8a793826d9ba8803b626681e225dd60e69e584bb5bf2a0fa8549d6b78"
+    },
+    {
+      "path": "04-strain.png",
+      "sha256": "65b26b2904f9dda9e86c44dc5ce20d10095f34ba128511d650ce269b495e062e"
+    },
+    {
+      "path": "05-health.png",
+      "sha256": "28339e828109187f0237b807e979e8deaafd52fc642ab568c06a7300007a787f"
+    },
+    {
+      "path": "06-stress.png",
+      "sha256": "5914739958cc6c2d61c69444453ad72634b8765f41209d71a76a0a4e9a0d75b5"
+    },
+    {
+      "path": "07-community.png",
+      "sha256": "4b2b6c1a147a7c9d2e1c7bd9cce398d6bb5ab26fad8d2348eb5541477b899180"
+    },
+    {
+      "path": "08-profile.png",
+      "sha256": "5df36ae81107607563a50d023929825a2476342b73727b6a68758c6e85fcd58d"
+    },
+    {
+      "path": "09-more.png",
+      "sha256": "af53129eb16b12079550e7e5f8bd442588ce73c795876a32f80d2f442c6b2879"
+    },
+    {
+      "path": "10-journal.png",
+      "sha256": "85947ade2d048d7d15b2dadf192c9d6cf1ef81283a2092758f9d8c0ee0c6ec7c"
+    },
+    {
+      "path": "11-add-activity.png",
+      "sha256": "eee47b9f7aa9d507c9d0008bb73388c240d91d82e4c7a2f79bf7a324d3ed004c"
+    },
+    {
+      "path": "12-device.png",
+      "sha256": "9a05469d689b0f3dbcf723cddcc6bbd3183d6d1c31b8533b6c16c016fc1d38da"
+    },
+    {
+      "path": "13-workout.png",
+      "sha256": "49486f786223b461443d865ee8dbee2827e459813ba078531f992f30bb9905fe"
+    },
+    {
+      "path": "14-activities.png",
+      "sha256": "baba31b595eb3bfc4e69d01a28752640eacada67f94b52b92fa66d717a304c0d"
+    },
+    {
+      "path": "15-health-import.png",
+      "sha256": "6d53c6d36abe94aa9778db3d09bf6aab1454ca633d643c240975180821b112ff"
+    },
+    {
+      "path": "16-account.png",
+      "sha256": "e0098ffb0686edd3376154215db11d88483821e5055418d4c45ea78b98cdc341"
+    },
+    {
+      "path": "17-file-formats.png",
+      "sha256": "59178fec16b71d279f1b468c0d076876745f0bdcb6704b27a62f774015e41804"
+    },
+    {
+      "path": "18-strain-reference.png",
+      "sha256": "702f5fefdb3b05981bd65bf569d2675fa82be19651131d4f692594969ab6802c"
+    },
+    {
+      "path": "19-about.png",
+      "sha256": "e033fc81b900a42b75cf861d1c2849b77d650997af14bb9264f4c29f2421eeb6"
+    },
+    {
+      "path": "20-food-text.png",
+      "sha256": "a832f90e2e0641a9b6b829a344451bc5e242948e1f5ee368ba45d3232c78dd96"
+    },
+    {
+      "path": "21-food-photo.png",
+      "sha256": "7cc36fd2e165570a8f4971c25321a5a8b87aec617e7221fd43255cc0fd7e53f8"
+    },
+    {
+      "path": "22-nutrition-activity.png",
+      "sha256": "0dff785a5f05258ca1c73d2daddb23f4b19e33f14e28305ae7e83b9b6bb04ad8"
+    },
+    {
+      "path": "23-weight.png",
+      "sha256": "9aa7f58ca7fa791d0cf05a97e4a7bb782518c688c91f52a186667316e87abf8a"
+    },
+    {
+      "path": "24-nutrition-settings.png",
+      "sha256": "791d1352bb58c5862c41d5ccd48b9acbf67eb0d81aec55893db001a7a6e300fa"
+    },
+    {
+      "path": "25-local-edition.png",
+      "sha256": "cb877f1d82205cc5cc12ba8ace1efb5e620c019be86395d5f8739d22bb2c2e94"
+    },
+    {
+      "path": "26-live-camera.png",
+      "sha256": "07822dc534969a9c2e830ee0330450acc6f61cae692c0514eef00bcad6826b2f"
+    },
+    {
+      "path": "27-live-photo.png",
+      "sha256": "4bd8f366e86ebdb1c3a96be71c5bdf2bde61136622c18ba8a73c497fbe1ff945"
+    },
+    {
+      "path": "28-live-widget.png",
+      "sha256": "af35980d4c4aeae0162427b02c9ef3752785cbdeaf07d94799a1fe177e3e83d4"
+    },
+    {
+      "path": "29-nutrition-home.png",
+      "sha256": "6557664ef28fff053532956a920ca5f06643c050892ba0c2e3decca1dfed6a68"
+    },
+    {
+      "path": "30-nutrition-calories.png",
+      "sha256": "034b5947dc1d824b9b4871994a9ceba57683e9c4e2ac0c0dac923ab9599feaee"
+    },
+    {
+      "path": "31-nutrition-protein.png",
+      "sha256": "bc17317b13a7a10dfbab63e5f5cdd393e8bccea01c787dcabaf8353e0496839e"
+    },
+    {
+      "path": "32-nutrition-deficit.png",
+      "sha256": "5f5fedce9ddf3f65007dd2d8b09439e5e1f493e6e813abd24843ea2ac57d35db"
+    },
+    {
+      "path": "33-nutrition-add.png",
+      "sha256": "878a770f5910015be926eafb5a76acc18091749c9b4a8dc15dec2c9e617a896a"
+    },
+    {
+      "path": "README.md",
+      "sha256": "189911ddd22f30dd7df60f122e7e82509f8252f8adbb2b738cfa1dc4f0f325e9"
+    },
+    {
+      "path": "index.html",
+      "sha256": "7ef020baa882cf238857f8f585c158582170c066458dd577740831f3257ef4df"
+    },
+    {
+      "path": "screens.json",
+      "sha256": "2dd39d6df10986d1708d2f5aec52380a46d11a5ce803b340e34214d1af554f6c"
+    }
+  ]
+}
