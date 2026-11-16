@@ -155,8 +155,9 @@ struct RootView: View {
                 })
 
         }
+        .ignoresSafeArea(.container, edges: .bottom)
         .background { if store.tab == .nutrition { NColor.background.ignoresSafeArea() } else { WhoopBackground(healthGlow: store.tab == .health) } }
-        .overlay(alignment: .bottom) { floatingNavigation.padding(.bottom, 8) }
+        .overlay(alignment: .bottom) { floatingNavigation.padding(.bottom, 23) }
         .onChange(of: store.tab) { _, _ in compactMetrics = false }
         .preferredColorScheme(.dark)
         .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
@@ -248,9 +249,10 @@ struct RootView: View {
                 }
             }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
             Button { sheet = .review } label: {
-                WhoopMonogram().environment(\.layoutDirection, .leftToRight)
-                    .frame(width: 23, height: 23).padding(15.5)
-                    .overlay(Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1).padding(11))
+                ZStack {
+                    Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.1).frame(width: 29, height: 29)
+                    WhoopMonogram().environment(\.layoutDirection, .leftToRight).frame(width: 18, height: 15)
+                }.frame(width: ReferenceSize.navigationHeight, height: ReferenceSize.navigationHeight)
             }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))
                 .accessibilityLabel(L10n.text("Open your day in review"))
         }.padding(.horizontal, 12).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)
