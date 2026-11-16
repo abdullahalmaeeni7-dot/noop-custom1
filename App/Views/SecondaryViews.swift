@@ -108,12 +108,15 @@ struct MenuView: View {
     let openJournal: () -> Void
     @State private var confirmExamples = false
     @State private var referenceHome = false
+    @State private var showingSetup = false
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             LanguagePicker()
             SectionHeading(title: "Your WHOOP")
             WCard {
                 VStack(spacing: 0) {
+                    MenuActionRow(title: "Welcome & tracker setup", symbol: "sparkles") { showingSetup = true }
+                    Divider()
                     MenuActionRow(title: "Local edition · choose mode", symbol: "square.stack.3d.up", action: openTier)
                     Divider()
                     MenuActionRow(title: "Live camera & photo overlays", symbol: "camera", action: openLive)
@@ -173,6 +176,7 @@ struct MenuView: View {
             Button(L10n.text("Replace with examples"), role: .destructive) { showExamples() }
         } message: { Text(L10n.text("This replaces imported days, journal entries and logged activities on this iPhone. Save a full backup first if you want to keep a copy, including journal entries and activities. Example scores are labelled throughout the app.")) }
         .sheet(isPresented: $referenceHome) { PulseHomeView().presentationDragIndicator(.visible) }
+        .sheet(isPresented: $showingSetup) { SetupGuideView() }
     }
 }
 

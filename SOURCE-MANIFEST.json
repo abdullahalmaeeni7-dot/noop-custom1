@@ -53,8 +53,8 @@
     },
     {
       "path": ".github/workflows/ios-ipa.yml",
-      "bytes": 4303,
-      "sha256": "6bde25515a3a7c0b3dc31db188b6a2ce84251ba8f4458828d325e4a7f78e6d24"
+      "bytes": 6016,
+      "sha256": "6a48c661611ebbabca3c6821a0c985c37185fb078de9ed21760b5a9327094a94"
     },
     {
       "path": ".github/workflows/ios-layout.yml",
@@ -83,8 +83,8 @@
     },
     {
       "path": "App/AppStore.swift",
-      "bytes": 21196,
-      "sha256": "0c2e23fbdcd7f5eab05f59bf49898cba83c58ee8c06487632847bc4c398d57bb"
+      "bytes": 21245,
+      "sha256": "8b68c7e252af07031fae782349015cf72f00bd8d7927b43f2c29b0b8d9e9c544"
     },
     {
       "path": "App/DeviceModel.swift",
@@ -113,8 +113,8 @@
     },
     {
       "path": "App/NutritionModel.swift",
-      "bytes": 6862,
-      "sha256": "00f07127639531e1bb6d395ac931a1d5f0d5d428a8a804931685c93a11f5bd11"
+      "bytes": 6867,
+      "sha256": "d343edc4a4aeb7d910ea65231f1af77f4140e04b8bc2b05db0f832601cd5bf25"
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
@@ -298,8 +298,8 @@
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 22158,
-      "sha256": "9be994ee8fa723a3a67c69b835cacb9e4a044dec1fc642e325bf4d876425bf7a"
+      "bytes": 22408,
+      "sha256": "8af9afde26763c98994fd8358e1a11b070411e113a3fa5a28a2dd384ab12b74a"
     },
     {
       "path": "App/Views/Theme.swift",
@@ -313,8 +313,8 @@
     },
     {
       "path": "App/WHOOPApp.swift",
-      "bytes": 16754,
-      "sha256": "2c40504673097a209d5c181ce36547c887f8e105c82ce0483f1cc93ec5274041"
+      "bytes": 17332,
+      "sha256": "98716afd1fc31369f1da4512a6fe65d1b4e6a56ced76475ccc48be57de309ee1"
     },
     {
       "path": "App/WhoopWordmark.swift",
@@ -403,8 +403,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 110943,
-      "sha256": "2234ef80e716c87dee8647215c6a33b954f88627777591f54a31eba8c36b39f7"
+      "bytes": 111025,
+      "sha256": "0daabf34c35e99160eb83e59f2956208f1dbe12e6b6d749f60cbc19af377e19d"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -628,8 +628,8 @@
     },
     {
       "path": "Docs/ReleaseNotes/2026-11-16-runtime-fixes.md",
-      "bytes": 2755,
-      "sha256": "d8d0153ad27751babe0bbe7c5eb9cf9e2c8489504cecd4743c92192bd8474a14"
+      "bytes": 3224,
+      "sha256": "e4024b759db6e15f5edcc26e75022120564bd980f24a54717124e22204c13418"
     },
     {
       "path": "Docs/ThirdParty/ZIPFoundation-LICENSE.txt",

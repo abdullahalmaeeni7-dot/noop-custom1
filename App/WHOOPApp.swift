@@ -42,6 +42,20 @@ struct AppLaunchView: View {
     }
 }
 
+/// Reopen setup without clearing saved data or changing the first-launch preference.
+struct SetupGuideView: View {
+    @Environment(\.dismiss) private var dismiss
+    var body: some View {
+        NavigationStack {
+            FirstRunView { dismiss() }
+                .toolbar { ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.text("Done")) { dismiss() }.frame(minWidth: 44, minHeight: 44)
+                } }
+                .toolbarBackground(PulseColor.background, for: .navigationBar)
+        }.tint(.white).preferredColorScheme(.dark)
+    }
+}
+
 private enum SetupStep: Int, CaseIterable {
     case welcome, profile, tracker, data
     var title: String {

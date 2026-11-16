@@ -1043,5 +1043,6 @@
   "Some dates contain multiple cycles. Home shows the latest cycle; JSON exports and full backups retain every cycle's measurements.": "تتضمن بعض التواريخ أكثر من دورة. تعرض الرئيسية أحدث دورة، وتحتفظ صادرات JSON والنسخ الاحتياطية الكاملة بقياسات كل دورة.",
   "Listening for WHOOP device data…": "جارٍ الاستماع إلى بيانات جهاز WHOOP…",
   "Each cycle uses its UTC start date. When several cycles share a date, Home shows the latest cycle. JSON exports and full backups retain every cycle, with its original start time and supplied scores.": "تُسجّل كل دورة بتاريخ بدئها بتوقيت UTC. تعرض الرئيسية أحدث دورة عند اشتراك عدة دورات في تاريخ واحد، وتحتفظ صادرات JSON والنسخ الاحتياطية بكل دورة ووقت بدئها ودرجاتها الأصلية.",
-  "CANCEL CONNECTION": "إلغاء الاتصال"
+  "CANCEL CONNECTION": "إلغاء الاتصال",
+  "Welcome & tracker setup": "الترحيب وإعداد جهاز التتبع"
 }

@@ -10,8 +10,10 @@ Cold-start disk reads and JSON decoding run off the main actor. Date lookups use
 
 Tracker discovery begins with the supported services, then also discovers connectable named wearables that omit those services from advertising. Discovered WHOOP services automatically attempt the existing Hello/heart-rate handshake once their notification channels are ready. Failed attempts do not loop. Both setup and device settings let the user cancel a connection. This does not add proprietary historical sync or establish compatibility with every tracker model.
 
-Welcome has a centered wearable illustration and direct tracker/import/personalization choices. No supplied reference depicts the official welcome screen, so exact visual parity is not asserted. No remote login or provider access is simulated.
+Welcome has a centered wearable illustration and direct tracker/import/personalization choices. Existing installs can reopen it from **More → Welcome & tracker setup** without deleting data. No supplied reference depicts the official welcome screen, so exact visual parity is not asserted. No remote login or provider access is simulated.
 
 Validation: portable Swift regressions cover collisions, exact sleep joins, order independence, JSON/backup preservation, cycle peak highlights, and malformed cycle records. Native build results are recorded by the existing iPhone IPA workflow. Physical Bluetooth pairing, camera behavior and on-device timing require an iPhone and tracker; Linux syntax checks cannot establish those results.
 
 Verified locally: 169 Swift core tests and 13 IPA/package validator tests passed; the generated nutrition bundle matches the canonical calculator; Swift frontend parsing and the Xcode project structural validator passed. These checks do not substitute for an Apple SDK build or physical device verification.
+
+Apple validation: source commit `26bb92e` passed the complete Mac workflow, including Apple SDK compilation, arm64 device packaging and embedded extension validation: https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43923578963 . The follow-up setup shortcut and direct-download publication use the same workflow and require their own successful build.

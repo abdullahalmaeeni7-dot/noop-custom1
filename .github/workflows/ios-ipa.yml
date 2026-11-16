@@ -28,6 +28,8 @@ jobs:
   device-ipa:
     runs-on: macos-15-intel
     timeout-minutes: 35
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Find standalone project
@@ -102,6 +104,28 @@ jobs:
             ${{ steps.project.outputs.directory }}/build/WHOOP-unsigned.ipa.sha256
           if-no-files-found: error
           retention-days: 7
+      - name: Publish direct IPA download
+        continue-on-error: true
+        working-directory: ${{ steps.project.outputs.directory }}
+        run: |
+          set -euo pipefail
+          DOWNLOAD_TREE=$(mktemp -d)
+          git worktree add --detach "$DOWNLOAD_TREE" HEAD
+          DOWNLOAD_BRANCH="device-download/$GITHUB_SHA"
+          git -C "$DOWNLOAD_TREE" switch --orphan "$DOWNLOAD_BRANCH"
+          cp build/WHOOP-unsigned.ipa build/WHOOP-unsigned.ipa.sha256 "$DOWNLOAD_TREE/"
+          export DOWNLOAD_TREE
+          python3 - <<'PYTHON'
+          import os
+          from pathlib import Path
+          commit = os.environ['GITHUB_SHA']
+          root = Path(os.environ['DOWNLOAD_TREE'])
+          root.joinpath('README.md').write_text('# iPhone build download\n\n[Download WHOOP-unsigned.ipa](WHOOP-unsigned.ipa)\n\nThis is the validated arm64 iPhone application from source commit `' + commit + '`. It is unsigned: sign and install it with your own Apple identity using a compatible signing tool. It cannot be installed by opening the file directly on an iPhone. It is not an official WHOOP release.\n\nThe SHA-256 checksum is provided alongside the IPA. The build checks the device executable and embedded Live Activity extension before publishing.\n')
+          PYTHON
+          git -C "$DOWNLOAD_TREE" add WHOOP-unsigned.ipa WHOOP-unsigned.ipa.sha256 README.md
+          git -C "$DOWNLOAD_TREE" -c user.name='iPhone build download' -c user.email='build@users.noreply.github.com' commit -m "Validated device build $GITHUB_SHA"
+          git -C "$DOWNLOAD_TREE" push origin "HEAD:refs/heads/$DOWNLOAD_BRANCH"
+          git worktree remove "$DOWNLOAD_TREE"
       - name: Upload build diagnostics
         if: always() && steps.project.outcome == 'success'
         uses: actions/upload-artifact@v4

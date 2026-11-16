@@ -96,7 +96,7 @@ final class AppStore: ObservableObject {
             let initial = LaunchDayData(savedDays: state.days, selectedDate: state.selectedDate)
             days = initial.days; activities = state.activities; journal = state.journal
             selectedDate = initial.selectedDate; whoopAccountUserID = state.whoopAccountUserID
-            nutrition = state.nutrition ?? NutritionData(); profile = state.profile ?? ProfilePersonalization()
+            nutrition = state.nutrition ?? NutritionData(); profile = (try? (state.profile ?? ProfilePersonalization()).validated()) ?? ProfilePersonalization()
         }
         storageWritable = restored.writable; persistenceError = restored.error; isLoadingSavedData = false
     }

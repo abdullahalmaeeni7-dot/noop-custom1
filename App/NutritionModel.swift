@@ -39,7 +39,7 @@ final class NutritionViewModel: ObservableObject {
     func refresh(_ data: NutritionData, date: Date) async {
         let day = NutritionDay.key(date)
         if calculation?.day == day, calculatedData == data { return }
-        let token = UUID(); revision = token; isLoading = calculation == nil; error = nil; review = nil
+        let token = UUID(); revision = token; isLoading = calculation?.day != day; error = nil; review = nil
         if calculation?.day != day { calculation = nil }
         do {
             let result = try await Task.detached(priority: .userInitiated) { try NutritionEngine.calculate(data, day: day) }.value
