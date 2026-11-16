@@ -55,7 +55,7 @@ struct PulseCard<Content: View>: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
+            .background(PulseColor.card, in: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius, style: .continuous))
     }
 }
 struct PulseRing: View {
@@ -105,7 +105,7 @@ struct PulseDayStrip: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
         ZStack {
-            AppGlassSurface(shape: Capsule()).frame(width: 126, height: 28)
+            Capsule().fill(PulseColor.elevated.opacity(0.48)).frame(width: 126, height: 28)
             Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28)
             Button { select(index - 1) } label: {
                 Image(systemName: "chevron.left").frame(width: 44, height: 44).contentShape(Rectangle())

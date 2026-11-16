@@ -115,6 +115,8 @@ struct MenuView: View {
             SectionHeading(title: "Your WHOOP")
             WCard {
                 VStack(spacing: 0) {
+                    MenuActionRow(title: "Nutrition", symbol: "fork.knife") { store.tab = .nutrition }
+                    Divider()
                     MenuActionRow(title: "Welcome & tracker setup", symbol: "sparkles") { showingSetup = true }
                     Divider()
                     MenuActionRow(title: "Local edition · choose mode", symbol: "square.stack.3d.up", action: openTier)

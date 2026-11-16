@@ -267,7 +267,7 @@ struct RootView: View {
         HStack(spacing: 10) {
             HStack(spacing: 0) {
                 ForEach(AppTab.navigationTabs) { tab in
-                    let selected = store.tab == tab || (store.tab == .profile && tab == .menu)
+                    let selected = store.tab == tab || ([AppTab.profile, .nutrition].contains(store.tab) && tab == .menu)
                     Button {
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { store.tab = tab }
                     } label: {
@@ -341,7 +341,7 @@ struct DaySelector: View {
                             .background { Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28) }
                     }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)"))
                     dayArrow(1)
-                }.background { AppGlassSurface(shape: Capsule(), interactive: true).frame(height: ReferenceSize.dayStripHeight) }
+                }.background { Capsule().fill(PulseColor.elevated.opacity(0.48)).frame(height: ReferenceSize.dayStripHeight) }
             } else {
                 HStack {
                     dayArrow(-1)

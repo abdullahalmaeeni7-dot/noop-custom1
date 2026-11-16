@@ -24,7 +24,7 @@ struct HomeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
-            overview.padding(.top, 14).padding(.bottom, 7)
+            overview.padding(.top, 22).padding(.bottom, 12)
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
             HStack(spacing: 11) {
@@ -193,7 +193,7 @@ struct HomeView: View {
             HStack(alignment: .top, spacing: 32) {
                 ForEach(ScoreMetric.allCases) { metric in
                     PulseRing(value: metric.value(day) == nil ? "NO DATA" : metric.text(day), fraction: metric.fraction(day),
-                              previous: precedingDay(in: store).flatMap { metric.value($0) == nil ? nil : metric.fraction($0) },
+                              previous: nil,
                               tint: metric == .recovery ? PulseColor.recoveryScore(day.recovery.map(Double.init)) : metric.color,
                               label: metric.title, action: { openMetric(metric) })
                 }
@@ -210,23 +210,30 @@ struct HomeView: View {
             WCard(padding: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 7) {
-                        Text(L10n.text("Your day, in focus")).font(WFont.body(15).weight(.semibold))
+                        Text(L10n.text(highlightTitle)).font(WFont.body(14).weight(.semibold))
                         Text(L10n.text(highlightText)).font(WFont.body(13)).foregroundStyle(WColor.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 0)
                     VStack(spacing: 4) {
-                        Image(systemName: "chart.line.uptrend.xyaxis").font(.system(size: 17, weight: .light))
-                        Text(L10n.text(decimalText(day.hrv, places: 0))).font(WFont.number(15, bold: true))
-                    }.foregroundStyle(WColor.sleep)
+                        Image(systemName: "checkmark").font(.system(size: 17, weight: .light))
+                        Text("1").font(WFont.number(13)).foregroundStyle(WColor.muted)
+                    }.foregroundStyle(.white.opacity(0.8)).frame(width: 23, height: 42)
+                        .background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 8))
                 }.frame(minHeight: 80, alignment: .top)
             }
         }.buttonStyle(.plain)
     }
 
+    private var highlightTitle: String {
+        guard let strain = day.strain else { return "Your Day In Review" }
+        return strain >= 14 ? "Pushing Limits" : strain >= 10 ? "Building Momentum" : "Finding Your Balance"
+    }
     private var highlightText: String {
-        if let recovery = day.recovery, let strain = day.strain {
-            return "Your Recovery is \(recovery)% and your day Strain is \(decimalText(strain)). Review your sleep and recorded activities for the full picture."
+        if let strain = day.strain {
+            if strain >= 14 { return "You worked hard today. Your recorded Strain is \(decimalText(strain)). Explore your activities and Recovery to plan what comes next." }
+            if strain >= 10 { return "You built up a solid day of activity. Review your Strain and Recovery together as you plan your next session." }
+            return "Your day has been lighter so far. Check your Recovery and recent activities before deciding what comes next."
         }
         guard let hrv = day.hrv else { return "Your HRV will appear here when a measurement is available. Tap to view your Recovery details." }
         if let previous = precedingDay(in: store)?.hrv, previous > 0 {

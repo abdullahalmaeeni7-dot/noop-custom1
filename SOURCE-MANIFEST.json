@@ -58,8 +58,8 @@
     },
     {
       "path": ".github/workflows/ios-layout.yml",
-      "bytes": 10794,
-      "sha256": "2c7e8c34fd52989e4c83e10662b93e8b09cbfecbedd212d90553e17faceee678"
+      "bytes": 11000,
+      "sha256": "a06227e2f1331f702c357175bad08f2a11af7bafa7591615717896e266e5a123"
     },
     {
       "path": ".gitignore",
@@ -83,8 +83,8 @@
     },
     {
       "path": "App/AppStore.swift",
-      "bytes": 21245,
-      "sha256": "8b68c7e252af07031fae782349015cf72f00bd8d7927b43f2c29b0b8d9e9c544"
+      "bytes": 21233,
+      "sha256": "208948df63e21811b0201f10eca7201258f940da2f84109c673ad585d6f2fc90"
     },
     {
       "path": "App/DeviceModel.swift",
@@ -118,8 +118,8 @@
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
-      "bytes": 14811,
-      "sha256": "9ae36f382ec98724c3dd30c760cf2f645e2523a2fda4609bb484b3f2af399cba"
+      "bytes": 14763,
+      "sha256": "0bc1941363500e4791686149a9f6b75bc04b6ace2976d32602432b81d16ef230"
     },
     {
       "path": "App/Pulse/PulseHomeCards.swift",
@@ -233,8 +233,8 @@
     },
     {
       "path": "App/Views/DashboardViews.swift",
-      "bytes": 32879,
-      "sha256": "a16f84b779cd056cf712f35c128ee42b20c2f70d5db4d76b35e34cb40c19d75f"
+      "bytes": 33381,
+      "sha256": "e9d10d671a3576d55baaf79362a55fbd002249cde8928f030dbf49ab72ba8f2a"
     },
     {
       "path": "App/Views/DetailViews.swift",
@@ -263,8 +263,8 @@
     },
     {
       "path": "App/Views/NutritionComponents.swift",
-      "bytes": 11902,
-      "sha256": "5b94c3933fa3a760c1373b583c5b3df7d9b06e87c66ff31c32ab1a75486740f6"
+      "bytes": 11829,
+      "sha256": "b5e3ec58f1c812af70df80863f4f7416afcda16f2b7c9b0b2a0fb451e93f0114"
     },
     {
       "path": "App/Views/NutritionForms.swift",
@@ -293,18 +293,18 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 22284,
-      "sha256": "c17fff05b3eb098e99ca3717652eef255a6959099ca5ccb955a1b76d19359677"
+      "bytes": 22308,
+      "sha256": "a4b16d9bf04961a41f676d0f908939e47825aafc8efe91497d51291597f3f159"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 22408,
-      "sha256": "8af9afde26763c98994fd8358e1a11b070411e113a3fa5a28a2dd384ab12b74a"
+      "bytes": 22541,
+      "sha256": "26a79f3c0b2b528baa10d5ee26448ccd50636a82719c02549d657ff674bd21b1"
     },
     {
       "path": "App/Views/Theme.swift",
-      "bytes": 12325,
-      "sha256": "171521c308e9e4b3294a7f3a955864b7066b2f76ddc913bd289a8f73fd35b551"
+      "bytes": 12242,
+      "sha256": "d7f8337257f6d67460f4e508b0f26635dc0d7815d4b05a0d9b5d7969940e793f"
     },
     {
       "path": "App/Views/WorkoutView.swift",
@@ -403,8 +403,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 111025,
-      "sha256": "0daabf34c35e99160eb83e59f2956208f1dbe12e6b6d749f60cbc19af377e19d"
+      "bytes": 111950,
+      "sha256": "aec9180525fdc18818b0ffa196381c1cd6981c32409223cf6f23888758a1739f"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -708,8 +708,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11757,
-      "sha256": "3fdd97da257acd9bd5cddd8994fae0e33d5de835799ea587a886e0abd55c99d3"
+      "bytes": 11885,
+      "sha256": "fe9de87a4e260fd3ae79cf115f3993c435a189babfad505e5d3e983fe69ecce7"
     },
     {
       "path": "STATUS.md",
@@ -1627,14 +1627,19 @@
       "sha256": "7420fd71a33cd94dce1293869811d8f1fd1287a54249168c7ac24d6b4ce2da9a"
     },
     {
+      "path": "design/reviews/2026-11-16-reference-audit.md",
+      "bytes": 4933,
+      "sha256": "8440fc109c828506ad8f4499ae6ad6a178c4cbf37255e014dd8f2fb5f60a4641"
+    },
+    {
       "path": "design/tokens/README.md",
       "bytes": 2427,
       "sha256": "576183b82cb246882abcafc03f8335bf049ae008d8e8eb9e6b4ebb8d26688f34"
     },
     {
       "path": "design/tokens/home.json",
-      "bytes": 5136,
-      "sha256": "c7b58f7281af47e47d0ecd405b0d72fd3fdc64dfd4250a20d2fdcb6fdd940a75"
+      "bytes": 5336,
+      "sha256": "636d745a78f16541f44abc2eea2f7d4949b537c1b83a3f3552dd3e031ac0184d"
     },
     {
       "path": "design/tokens/live.json",

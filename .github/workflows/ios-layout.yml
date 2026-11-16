@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   native-layout-review:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 35
     continue-on-error: true
     permissions:
@@ -78,8 +78,9 @@ jobs:
           SIM_DEVICE=$(xcrun simctl create "WHOOP isolated layout review" com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro "$SIM_RUNTIME")
           trap 'xcrun simctl shutdown "$SIM_DEVICE" >/dev/null 2>&1 || true; xcrun simctl delete "$SIM_DEVICE" >/dev/null 2>&1 || true' EXIT
           xcrun simctl boot "$SIM_DEVICE"
-          xcrun simctl bootstatus "$SIM_DEVICE" -b
-          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination "id=$SIM_DEVICE" -derivedDataPath build/SimulatorReview CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/visual-review/simulator-build.log 2>&1; then
+          xcrun simctl bootstatus "$SIM_DEVICE" -b > build/visual-review/simulator-boot.log 2>&1 &
+          BOOT_PID=$!
+          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/SimulatorReview CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/visual-review/simulator-build.log 2>&1; then
             python3 - <<'PYTHON'
           from pathlib import Path
           lines = Path('build/visual-review/simulator-build.log').read_text(errors='replace').splitlines()
@@ -89,6 +90,7 @@ jobs:
           PYTHON
             exit 1
           fi
+          wait "$BOOT_PID"
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
           xcrun simctl status_bar "$SIM_DEVICE" override --time '9:34' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
           for REVIEW_LANGUAGE in en ar; do
@@ -101,10 +103,11 @@ jobs:
           import datetime, json, os, pathlib, plistlib
           container = pathlib.Path(os.environ['APP_CONTAINER'])
           days = []
+          today = datetime.datetime.now(datetime.timezone.utc).replace(hour=0,minute=0,second=0,microsecond=0)
           for i, (strain, recovery) in enumerate(zip([9.5,10.7,14.5,5.6,9.6,5.3,15.8], [43,29,44,29,54,50,38])):
-              date = datetime.datetime(2026,11,3+i,tzinfo=datetime.timezone.utc).isoformat().replace('+00:00','Z')
+              date = (today - datetime.timedelta(days=6-i)).isoformat().replace('+00:00','Z')
               days.append(dict(date=date,recovery=recovery,strain=strain,sleepPerformance=33 if i==6 else 75,sleepMinutes=224 if i==6 else 420,sleepNeededMinutes=680 if i==6 else 510,restingHeartRate=58,hrv=122,respiratoryRate=19.7,steps=26783,energyKcal=2886,heartRates=[],source='imported'))
-          fixtures = dict(version=1,days=days,activities=[],journal=[],selectedDate=days[-1]['date'],profile=dict(displayName='Layout Review',username='simulator',age='18',whoopAge='22.6',dayStreakOverride=41))
+          fixtures = dict(version=1,days=days,activities=[],journal=[],selectedDate=days[-1]['date'],profile=dict(displayName='Alex Avery',username='simulator',age='18',whoopAge='22.6',dayStreakOverride=41))
           (container/'Documents').mkdir(exist_ok=True)
           (container/'Documents/whoop-local-data.json').write_text(json.dumps(fixtures))
           preferences = container/'Library/Preferences/local.whoop.reconstruction.plist'

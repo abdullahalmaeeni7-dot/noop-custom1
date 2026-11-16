@@ -46,7 +46,7 @@ struct NButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(NFont.label(12)).frame(maxWidth: .infinity, minHeight: 46)
             .foregroundStyle(Color.white)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 23, style: .continuous), tint: secondary ? .white.opacity(0.03) : NColor.cyan.opacity(0.2), solid: NColor.card, interactive: true))
+            .background(secondary ? NColor.card : NColor.cyan.opacity(0.24), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .opacity(configuration.isPressed ? 0.65 : 1)
     }
 }

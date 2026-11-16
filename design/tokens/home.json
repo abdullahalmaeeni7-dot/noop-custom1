@@ -1,6 +1,6 @@
 {
   "brand": "WHOOP",
-  "reference": "Latest 27 user-supplied screenshots: 945 \u00d7 2048 displayed images; primary Home image with membership banner and 33 / 38 / 15.8 rings, plus four Home scroll positions.",
+  "reference": "Latest 27 user-supplied screenshots: 945 × 2048 displayed images; primary Home image with membership banner and 33 / 38 / 15.8 rings, plus four Home scroll positions.",
   "provenance": "Geometry estimated from displayed attachment coordinates using 945/393 scale. Colors visually estimated, not extracted from image bytes. Actual native simulator captures are recorded in VALIDATION.json; quantitative pixel equality and official animation timings remain unverified.",
   "viewport": {
     "width": 393,
@@ -114,7 +114,7 @@
     "tabBarWidth": 302,
     "coachDiameter": 58,
     "tabBarBottomInset": 26,
-    "initialContentTopInset": 22,
+    "initialContentTopInset": 30,
     "cardAlpha": 0.92,
     "dashboardRowHeight": 56,
     "weeklyChartCardHeight": 279,
@@ -144,8 +144,8 @@
     "Pushing Limits insight",
     "Health Monitor and Stress Monitor",
     "My Day and Day In Review",
-    "Tonight\u2019s Sleep",
-    "Today\u2019s Activities",
+    "Tonight’s Sleep",
+    "Today’s Activities",
     "My Journal",
     "My Plan",
     "My Dashboard: calories, steps, RHR",
@@ -155,9 +155,9 @@
     "Discover More",
     "WHOOP Peak footer"
   ],
-  "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified.",
+  "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified. Shared standard cards now use the opaque reference surface; date strip is flat. Native comparison remains required.",
   "membershipExpiryBanner": false,
-  "functional_layout_revision": 9,
-  "functional_layout_note": "Measured reference tokens now apply to real Home. Navigation adds the previously requested Nutrition tab. System glass, unavailable-data labels and functional service actions intentionally differ from static screenshots.",
+  "functional_layout_revision": 10,
+  "functional_layout_note": "Reference corrections: four tabs (Home, Health, Community, More); Nutrition remains functional under More. Standard cards use opaque #2B3135 with no glass stroke. System glass is confined to floating navigation/control surfaces. No membership expiry banner. Unavailable provider measurements are never fabricated.",
   "sizing_implementation": "Shared ReferenceSize values in App/Pulse/PulseComponents.swift; real Home uses the same ring geometry and day-strip width as the screenshot preview. RTL mirrors layout without changing base point sizes. Dynamic Type and the requested extra Nutrition tab remain supported. The floating bar uses the actual UIWindow bottom inset and its 3-point internal padding to place the visible shape 26 points above the screen edge on phones with or without a Home indicator."
 }

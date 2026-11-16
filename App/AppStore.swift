@@ -4,7 +4,7 @@ import WHOOPCore
 
 enum AppTab: String, CaseIterable, Identifiable {
     case home, sleep, recovery, strain, nutrition, menu, health, community, profile
-    static let navigationTabs: [AppTab] = [.home, .health, .nutrition, .community, .menu]
+    static let navigationTabs: [AppTab] = [.home, .health, .community, .menu]
     var id: String { rawValue }
     var title: String { self == .menu ? "More" : rawValue.capitalized }
     var symbol: String {

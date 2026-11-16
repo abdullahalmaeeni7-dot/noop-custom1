@@ -1044,5 +1044,10 @@
   "Listening for WHOOP device data…": "جارٍ الاستماع إلى بيانات جهاز WHOOP…",
   "Each cycle uses its UTC start date. When several cycles share a date, Home shows the latest cycle. JSON exports and full backups retain every cycle, with its original start time and supplied scores.": "تُسجّل كل دورة بتاريخ بدئها بتوقيت UTC. تعرض الرئيسية أحدث دورة عند اشتراك عدة دورات في تاريخ واحد، وتحتفظ صادرات JSON والنسخ الاحتياطية بكل دورة ووقت بدئها ودرجاتها الأصلية.",
   "CANCEL CONNECTION": "إلغاء الاتصال",
-  "Welcome & tracker setup": "الترحيب وإعداد جهاز التتبع"
+  "Welcome & tracker setup": "الترحيب وإعداد جهاز التتبع",
+  "Building Momentum": "بناء الزخم",
+  "Finding Your Balance": "إيجاد توازنك",
+  "You worked hard today. Your recorded Strain is {0}. Explore your activities and Recovery to plan what comes next.": "بذلت جهداً كبيراً اليوم. درجة الإجهاد المسجّلة هي {0}. استعرض أنشطتك وتعافيك لتخطط لخطوتك التالية.",
+  "You built up a solid day of activity. Review your Strain and Recovery together as you plan your next session.": "كان يومك مليئاً بالنشاط. راجع الإجهاد والتعافي معاً عند التخطيط لحصتك المقبلة.",
+  "Your day has been lighter so far. Check your Recovery and recent activities before deciding what comes next.": "كان يومك أخف حتى الآن. تحقّق من التعافي والأنشطة الأخيرة قبل تحديد خطوتك التالية."
 }

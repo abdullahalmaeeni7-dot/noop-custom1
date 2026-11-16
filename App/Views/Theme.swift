@@ -64,7 +64,7 @@ struct WCard<Content: View>: View {
     }
     var body: some View {
         content.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: radius, style: .continuous), tint: (surface ?? WColor.card).opacity(0.13), solid: surface ?? WColor.card))
+            .background((surface ?? WColor.card), in: RoundedRectangle(cornerRadius: radius, style: .continuous))
     }
 }
 
@@ -114,8 +114,8 @@ struct WButton: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.font(WFont.label(13)).tracking(AppLanguage.isArabic ? 0 : 0.9)
             .frame(maxWidth: .infinity).padding(.vertical, 16)
-            .foregroundStyle(Color.white)
-            .background(AppGlassSurface(shape: Capsule(), tint: filled ? WColor.sleep.opacity(0.25) : .white.opacity(0.03), solid: WColor.elevated, interactive: true))
+            .foregroundStyle(filled ? WColor.background : Color.white)
+            .background(filled ? Color.white : PulseColor.elevated, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
