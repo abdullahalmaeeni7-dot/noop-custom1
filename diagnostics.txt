@@ -1,0 +1,11 @@
+Command line invocation:
+    /Applications/Xcode_26.3.app/Contents/Developer/usr/bin/xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination "generic/platform=iOS Simulator" -derivedDataPath build/SimulatorReview ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+
+Build settings from command line:
+    ARCHS = x86_64
+    CODE_SIGNING_ALLOWED = NO
+    CODE_SIGNING_REQUIRED = NO
+    ONLY_ACTIVE_ARCH = YES
+    SDKROOT = iphonesimulator26.2
+
+Resolve Package Graph
