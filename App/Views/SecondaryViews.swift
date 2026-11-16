@@ -119,11 +119,11 @@ struct MenuView: View {
                     Divider()
                     MenuActionRow(title: "Welcome & tracker setup", symbol: "sparkles") { showingSetup = true }
                     Divider()
-                    MenuActionRow(title: "Local edition · choose mode", symbol: "square.stack.3d.up", action: openTier)
+                    MenuActionRow(title: "Membership", symbol: "square.stack.3d.up", action: openTier)
                     Divider()
                     MenuActionRow(title: "Live camera & photo overlays", symbol: "camera", action: openLive)
                     Divider()
-                    MenuActionRow(title: "WHOOP account", symbol: "person.crop.circle", action: openAccount)
+                    MenuActionRow(title: "My Account", symbol: "person.crop.circle", action: openAccount)
                     Divider()
                     MenuActionRow(title: "Health Monitor", symbol: "heart.text.square", action: openHealth)
                     Divider()

@@ -11,6 +11,8 @@ This is an existing SwiftUI iOS project, using its own reusable views, Swift Cha
 - Flat selected date strip with the reference's separate middle capsule; remove the extra glass rim.
 - Standard filled actions use white with dark text; secondary actions use the elevated surface and rounded rectangular geometry instead of glass capsules.
 - Home's opening spacing is increased. Extra prior-day tick marks are removed from the Home rings; no unsupported optimal-strain target is substituted. Its insight follows the reference's left title/body and small right badge, using the recorded Strain without claiming an unmeasured optimal target.
+- Home's Health Monitor shortcut opens the monitor directly. More → Profile opens the same full profile screen as the Home avatar, instead of the older generic profile route.
+- More uses the reference-facing Membership and My Account navigation labels while keeping the existing tier/account actions.
 - The earlier import/export corrections, removal of the Live source/date banner and startup optimizations remain intact.
 
 ## Screen-by-screen status

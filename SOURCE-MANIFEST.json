@@ -58,8 +58,8 @@
     },
     {
       "path": ".github/workflows/ios-layout.yml",
-      "bytes": 11000,
-      "sha256": "a06227e2f1331f702c357175bad08f2a11af7bafa7591615717896e266e5a123"
+      "bytes": 11041,
+      "sha256": "f270ad294d66acf9bc0ff3e0dad7b3a9cdcdf50f6ca78f2f5e85f563e74e3853"
     },
     {
       "path": ".gitignore",
@@ -293,13 +293,13 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 22308,
-      "sha256": "a4b16d9bf04961a41f676d0f908939e47825aafc8efe91497d51291597f3f159"
+      "bytes": 22643,
+      "sha256": "2a2c39259efb4cd98998fae9dff41077f861c0f73b847b4b5425a387723e44a5"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 22541,
-      "sha256": "26a79f3c0b2b528baa10d5ee26448ccd50636a82719c02549d657ff674bd21b1"
+      "bytes": 22520,
+      "sha256": "92e5e3ce91509c55d05f7849637aa9c00834ac713853ae73b83b081b4d3cf1da"
     },
     {
       "path": "App/Views/Theme.swift",
@@ -403,8 +403,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 111950,
-      "sha256": "aec9180525fdc18818b0ffa196381c1cd6981c32409223cf6f23888758a1739f"
+      "bytes": 111980,
+      "sha256": "c2fa438fd4a84f33b4ffc074069c7ede34d4348936dc11b56181c6495cfd9b7f"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -1628,8 +1628,8 @@
     },
     {
       "path": "design/reviews/2026-11-16-reference-audit.md",
-      "bytes": 4933,
-      "sha256": "8440fc109c828506ad8f4499ae6ad6a178c4cbf37255e014dd8f2fb5f60a4641"
+      "bytes": 5236,
+      "sha256": "759eaf4c2389145fa37b500fbd91d1d8c4cb125ae95740471e5c7a60c9086ffb"
     },
     {
       "path": "design/tokens/README.md",

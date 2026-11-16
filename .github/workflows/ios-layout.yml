@@ -80,7 +80,7 @@ jobs:
           xcrun simctl boot "$SIM_DEVICE"
           xcrun simctl bootstatus "$SIM_DEVICE" -b > build/visual-review/simulator-boot.log 2>&1 &
           BOOT_PID=$!
-          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/SimulatorReview CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/visual-review/simulator-build.log 2>&1; then
+          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/SimulatorReview ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/visual-review/simulator-build.log 2>&1; then
             python3 - <<'PYTHON'
           from pathlib import Path
           lines = Path('build/visual-review/simulator-build.log').read_text(errors='replace').splitlines()
