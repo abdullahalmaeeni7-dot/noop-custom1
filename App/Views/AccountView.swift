@@ -68,7 +68,7 @@ struct AccountView: View {
                 WCard {
                     VStack(alignment: .leading, spacing: 12) {
                         SectionHeading(title: "Account data, in context")
-                        Text(L10n.text("Each WHOOP cycle is placed on the UTC date when that cycle started. This can differ from the day shown in WHOOP. If two cycles share one UTC date, the import stops so neither score is silently lost."))
+                        Text(L10n.text("Each cycle uses its UTC start date. When several cycles share a date, Home shows the latest cycle. JSON exports and full backups retain every cycle, with its original start time and supplied scores."))
                         Text(L10n.text("Recovery and Sleep Performance come from your account; this app does not calculate them. Sleep stages and need components are converted to minutes. Percentage scores use whole-number display precision."))
                         Text(L10n.text("WHOOP’s API does not supply steps or a continuous heart-rate trace here. The import adds no steps or heart-rate samples. Cycle energy includes the energy reported by WHOOP for that cycle."))
                         Text(L10n.text("Sync saves your imported days and activities locally. Your chosen bridge can access the WHOOP data you authorize. Disconnect removes its account session; saved imports can be deleted from Your Data Files."))

@@ -26,7 +26,11 @@ enum AppTab: String, CaseIterable, Identifiable {
 final class AppStore: ObservableObject {
     @Published var tab: AppTab = .home
     @Published var selectedDate: Date
-    @Published private(set) var days: [DailySnapshot]
+    @Published private(set) var days: [DailySnapshot] {
+        didSet { dayIndex = days.enumerated().reduce(into: [:]) { $0[DayCalendar.start(of: $1.element.date)] = $1.offset } }
+    }
+    private var dayIndex: [Date: Int] = [:]
+    @Published private(set) var isLoadingSavedData = false
     @Published private(set) var activities: [ActivityRecord]
     @Published private(set) var nutrition = NutritionData()
     @Published private(set) var profile = ProfilePersonalization()
@@ -42,7 +46,7 @@ final class AppStore: ObservableObject {
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         return calendar
     }
-    private struct SavedState: Codable {
+    private struct SavedState: Codable, Sendable {
         let version: Int
         let days: [DailySnapshot]
         let activities: [ActivityRecord]
@@ -56,40 +60,50 @@ final class AppStore: ObservableObject {
     init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         storageURL = documents.appendingPathComponent("whoop-local-data.json")
-        let decoder = ImportReader.jsonDecoder()
-        if let data = try? Data(contentsOf: storageURL),
-           let state = try? decoder.decode(SavedState.self, from: data), state.version == 1,
-           let restoredProfile = try? (state.profile ?? ProfilePersonalization()).validated() {
-            let initial = LaunchDayData(savedDays: state.days, selectedDate: state.selectedDate)
-            days = initial.days
-            activities = state.activities
-            journal = state.journal
-            selectedDate = initial.selectedDate
-            whoopAccountUserID = state.whoopAccountUserID
-            nutrition = state.nutrition ?? NutritionData()
-            profile = restoredProfile
-        } else {
-            let initial = LaunchDayData()
-            days = initial.days
-            activities = []
-            journal = []
-            selectedDate = initial.selectedDate
-            if FileManager.default.fileExists(atPath: storageURL.path) {
-                let backup = documents.appendingPathComponent("whoop-unreadable-\(UUID().uuidString).json")
-                do {
-                    try FileManager.default.copyItem(at: storageURL, to: backup)
-                    persistenceError = "Your saved file could not be opened. A separate copy has been kept on this iPhone. Import a backup to restore your days."
-                } catch {
-                    storageWritable = false
-                    persistenceError = "Your saved file could not be opened or backed up. Saving is paused to protect it."
-                }
+        days = []; activities = []; journal = []; selectedDate = DayCalendar.start(of: Date())
+        if FileManager.default.fileExists(atPath: storageURL.path) {
+            isLoadingSavedData = true
+            Task { await restoreFromDisk() }
+        }
+    }
+
+    private struct DiskRestore: Sendable {
+        var state: SavedState?
+        var error: String?
+        var writable = true
+    }
+    private nonisolated static func readSavedState(at url: URL) -> DiskRestore {
+        do {
+            let data = try Data(contentsOf: url)
+            let state = try ImportReader.jsonDecoder().decode(SavedState.self, from: data)
+            guard state.version == 1 else { throw ImportProblem.protectedFile }
+            _ = try (state.profile ?? ProfilePersonalization()).validated()
+            return DiskRestore(state: state)
+        } catch {
+            let backup = url.deletingLastPathComponent().appendingPathComponent("whoop-unreadable-\(UUID().uuidString).json")
+            do {
+                try FileManager.default.copyItem(at: url, to: backup)
+                return DiskRestore(error: "Your saved file could not be opened. A separate copy has been kept on this iPhone. Import a backup to restore your days.")
+            } catch {
+                return DiskRestore(error: "Your saved file could not be opened or backed up. Saving is paused to protect it.", writable: false)
             }
         }
+    }
+    private func restoreFromDisk() async {
+        let url = storageURL
+        let restored = await Task.detached(priority: .userInitiated) { Self.readSavedState(at: url) }.value
+        if let state = restored.state {
+            let initial = LaunchDayData(savedDays: state.days, selectedDate: state.selectedDate)
+            days = initial.days; activities = state.activities; journal = state.journal
+            selectedDate = initial.selectedDate; whoopAccountUserID = state.whoopAccountUserID
+            nutrition = state.nutrition ?? NutritionData(); profile = state.profile ?? ProfilePersonalization()
+        }
+        storageWritable = restored.writable; persistenceError = restored.error; isLoadingSavedData = false
     }
 
     var isExampleMode: Bool { !days.isEmpty && days.allSatisfy { $0.source == .example } }
     var selectedDay: DailySnapshot {
-        days.first { Self.utc.isDate($0.date, inSameDayAs: selectedDate) } ??
+        dayIndex[Self.utc.startOfDay(for: selectedDate)].map { days[$0] } ??
         DailySnapshot(date: Self.utc.startOfDay(for: selectedDate), recovery: nil, strain: nil,
                       sleepPerformance: nil, sleepMinutes: 0, sleepNeededMinutes: 0,
                       restingHeartRate: nil, hrv: nil, respiratoryRate: nil, steps: 0,
@@ -143,10 +157,10 @@ final class AppStore: ObservableObject {
         guard !imported.days.isEmpty || !imported.activities.isEmpty || imported.profile != nil else { throw ImportProblem.empty }
         let before = stateSnapshot()
         if !imported.days.isEmpty {
-            var merged = days.filter { $0.source == .imported }
+            var merged = days.filter { $0.source == .imported }.reduce(into: [Date: DailySnapshot]()) { $0[Self.utc.startOfDay(for: $1.date)] = $1 }
             for day in imported.days {
                 var day = day
-                if let existing = merged.first(where: { Self.utc.isDate($0.date, inSameDayAs: day.date) }),
+                if let existing = merged[day.date],
                    URL(fileURLWithPath: url.lastPathComponent).pathExtension.lowercased() != "json" {
                     if day.heartRates.isEmpty { day.heartRates = existing.heartRates }
                     if day.steps == 0 { day.steps = existing.steps }
@@ -160,10 +174,9 @@ final class AppStore: ObservableObject {
                     if day.sleepNeededMinutes == 0 { day.sleepNeededMinutes = existing.sleepNeededMinutes }
                     if day.energyKcal == 0 { day.energyKcal = existing.energyKcal }
                 }
-                merged.removeAll { Self.utc.isDate($0.date, inSameDayAs: day.date) }
-                merged.append(day)
+                merged[day.date] = day
             }
-            days = merged.sorted { $0.date < $1.date }
+            days = merged.values.sorted { $0.date < $1.date }
             if let latest = imported.days.map(\.date).max() { selectedDate = latest }
         }
         for activity in imported.activities {
@@ -210,18 +223,18 @@ final class AppStore: ObservableObject {
             throw WhoopAccountError.invalidData("saved data belongs to another WHOOP account. Save a full backup and clear local data before importing a different account.")
         }
         let before = stateSnapshot()
-        var merged = days.filter { $0.source != .example }
+        var merged = days.filter { $0.source != .example }.reduce(into: [Date: DailySnapshot]()) { $0[Self.utc.startOfDay(for: $1.date)] = $1 }
         for supplied in account.days {
             var day = supplied
-            if let index = merged.firstIndex(where: { Self.utc.isDate($0.date, inSameDayAs: supplied.date) }) {
+            if let previous = merged[supplied.date] {
                 // The API supplies authoritative score states. Keep the two measurements
                 // it does not provide, while allowing pending scores to clear stale ones.
-                day.steps = merged[index].steps
-                day.heartRates = merged[index].heartRates
-                merged[index] = day
-            } else { merged.append(day) }
+                day.steps = previous.steps
+                day.heartRates = previous.heartRates
+            }
+            merged[day.date] = day
         }
-        days = merged.sorted { $0.date < $1.date }
+        days = merged.values.sorted { $0.date < $1.date }
         for activity in account.activities {
             if let index = activities.firstIndex(where: { $0.id == activity.id }) { activities[index] = activity }
             else { activities.append(activity) }
@@ -355,7 +368,7 @@ final class AppStore: ObservableObject {
         catch { persistenceError = "Your changes are visible, but couldn’t be saved: \(error.localizedDescription)" }
     }
     private func writeState() throws {
-        guard storageWritable else { throw ImportProblem.protectedFile }
+        guard storageWritable, !isLoadingSavedData else { throw ImportProblem.protectedFile }
         let state = LocalBackup(selectedDate: selectedDate, days: days, journal: journal, activities: activities, whoopAccountUserID: whoopAccountUserID, nutrition: nutrition, profile: profile)
         let data = try LocalBackupCodec.encode(state)
         try data.write(to: storageURL, options: [.atomic, .completeFileProtection])

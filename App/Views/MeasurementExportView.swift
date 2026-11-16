@@ -43,6 +43,10 @@ struct MeasurementExportView: View {
                     dates
                     highlightsSummary
                     exportOptions
+                    if selected.contains(where: { $0.cycleRecords != nil }) {
+                        Text(L10n.text("Some dates contain multiple cycles. Home shows the latest cycle; JSON exports and full backups retain every cycle's measurements."))
+                            .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                    }
                     importOptions
                     if let savedMessage {
                         Label(savedMessage, systemImage: "checkmark.circle.fill").foregroundStyle(PulseColor.mint)
@@ -64,7 +68,7 @@ struct MeasurementExportView: View {
         .environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
         .sheet(isPresented: $showingAccount) { AccountView() }
         .sheet(isPresented: $showingProfile) { WHOOPProfileView() }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .commaSeparatedText]) { result in
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.zip, .json, .commaSeparatedText]) { result in
             switch result {
             case .success(let url):
                 work = Task { @MainActor in
@@ -189,7 +193,7 @@ struct MeasurementExportView: View {
                     .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
             }.accessibilityIdentifier("exportConnectAccount")
             Button { savedMessage = nil; importing = true } label: {
-                Label(L10n.text("Import profile/day JSON or heart-rate CSV"), systemImage: "square.and.arrow.down")
+                Label(L10n.text("Import WHOOP ZIP, CSV or app JSON"), systemImage: "square.and.arrow.down")
                     .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
             }.accessibilityIdentifier("exportImportData")
             if store.isImporting { ProgressView(L10n.text("Importing measurements…")).tint(PulseColor.sleep) }

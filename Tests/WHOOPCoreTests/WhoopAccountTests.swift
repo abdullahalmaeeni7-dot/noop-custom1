@@ -126,11 +126,19 @@ final class WhoopAccountTests: XCTestCase {
         }
     }
 
-    func testMultipleCyclesOnSameUTCDateFailAtomically() {
+    func testMultipleCyclesOnSameUTCDateRetainEveryCycleWithLatestSummary() throws {
         var payload = fixture(), rows = payload["cycles"] as! [[String: Any]]
         var second = rows[0]; second["id"] = 112; second["start"] = "2026-04-24T20:00:00Z"
+        second["score"] = ["strain": 12.0, "kilojoule": 9000.0]
         rows.append(second); payload["cycles"] = rows
-        XCTAssertThrowsError(try map(payload))
+        let days = try map(payload).days
+        XCTAssertEqual(days.count, 1)
+        XCTAssertEqual(days.first?.strain, 12)
+        XCTAssertEqual(days.first?.cycleRecords?.map { $0.measurements.strain }, [5, 12])
+        XCTAssertEqual(days.first?.cycleRecords?.first?.measurements.recovery, 50)
+        XCTAssertNil(days.first?.recovery)
+        payload["cycles"] = Array(rows.reversed())
+        XCTAssertEqual(try map(payload).days, days)
     }
 
     func testUTCGroupingUsesTimestampOffsetRatherThanDeviceTimezone() throws {

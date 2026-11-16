@@ -35,6 +35,8 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     private var discovered: [UUID: CBPeripheral] = [:]
     private var active: CBPeripheral?
     var isConnecting: Bool { active != nil && connectedName == nil }
+    private var broadScan = false
+    private var attemptedAutomaticStream = false
     private var pendingScan = false
     private var pendingReconnectID: UUID?
     private var scanToken = UUID()
@@ -92,7 +94,14 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         isScanning = true
         status = "Looking for nearby sensors…"
         let token = UUID(); scanToken = token
+        broadScan = false
         central.scanForPeripherals(withServices: scanServices, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+        // Some straps advertise their name without advertising the heart-rate service.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            guard let self, self.scanToken == token, self.isScanning, self.central.state == .poweredOn else { return }
+            self.central.stopScan(); self.broadScan = true
+            self.central.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
             guard let self, self.scanToken == token else { return }
             self.stop()
@@ -143,7 +152,13 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         }
     }
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
+        guard isScanning, (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue != false else { return }
         let name = (advertisementData[CBAdvertisementDataLocalNameKey] as? String) ?? peripheral.name ?? "Heart-rate sensor"
+        if broadScan {
+            let services = (advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []) + (advertisementData[CBAdvertisementDataOverflowServiceUUIDsKey] as? [CBUUID] ?? [])
+            let wearableName = ["whoop", "polar", "garmin", "wahoo", "suunto", "coros", "myzone", "heart", "hrm", "fitbit"].contains { name.localizedCaseInsensitiveContains($0) }
+            guard wearableName || services.contains(where: { scanServices.contains($0) }) else { return }
+        }
         discovered[peripheral.identifier] = peripheral
         devices.removeAll { $0.id == peripheral.identifier }
         devices.append(NearbyDevice(id: peripheral.identifier, name: name, rssi: RSSI.intValue))
@@ -236,7 +251,11 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
                 }
             }
             updateCustomAvailability()
-            status = error == nil ? "Listening for WHOOP device data. You can request live heart rate below." : "Device sharing couldn’t start: \(error!.localizedDescription)"
+            status = error == nil ? "Listening for WHOOP device data…" : "Device sharing couldn’t start: \(error!.localizedDescription)"
+            if canStartCustomStream && !attemptedAutomaticStream {
+                attemptedAutomaticStream = true
+                startCustomStream()
+            }
             return
         }
         guard characteristic.uuid == heartMeasurement else { return }
@@ -279,7 +298,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         }
     }
 
-    /// User action only: a successful matching Hello ack must precede enabling HR.
+    /// A successful matching Hello acknowledgement must precede enabling HR.
     func startCustomStream() {
         guard canStartCustomStream, var session = customSession else { return }
         do {
@@ -345,6 +364,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     private func resetCustomState() {
         customDecoders = [:]; customSession = nil; customCommandCharacteristic = nil; heartRateToken = UUID()
         requiredNotifications = []; readyNotifications = []; requestTimeoutToken = UUID()
+        attemptedAutomaticStream = false
         startingCustomStream = false; canStartCustomStream = false
     }
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {

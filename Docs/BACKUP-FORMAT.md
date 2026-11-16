@@ -33,3 +33,5 @@ The file is ordinary unencrypted JSON and includes journal notes and health metr
 ## Optional Nutrition data
 
 The optional `nutrition` object contains foods, exercises, weights, favorites, completed UTC day keys and settings. It uses typed contracts in Core/NutritionModels.swift, at most 10,000 combined records and the same full-backup total size/record limits. Older backups omit it and remain valid. Photos, AI keys and bridge tokens are excluded. Restoring a complete older backup replaces nutrition with an empty dataset after the existing confirmation; Reset Nutrition only affects this object.
+
+When several WHOOP cycles share one dashboard date, its optional `cycleRecords` array retains each cycle’s `id`, original `start`, and `measurements` snapshot. Child measurements must belong to the same UTC day, contain no nested cycle records or heart-rate stream, and satisfy the normal metric bounds. Cycle identities must be unique within a day. These records count toward the backup record limit. The daily summary uses the latest cycle. Old backups without this optional field remain supported.

@@ -1,5 +1,7 @@
 Current iPhone build: [download the unsigned IPA (ZIP)](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242913/artifacts/14204939967), built from `17f90c4` with the iOS device SDK. Extract the ZIP and sign the IPA with Sideloadly. The archive is 4.09 MB. Arabic input and interface checks include 165 passing Swift tests; nutrition/server suites have 60 passing tests, with 13 IPA packaging tests.
 
+Current runtime corrections: [Live, cycle imports, startup and tracker fixes](Docs/ReleaseNotes/2026-11-16-runtime-fixes.md).
+
 Arabic is available from the globe on first launch or **More → Language → العربية**. The app remembers the choice and mirrors the interface. Nutrition AI can use a separate Gemini service without WHOOP OAuth: follow [the deployment and pairing guide](Server/NUTRITION-SETUP.md). No provider key is bundled in the app. Shared point measurements now drive Home rings, cards, the day selector and navigation; reference geometry is documented in [design tokens](design/tokens/home.json).
 
 # WHOOP iPhone app

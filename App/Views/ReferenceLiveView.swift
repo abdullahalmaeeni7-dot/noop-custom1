@@ -82,8 +82,8 @@ struct ReferenceLiveView: View {
                     }.font(PulseFont.label(10)).frame(minHeight: 44)
                 }.foregroundStyle(.white).padding(32).offset(y: -height * 0.1)
             }
-            Image(uiImage: LiveOverlayRenderer.image(snapshot: snapshot(), size: CGSize(width: width * 2, height: height * 2), transparent: true))
-                .resizable().frame(width: width, height: height).allowsHitTesting(false)
+            CachedLiveOverlay(snapshot: snapshot(), size: CGSize(width: width, height: height))
+                .allowsHitTesting(false)
                 .accessibilityLabel(snapshot().referenceMetrics?.map { "\($0.label.replacingOccurrences(of: "\n", with: " ")), \($0.value)" }.joined(separator: ". ") ?? "Saved day stats")
             VStack {
                 HStack {
@@ -368,5 +368,23 @@ struct ReferenceCameraPreview: UIViewRepresentable {
     }
     func updateUIView(_ view: PreviewView, context: Context) {
         if let connection = view.preview.connection, connection.isVideoRotationAngleSupported(90) { connection.videoRotationAngle = 90 }
+    }
+}
+
+private struct CachedLiveOverlay: View {
+    let snapshot: LiveOverlaySnapshot
+    let size: CGSize
+    @State private var rendered: UIImage?
+    var body: some View {
+        Group {
+            if let rendered { Image(uiImage: rendered).resizable() }
+            else { Color.clear }
+        }.frame(width: size.width, height: size.height)
+            .onAppear(perform: render)
+            .onChange(of: snapshot) { _, _ in render() }
+            .onChange(of: size) { _, _ in render() }
+    }
+    private func render() {
+        rendered = LiveOverlayRenderer.image(snapshot: snapshot, size: CGSize(width: size.width * 2, height: size.height * 2), transparent: true)
     }
 }

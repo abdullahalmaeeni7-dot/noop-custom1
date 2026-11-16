@@ -99,6 +99,9 @@ public enum LocalBackupCodec {
         }
         var dayDates = Set<Date>()
         for day in backup.days {
+            try count(day.cycleRecords?.count ?? 0)
+            do { try ImportReader.validateCycleRecords(day) }
+            catch { throw LocalBackupError.invalid(error.localizedDescription) }
             guard validDate(day.date), DayCalendar.start(of: day.date) == day.date,
                   dayDates.insert(day.date).inserted else {
                 throw LocalBackupError.invalid("Daily entries must have unique UTC midnight dates.")

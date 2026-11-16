@@ -129,7 +129,7 @@
   "30 days": "30 يوماً",
   "Dates use UTC. The range includes your ending day; today includes data available so far. Choose an earlier date to sync historical records.": "التواريخ بتوقيت UTC. تشمل الفترة يوم النهاية؛ يشمل اليوم البيانات المتاحة حتى الآن. اختر تاريخاً سابقاً لمزامنة السجلات القديمة.",
   "Includes available account scores and scored sleep measurements. Missing scores stay unavailable. Activities retain WHOOP’s supplied Strain; no heart-rate stream is created.": "يشمل درجات الحساب وقياسات النوم المتاحة. تبقى الدرجات المفقودة غير متاحة. تحتفظ الأنشطة بجهد WHOOP؛ لا يتم إنشاء سجل نبض مستمر.",
-  "Each WHOOP cycle is placed on the UTC date when that cycle started. This can differ from the day shown in WHOOP. If two cycles share one UTC date, the import stops so neither score is silently lost.": "تُسجّل كل دورة في تاريخ بدئها بتوقيت UTC، وقد يختلف عن تاريخ WHOOP. إذا بدأت دورتان في التاريخ نفسه، يتوقف الاستيراد لحفظ سلامة الدرجات.",
+  "Each WHOOP cycle is placed on the UTC date when that cycle started. This can differ from the day shown in WHOOP. If two cycles share one UTC date, the import stops so neither score is silently lost.": "تُسجّل الدورات بحسب تاريخ البدء بتوقيت UTC. عند وجود أكثر من دورة في التاريخ نفسه، تعرض الرئيسية أحدث دورة وتحتفظ صادرات JSON والنسخ الاحتياطية بجميع الدورات.",
   "Recovery and Sleep Performance come from your account; this app does not calculate them. Sleep stages and need components are converted to minutes. Percentage scores use whole-number display precision.": "يأتي التعافي وأداء النوم من حسابك ولا يحسبهما هذا التطبيق. تُحوّل مراحل النوم والاحتياج إلى دقائق، وتُعرض النسب بأعداد صحيحة.",
   "WHOOP’s API does not supply steps or a continuous heart-rate trace here. The import adds no steps or heart-rate samples. Cycle energy includes the energy reported by WHOOP for that cycle.": "لا توفر واجهة WHOOP هنا الخطوات أو مخطط نبض مستمراً. لا يضيف الاستيراد خطوات أو عينات نبض. تشمل طاقة الدورة القيمة التي يقدمها WHOOP.",
   "Sync saves your imported days and activities locally. Your chosen bridge can access the WHOOP data you authorize. Disconnect removes its account session; saved imports can be deleted from Your Data Files.": "تُحفظ الأيام والأنشطة المستوردة محلياً. يستطيع الخادم الوصول إلى بيانات WHOOP التي تسمح بها. يزيل قطع الاتصال جلسة الحساب؛ احذف القياسات المحفوظة من ملفات بياناتك.",
@@ -1031,5 +1031,17 @@
   "Your Recovery is {0}% and your day Strain is {1}. Review your sleep and recorded activities for the full picture.": "تعافيك {0}% وجهدك اليومي {1}. راجع النوم والأنشطة المسجّلة لرؤية الصورة الكاملة.",
   "Your HRV is {0}% higher than the previous recorded day. View your Recovery details for more context.": "تباين النبض أعلى بنسبة {0}% من اليوم المسجّل السابق. راجع تفاصيل التعافي للمزيد.",
   "Your HRV is {0}% lower than the previous recorded day. View your Recovery details for more context.": "تباين النبض أقل بنسبة {0}% من اليوم المسجّل السابق. راجع تفاصيل التعافي للمزيد.",
-  "Enter a valid number.": "أدخل رقماً صالحاً."
+  "Enter a valid number.": "أدخل رقماً صالحاً.",
+  "WELCOME TO WHOOP": "مرحباً بك في WHOOP",
+  "Unlock your potential.": "أطلق قدراتك.",
+  "Sleep. Recover. Perform.": "نَم. تعافَ. تألّق.",
+  "SET UP MY TRACKER": "إعداد جهاز التتبع",
+  "I HAVE WHOOP DATA": "لدي بيانات WHOOP",
+  "PERSONALIZE FIRST": "تخصيص ملفي أولاً",
+  "Loading saved data": "جارٍ تحميل البيانات المحفوظة",
+  "Import WHOOP ZIP, CSV or app JSON": "استيراد ملف WHOOP بصيغة ZIP أو CSV أو JSON",
+  "Some dates contain multiple cycles. Home shows the latest cycle; JSON exports and full backups retain every cycle's measurements.": "تتضمن بعض التواريخ أكثر من دورة. تعرض الرئيسية أحدث دورة، وتحتفظ صادرات JSON والنسخ الاحتياطية الكاملة بقياسات كل دورة.",
+  "Listening for WHOOP device data…": "جارٍ الاستماع إلى بيانات جهاز WHOOP…",
+  "Each cycle uses its UTC start date. When several cycles share a date, Home shows the latest cycle. JSON exports and full backups retain every cycle, with its original start time and supplied scores.": "تُسجّل كل دورة بتاريخ بدئها بتوقيت UTC. تعرض الرئيسية أحدث دورة عند اشتراك عدة دورات في تاريخ واحد، وتحتفظ صادرات JSON والنسخ الاحتياطية بكل دورة ووقت بدئها ودرجاتها الأصلية.",
+  "CANCEL CONNECTION": "إلغاء الاتصال"
 }

@@ -46,17 +46,18 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public var energyKcal: Double
     public var heartRates: [HeartRateSample]
     public var source: DataSource
+    public var cycleRecords: [WhoopCycleRecord]?
     public var id: Date { date }
 
     public init(date: Date, recovery: Int?, strain: Double?, sleepPerformance: Int?,
                 sleepMinutes: Int, sleepNeededMinutes: Int, restingHeartRate: Double?,
                 hrv: Double?, respiratoryRate: Double?, steps: Int, energyKcal: Double,
-                heartRates: [HeartRateSample], source: DataSource) {
+                heartRates: [HeartRateSample], source: DataSource, cycleRecords: [WhoopCycleRecord]? = nil) {
         self.date = date; self.recovery = recovery; self.strain = strain
         self.sleepPerformance = sleepPerformance; self.sleepMinutes = sleepMinutes
         self.sleepNeededMinutes = sleepNeededMinutes; self.restingHeartRate = restingHeartRate
         self.hrv = hrv; self.respiratoryRate = respiratoryRate; self.steps = steps
-        self.energyKcal = energyKcal; self.heartRates = heartRates; self.source = source
+        self.energyKcal = energyKcal; self.heartRates = heartRates; self.source = source; self.cycleRecords = cycleRecords
     }
 
     public static func empty(on date: Date, source: DataSource = .imported) -> Self {
@@ -67,7 +68,7 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case date, recovery, strain, sleepPerformance, sleepMinutes, sleepNeededMinutes
-        case restingHeartRate, hrv, respiratoryRate, steps, energyKcal, heartRates, source
+        case restingHeartRate, hrv, respiratoryRate, steps, energyKcal, heartRates, source, cycleRecords
     }
 
     public init(from decoder: Decoder) throws {
@@ -85,6 +86,26 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
         energyKcal = try values.decodeIfPresent(Double.self, forKey: .energyKcal) ?? 0
         heartRates = try values.decodeIfPresent([HeartRateSample].self, forKey: .heartRates) ?? []
         source = try values.decodeIfPresent(DataSource.self, forKey: .source) ?? .imported
+        cycleRecords = try values.decodeIfPresent([WhoopCycleRecord].self, forKey: .cycleRecords)
+    }
+}
+
+/// Original cycle scores retained when more than one provider cycle shares a dashboard date.
+/// The dashboard shows the latest cycle; scores are never added or averaged.
+public struct WhoopCycleRecord: Codable, Equatable, Sendable {
+    public let id: String
+    public let start: Date
+    public let measurements: DailySnapshot
+    public init(id: String, start: Date, measurements: DailySnapshot) {
+        self.id = id; self.start = start; self.measurements = measurements
+    }
+    public static func dailySummaries(_ records: [WhoopCycleRecord]) -> [DailySnapshot] {
+        Dictionary(grouping: records, by: { DayCalendar.start(of: $0.start) }).map { _, group in
+            let ordered = group.sorted { $0.start == $1.start ? $0.id < $1.id : $0.start < $1.start }
+            var day = ordered[ordered.count - 1].measurements
+            day.cycleRecords = ordered.count > 1 ? ordered : nil
+            return day
+        }.sorted { $0.date < $1.date }
     }
 }
 

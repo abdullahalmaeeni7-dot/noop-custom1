@@ -219,16 +219,21 @@ public enum ProfileHighlightsCalculator {
                 (1...1_000_000).contains(day.steps) || (day.energyKcal.isFinite && (0.001...100_000).contains(day.energyKcal)) {
                 logged.insert(date)
             }
-            record(&result.bestSleepPerformance, day.sleepPerformance.map(Double.init), date: date, range: 0...100)
-            record(&result.peakRecovery, day.recovery.map(Double.init), date: date, range: 0...100)
-            record(&result.peakStrain, day.strain, date: date, range: 0...21)
-            record(&result.lowestRecovery, day.recovery.map(Double.init), date: date, range: 0...100, highest: false)
-            record(&result.lowestRestingHeartRate, day.restingHeartRate, date: date, range: 1...300, highest: false)
-            record(&result.highestRestingHeartRate, day.restingHeartRate, date: date, range: 1...300)
-            record(&result.lowestHRV, day.hrv, date: date, range: 0...1000, highest: false)
-            record(&result.highestHRV, day.hrv, date: date, range: 0...1000)
+            let originals = (day.cycleRecords ?? []).filter {
+                $0.measurements.source == .imported && $0.measurements.date == date && DayCalendar.start(of: $0.start) == date && $0.start <= asOf
+            }.map(\.measurements)
+            for day in [day] + originals {
+                record(&result.bestSleepPerformance, day.sleepPerformance.map(Double.init), date: date, range: 0...100)
+                record(&result.peakRecovery, day.recovery.map(Double.init), date: date, range: 0...100)
+                record(&result.peakStrain, day.strain, date: date, range: 0...21)
+                record(&result.lowestRecovery, day.recovery.map(Double.init), date: date, range: 0...100, highest: false)
+                record(&result.lowestRestingHeartRate, day.restingHeartRate, date: date, range: 1...300, highest: false)
+                record(&result.highestRestingHeartRate, day.restingHeartRate, date: date, range: 1...300)
+                record(&result.lowestHRV, day.hrv, date: date, range: 0...1000, highest: false)
+                record(&result.highestHRV, day.hrv, date: date, range: 0...1000)
+                record(&result.longestSleepMinutes, (1...1440).contains(day.sleepMinutes) ? Double(day.sleepMinutes) : nil, date: date, range: 1...1440)
+            }
             record(&result.maxHeartRate, rates.map(\.bpm).max(), date: date, range: 1...300)
-            record(&result.longestSleepMinutes, (1...1440).contains(day.sleepMinutes) ? Double(day.sleepMinutes) : nil, date: date, range: 1...1440)
             if validSleep, (day.sleepPerformance ?? 0) >= 70 { sleep70.insert(date) }
             if validRecovery, (day.recovery ?? 0) >= 67 { green.insert(date) }
             if validStrain, (day.strain ?? 0) >= 10 { strain10.insert(date) }

@@ -30,8 +30,14 @@ struct WHOOPApp: App {
 /// Setup is remembered on this iPhone; reference screenshots are never the launch route.
 struct AppLaunchView: View {
     @AppStorage("whoop.setup.completed.v1") private var completed = false
+    @EnvironmentObject private var store: AppStore
     var body: some View {
-        if completed { RootView() }
+        if store.isLoadingSavedData {
+            VStack(spacing: 24) {
+                WhoopWordmark().frame(width: 150, height: 30)
+                ProgressView().tint(.white).accessibilityLabel(L10n.text("Loading saved data"))
+            }.frame(maxWidth: .infinity, maxHeight: .infinity).background(PulseColor.background)
+        } else if completed { RootView() }
         else { FirstRunView { completed = true } }
     }
 }
@@ -69,15 +75,16 @@ private struct FirstRunView: View {
     var body: some View {
         VStack(spacing: 0) {
             topBar
-            ScrollView {
+            if step == .welcome { welcomeContent }
+            else { ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text(L10n.text(step.title)).font(AppLanguage.isArabic ? .system(size: 42, weight: .bold) : PulseFont.number(42)).fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                     stepContent.id(step).transition(.opacity)
                     if let error { Label(error, systemImage: "exclamationmark.circle").foregroundStyle(.orange).font(PulseFont.body(14)).accessibilityIdentifier("setupError") }
                 }.padding(24).frame(maxWidth: 560, alignment: .leading).frame(maxWidth: .infinity)
-            }.scrollIndicators(.hidden)
-            bottomBar
+            }.scrollIndicators(.hidden) }
+            if step == .welcome { welcomeActions } else { bottomBar }
         }.foregroundStyle(PulseColor.text).font(PulseFont.body(16))
             .background(LinearGradient(colors: [PulseColor.top, PulseColor.background], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
             .preferredColorScheme(.dark)
@@ -95,6 +102,36 @@ private struct FirstRunView: View {
             .onDisappear { tracker.stop() }
     }
 
+    private var welcomeContent: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 18) {
+                Spacer(minLength: 12)
+                ZStack {
+                    Ellipse().fill(PulseColor.load.opacity(0.10)).blur(radius: 45).frame(width: 250, height: 300)
+                    RoundedRectangle(cornerRadius: 80).stroke(Color(white: 0.13), lineWidth: 57).frame(width: 130, height: 240)
+                    RoundedRectangle(cornerRadius: 80).stroke(Color(white: 0.24), style: StrokeStyle(lineWidth: 50, dash: [1, 3])).frame(width: 130, height: 240)
+                    RoundedRectangle(cornerRadius: 24).fill(LinearGradient(colors: [Color(white: 0.29), Color(white: 0.06)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 158, height: 88).overlay(RoundedRectangle(cornerRadius: 24).stroke(.white.opacity(0.14), lineWidth: 1))
+                        .overlay(WhoopWordmark().frame(width: 88, height: 18).opacity(0.7)).offset(y: -64)
+                }.rotationEffect(.degrees(-24)).scaleEffect(min(1, geometry.size.height / 420))
+                    .frame(height: max(170, min(300, geometry.size.height * 0.58))).accessibilityHidden(true)
+                Spacer(minLength: 8)
+                Text(L10n.text("WELCOME TO WHOOP")).font(PulseFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 2).foregroundStyle(PulseColor.muted)
+                Text(L10n.text("Unlock your potential.")).font(AppLanguage.isArabic ? .system(size: 36, weight: .bold) : PulseFont.number(38))
+                    .multilineTextAlignment(.center).minimumScaleFactor(0.75)
+                Text(L10n.text("Sleep. Recover. Perform.")).font(PulseFont.body(17)).foregroundStyle(PulseColor.muted)
+                Spacer(minLength: 12)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 24)
+        }
+    }
+    private var welcomeActions: some View {
+        VStack(spacing: 10) {
+            Button(L10n.text("SET UP MY TRACKER")) { changeStep(2) }.buttonStyle(WButton()).accessibilityIdentifier("setupTrackerFirst")
+            Button(L10n.text("I HAVE WHOOP DATA")) { changeStep(3) }.buttonStyle(WButton(filled: false)).accessibilityIdentifier("setupImportFirst")
+            Button(L10n.text("PERSONALIZE FIRST")) { changeStep(1) }.font(PulseFont.label(11)).frame(minHeight: 44)
+        }.padding(.horizontal, 24).padding(.bottom, 16).frame(maxWidth: 560).frame(maxWidth: .infinity)
+    }
+
     private var topBar: some View {
         HStack {
             if step != .welcome {
@@ -110,17 +147,7 @@ private struct FirstRunView: View {
 
     @ViewBuilder private var stepContent: some View {
         switch step {
-        case .welcome:
-            ZStack {
-                Circle().stroke(PulseColor.sleep.opacity(0.25), lineWidth: 12).frame(width: 218, height: 218)
-                Circle().trim(from: 0, to: 0.74).stroke(PulseColor.load, style: StrokeStyle(lineWidth: 12, lineCap: .round)).frame(width: 218, height: 218).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-                Circle().trim(from: 0, to: 0.61).stroke(PulseColor.mint, style: StrokeStyle(lineWidth: 10, lineCap: .round)).frame(width: 170, height: 170).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-                Circle().trim(from: 0, to: 0.83).stroke(PulseColor.sleep, style: StrokeStyle(lineWidth: 8, lineCap: .round)).frame(width: 127, height: 127).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-                Image(systemName: "waveform.path.ecg").font(.system(size: 38, weight: .light))
-            }.environment(\.layoutDirection, .leftToRight).frame(maxWidth: .infinity).padding(.vertical, 24).accessibilityHidden(true)
-            Text(L10n.text("Understand your sleep, recovery and daily effort. Connect a tracker, bring in your measurements, and build your routine.")).foregroundStyle(PulseColor.muted)
-            feature("Connect your wearable", symbol: "sensor.tag.radiowaves.forward", detail: "Find nearby heart-rate sensors over Bluetooth.")
-            feature("Build your personal record", symbol: "chart.xyaxis.line", detail: "Your dashboard grows with the data you save.")
+        case .welcome: EmptyView()
         case .profile:
             Text(L10n.text("Choose how you appear in the app. You can change this later in Profile.")).foregroundStyle(PulseColor.muted)
             PulseCard {
@@ -142,6 +169,9 @@ private struct FirstRunView: View {
                     Button(L10n.text(tracker.isScanning ? "STOP SEARCHING" : "SEARCH FOR MY TRACKER")) {
                         if tracker.isScanning { tracker.stop() } else { tracker.scan() }
                     }.buttonStyle(WButton(filled: false)).disabled(tracker.isConnecting).accessibilityIdentifier("setupSearchTracker")
+                }
+                if tracker.isConnecting {
+                    Button(L10n.text("CANCEL CONNECTION")) { tracker.disconnect() }.buttonStyle(WButton(filled: false))
                 }
                 if tracker.canStartCustomStream || tracker.startingCustomStream {
                     Button(L10n.text(tracker.startingCustomStream ? "STARTING HEART RATE…" : "ENABLE LIVE HEART RATE")) { tracker.startCustomStream() }

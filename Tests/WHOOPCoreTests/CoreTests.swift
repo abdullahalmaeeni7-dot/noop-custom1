@@ -100,9 +100,56 @@ final class WhoopZIPImportTests: XCTestCase {
         XCTAssertLessThan(data.count, ImportReader.maximumBytes)
         XCTAssertThrowsError(try MeasurementExport.readImport(data, filename: "export.zip"))
     }
-    func testConflictingCyclesAndInvalidWorkoutDurationAreRejected() throws {
+    func testSameDayCycleImportIsOrderIndependentAndRoundTripsEveryScore() throws {
+        let extra = "2026-03-10 01:30:00,UTC+04:00,75,57,79.4,9.6,2045,80,410,480,16.2\n"
+        let rows = cycles.components(separatedBy: "\r\n")
+        let forward = try MeasurementExport.readImport(Data((cycles + extra).utf8), filename: "cycles.csv")
+        let reverse = try MeasurementExport.readImport(Data((rows[0] + "\n" + extra + rows[1] + "\n").utf8), filename: "cycles.csv")
+        XCTAssertEqual(forward.days, reverse.days)
+        let day = try XCTUnwrap(forward.days.first)
+        XCTAssertEqual(day.cycleRecords?.map { $0.measurements.recovery }, [76, 75])
+        let archive = try MeasurementExport.make(days: forward.days, format: .json)
+        XCTAssertEqual(try MeasurementExport.readImport(archive.data, filename: archive.filename).days, forward.days)
+        let personalized = try ImportReader.jsonDecoder().decode(PersonalizedMeasurementArchive.self, from: archive.data)
+        XCTAssertEqual(personalized.highlights.peakRecovery?.value, 76)
+        XCTAssertEqual(personalized.highlights.peakStrain?.value, 12.6)
+        let backup = LocalBackup(selectedDate: day.date, days: forward.days, journal: [], activities: [])
+        XCTAssertEqual(try LocalBackupCodec.decode(LocalBackupCodec.encode(backup)).days, forward.days)
+    }
+    func testSleepJoinsExactCycleWhenTwoCyclesShareDate() throws {
+        let extra = "2026-03-10 01:30:00,UTC+04:00,75,57,79.4,9.6,2045,,,,\n"
+        let secondSleep = "2026-03-10 01:30:00,UTC+04:00,false,62,300,500,17.1\n"
+        let result = try MeasurementExport.readImport(zip([("physiological_cycles.csv", cycles + extra), ("sleeps.csv", sleep + secondSleep)]), filename: "export.zip")
+        let day = try XCTUnwrap(result.days.first)
+        XCTAssertEqual(day.sleepPerformance, 62)
+        XCTAssertEqual(day.cycleRecords?.map { $0.measurements.sleepPerformance }, [88, 62])
+    }
+    func testCycleRecordsCannotContainNestedOrDifferentDayMeasurements() throws {
+        let result = try MeasurementExport.readImport(Data((cycles + "2026-03-10 01:30:00,UTC+04:00,75,55,83.4,12.6,2345,88,416,473,15.2\n").utf8), filename: "cycles.csv")
+        let original = try XCTUnwrap(result.days.first)
+        var wrongDate = DailySnapshot.empty(on: original.date.addingTimeInterval(86_400))
+        wrongDate.recovery = 75
+        for invalid in [original, wrongDate] {
+            var day = original
+            day.cycleRecords = [WhoopCycleRecord(id: "invalid", start: original.date, measurements: invalid)]
+            let archive = try ImportReader.jsonEncoder().encode(DayArchive(days: [day]))
+            XCTAssertThrowsError(try ImportReader.read(archive, filename: "days.json"))
+            XCTAssertThrowsError(try LocalBackupCodec.encode(LocalBackup(selectedDate: day.date, days: [day], journal: [], activities: [])))
+        }
+    }
+
+    func testConflictingRowsForIdenticalCycleStillFail() throws {
+        let duplicate = cycles.components(separatedBy: "\r\n")[1].replacingOccurrences(of: ",76,", with: ",75,")
+        XCTAssertThrowsError(try MeasurementExport.readImport(Data((cycles + duplicate + "\n").utf8), filename: "cycles.csv"))
+    }
+
+    func testDifferentCyclesOnOneUTCDateImportButInvalidWorkoutStillFails() throws {
         let extra = "2026-03-10 01:30:00,UTC+04:00,75,55,83.4,12.6,2345,88,416,473,15.2\n"
-        XCTAssertThrowsError(try MeasurementExport.readImport(Data((cycles + extra).utf8), filename: "cycles.csv"))
+        let imported = try MeasurementExport.readImport(Data((cycles + extra).utf8), filename: "cycles.csv")
+        XCTAssertEqual(imported.days.count, 1)
+        XCTAssertEqual(imported.days.first?.recovery, 75)
+        XCTAssertEqual(imported.days.first?.cycleRecords?.count, 2)
+        XCTAssertFalse(imported.notices.isEmpty)
         let bad = workout.replacingOccurrences(of: "2026-03-10 17:45:00", with: "2026-03-10 16:00:00")
         XCTAssertThrowsError(try MeasurementExport.readImport(Data(bad.utf8), filename: "workouts.csv"))
     }

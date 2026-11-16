@@ -8,11 +8,10 @@ import WHOOPCore
 /// Executes the generated TypeScript calculator locally, without networking or keys.
 enum NutritionEngine {
     private struct Input: Encodable { let day: String; let data: NutritionData }
+    private static let source: String? = Bundle.main.url(forResource: "nutrition-calc", withExtension: "js").flatMap { try? String(contentsOf: $0, encoding: .utf8) }
     static func calculate(_ data: NutritionData, day: String) throws -> NutritionCalculation {
         try NutritionValidation.validate(data)
-        guard let url = Bundle.main.url(forResource: "nutrition-calc", withExtension: "js"),
-              let context = JSContext() else { throw NutritionError.invalid("The nutrition calculator could not be loaded.") }
-        let source = try String(contentsOf: url, encoding: .utf8)
+        guard let source, let context = JSContext() else { throw NutritionError.invalid("The nutrition calculator could not be loaded.") }
         context.evaluateScript(source)
         guard context.exception == nil else { throw NutritionError.invalid("The nutrition calculator could not start.") }
         let input = try ImportReader.jsonEncoder().encode(Input(day: day, data: data))
@@ -36,17 +35,23 @@ final class NutritionViewModel: ObservableObject {
     @Published private(set) var review: String?
     @Published private(set) var reviewing = false
     private var revision = UUID()
+    private var calculatedData: NutritionData?
     func refresh(_ data: NutritionData, date: Date) async {
-        let token = UUID(); revision = token; isLoading = true; error = nil; review = nil
         let day = NutritionDay.key(date)
+        if calculation?.day == day, calculatedData == data { return }
+        let token = UUID(); revision = token; isLoading = calculation == nil; error = nil; review = nil
         if calculation?.day != day { calculation = nil }
         do {
             let result = try await Task.detached(priority: .userInitiated) { try NutritionEngine.calculate(data, day: day) }.value
-            guard revision == token, !Task.isCancelled else { return }
-            calculation = result; isLoading = false
+            guard revision == token else { return }
+            isLoading = false
+            try Task.checkCancellation()
+            calculation = result; calculatedData = data
         } catch {
             guard revision == token else { return }
-            calculation = nil; self.error = error.localizedDescription; isLoading = false
+            isLoading = false
+            if error is CancellationError { return }
+            calculation = nil; self.error = error.localizedDescription
         }
     }
     func commit(_ store: AppStore, edit: (inout NutritionData) -> Void) async throws {
@@ -59,7 +64,7 @@ final class NutritionViewModel: ObservableObject {
         try Task.checkCancellation()
         guard store.nutrition == previous else { throw NutritionError.invalid("Your data changed while saving. Review your entry and save again.") }
         try store.updateNutrition(next)
-        calculation = result; error = nil; review = nil; revision = UUID()
+        calculation = result; calculatedData = next; error = nil; review = nil; revision = UUID()
     }
     func generateReview(account: AccountModel) async {
         guard !reviewing, let current = calculation else { return }

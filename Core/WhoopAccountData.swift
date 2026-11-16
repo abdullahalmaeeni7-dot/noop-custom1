@@ -18,7 +18,7 @@ public enum WhoopAccountError: LocalizedError {
 }
 
 /// Maps the public v2 response shape. Cycle start's UTC date is this archive's day.
-/// A second cycle on that UTC date is rejected rather than silently losing scores.
+/// All cycles are retained; the latest supplies the dashboard summary on a shared date.
 public enum WhoopAccountMapper {
     public static func map(_ data: Data) throws -> WhoopAccountImport {
         guard data.count <= 16 * 1_024 * 1_024 else { throw invalid("the response is too large.") }
@@ -31,13 +31,12 @@ public enum WhoopAccountMapper {
         }
         let user = payload.profile.user_id
         var cycles: [Int64: Cycle] = [:]
-        var days: [Date: DailySnapshot] = [:]
+        var days: [Int64: DailySnapshot] = [:]
         for cycle in payload.cycles {
             guard cycle.id > 0, cycle.user_id == user, cycles[cycle.id] == nil else { throw invalid("cycle identities conflict.") }
             let start = try date(cycle.start)
             if let end = cycle.end { guard try date(end) > start else { throw invalid("a cycle has an invalid interval.") } }
             let key = DayCalendar.start(of: start)
-            guard days[key] == nil else { throw invalid("multiple cycles fall on one UTC day. No scores were saved.") }
             try state(cycle.score_state, hasScore: cycle.score != nil)
             var day = DailySnapshot.empty(on: key)
             if cycle.score_state == "SCORED", let score = cycle.score {
@@ -45,7 +44,7 @@ public enum WhoopAccountMapper {
                 day.strain = score.strain
                 day.energyKcal = score.kilojoule / 4.184
             }
-            cycles[cycle.id] = cycle; days[key] = day
+            cycles[cycle.id] = cycle; days[cycle.id] = day
         }
         var sleeps: [UUID: Sleep] = [:]
         for sleep in payload.sleeps {
@@ -80,8 +79,7 @@ public enum WhoopAccountMapper {
             }
             // Range edges may omit the referenced cycle or sleep. Never join by date proximity.
             guard let cycle = cycles[recovery.cycle_id] else { continue }
-            let key = DayCalendar.start(of: try date(cycle.start))
-            guard var day = days[key] else { continue }
+            guard var day = days[cycle.id] else { continue }
             if recovery.score_state == "SCORED", let score = recovery.score {
                 day.recovery = Int(score.recovery_score.rounded())
                 day.restingHeartRate = score.resting_heart_rate; day.hrv = score.hrv_rmssd_milli
@@ -92,7 +90,7 @@ public enum WhoopAccountMapper {
                 day.sleepMinutes = values.asleep; day.sleepNeededMinutes = values.needed
                 day.respiratoryRate = score.respiratory_rate
             }
-            days[key] = day
+            days[cycle.id] = day
         }
         // Sleep without a recovery can still be joined through its explicit cycle_id.
         // When recovery exists, its sleep_id is authoritative; naps never replace main sleep.
@@ -100,11 +98,11 @@ public enum WhoopAccountMapper {
         for sleep in payload.sleeps where !sleep.nap && !recovered.contains(sleep.cycle_id) {
             guard standaloneCycles.insert(sleep.cycle_id).inserted else { throw invalid("multiple main sleeps refer to one cycle.") }
             guard let cycle = cycles[sleep.cycle_id], sleep.score_state == "SCORED", let score = sleep.score else { continue }
-            let key = DayCalendar.start(of: try date(cycle.start)); guard var day = days[key] else { continue }
+            guard var day = days[cycle.id] else { continue }
             let values = try sleepValues(score)
             day.sleepPerformance = Int(score.sleep_performance_percentage.rounded())
             day.sleepMinutes = values.asleep; day.sleepNeededMinutes = values.needed; day.respiratoryRate = score.respiratory_rate
-            days[key] = day
+            days[cycle.id] = day
         }
         var workoutIDs = Set<UUID>(), activities: [ActivityRecord] = []
         for workout in payload.workouts {
@@ -124,7 +122,11 @@ public enum WhoopAccountMapper {
         guard name.count <= 200, name.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) else {
             throw invalid("the profile name is invalid.")
         }
-        return WhoopAccountImport(days: days.values.sorted { $0.date < $1.date },
+        let records = try cycles.values.compactMap { cycle -> WhoopCycleRecord? in
+            guard let day = days[cycle.id] else { return nil }
+            return WhoopCycleRecord(id: String(cycle.id), start: try date(cycle.start), measurements: day)
+        }
+        return WhoopAccountImport(days: WhoopCycleRecord.dailySummaries(records),
             activities: activities.sorted { $0.start == $1.start ? $0.id.uuidString < $1.id.uuidString : $0.start < $1.start },
             displayName: name.isEmpty ? nil : name, userID: user)
     }

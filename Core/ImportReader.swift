@@ -80,7 +80,7 @@ public enum WhoopExportImporter {
     }
 
     private static func importFiles(_ files: [String: Data]) throws -> ImportedMeasurementArchive {
-        var days: [Date: DailySnapshot] = [:], cycleStarts: [Date: Date] = [:]
+        var cyclesByStart: [Date: DailySnapshot] = [:]
         var activities: [UUID: ActivityRecord] = [:]
         var totalRows = 0
         let dates = Dates()
@@ -96,11 +96,7 @@ public enum WhoopExportImporter {
             for row in cycles.rows {
                 try Task.checkCancellation()
                 let start = try dates.date(cycles, row, ["Cycle start time"])
-                let key = DayCalendar.start(of: start)
-                if let previous = cycleStarts[key], previous != start {
-                    throw ImportError.invalid("Two WHOOP cycles fall on the same UTC date. No records were saved; choose a shorter export range.")
-                }
-                var day = DailySnapshot.empty(on: key)
+                var day = DailySnapshot.empty(on: start)
                 day.recovery = try cycles.integer(row, ["Recovery score %", "Recovery score"])
                 day.strain = try cycles.number(row, ["Day Strain", "Strain"])
                 day.restingHeartRate = try cycles.number(row, ["Resting heart rate (bpm)"])
@@ -109,8 +105,8 @@ public enum WhoopExportImporter {
                 day.energyKcal = try cycles.number(row, ["Energy burned (cal)", "Energy burned (kcal)"]) ?? 0
                 try addSleep(cycles, row, to: &day)
                 try ImportReader.validate(day)
-                if let previous = days[key], previous != day { throw ImportError.invalid("The cycle CSV contains conflicting duplicate rows.") }
-                days[key] = day; cycleStarts[key] = start
+                if let previous = cyclesByStart[start], previous != day { throw ImportError.invalid("The cycle CSV contains conflicting duplicate rows.") }
+                cyclesByStart[start] = day
             }
         }
         if let sleeps = try table("sleeps.csv") {
@@ -126,14 +122,14 @@ public enum WhoopExportImporter {
                 var incoming = DailySnapshot.empty(on: key)
                 try addSleep(sleeps, row, to: &incoming)
                 try ImportReader.validate(incoming)
-                if let previous = primarySleeps[key], previous != incoming { throw ImportError.invalid("The sleep CSV has conflicting primary sleeps on the same UTC day.") }
-                primarySleeps[key] = incoming
-                var day = days[key] ?? incoming
+                if let previous = primarySleeps[start], previous != incoming { throw ImportError.invalid("The sleep CSV has conflicting primary sleeps for the same cycle.") }
+                primarySleeps[start] = incoming
+                var day = cyclesByStart[start] ?? incoming
                 if day.sleepPerformance == nil { day.sleepPerformance = incoming.sleepPerformance }
                 if day.sleepMinutes == 0 { day.sleepMinutes = incoming.sleepMinutes }
                 if day.sleepNeededMinutes == 0 { day.sleepNeededMinutes = incoming.sleepNeededMinutes }
                 if day.respiratoryRate == nil { day.respiratoryRate = incoming.respiratoryRate }
-                days[key] = day
+                cyclesByStart[start] = day
             }
         }
         if let workouts = try table("workouts.csv") {
@@ -153,10 +149,13 @@ public enum WhoopExportImporter {
                 activities[id] = activity
             }
         }
+        let records = cyclesByStart.map { WhoopCycleRecord(id: "csv-" + String($0.key.timeIntervalSince1970), start: $0.key, measurements: $0.value) }
+        let days = WhoopCycleRecord.dailySummaries(records)
         guard !days.isEmpty || !activities.isEmpty else { throw ImportError.noData }
         var notices: [String] = []
+        if days.contains(where: { $0.cycleRecords != nil }) { notices.append("Some dates contain multiple cycles. Home shows the latest cycle; JSON exports and full backups retain every cycle's measurements.") }
         if files["journal_entries.csv"] != nil { notices.append("Journal answers are not part of this measurement import.") }
-        return ImportedMeasurementArchive(days: days.values.sorted { $0.date < $1.date }, profile: nil,
+        return ImportedMeasurementArchive(days: days, profile: nil,
             activities: activities.values.sorted { $0.start < $1.start }, notices: notices)
     }
 
@@ -317,7 +316,7 @@ public enum ImportReader {
             guard days.insert(day.date).inserted else {
                 throw ImportError.invalid("The JSON archive contains more than one entry for the same UTC day.")
             }
-            sampleCount += day.heartRates.count
+            sampleCount += day.heartRates.count + (day.cycleRecords?.count ?? 0)
             guard sampleCount <= maximumRows else { throw ImportError.tooManyRows }
             try validate(day)
             day.heartRates = try uniqueSamples(day.heartRates)
@@ -397,7 +396,22 @@ public enum ImportReader {
         return seen.keys.sorted().map { .init(timestamp: $0, bpm: seen[$0]!) }
     }
 
-    fileprivate static func validate(_ day: DailySnapshot) throws {
+    static func validateCycleRecords(_ day: DailySnapshot) throws {
+        if let cycles = day.cycleRecords {
+            guard cycles.count <= maximumRows, Set(cycles.map(\.id)).count == cycles.count else { throw ImportError.invalid("Cycle records have duplicate identities or exceed the record limit.") }
+            for cycle in cycles {
+                guard !cycle.id.isEmpty, cycle.id.count <= 200, cycle.start.timeIntervalSince1970.isFinite,
+                      (0...4_102_444_800).contains(cycle.start.timeIntervalSince1970),
+                      DayCalendar.start(of: cycle.start) == day.date, cycle.measurements.date == day.date,
+                      cycle.measurements.cycleRecords == nil, cycle.measurements.heartRates.isEmpty else {
+                    throw ImportError.invalid("Original cycle measurements must belong to their dashboard date and cannot contain nested cycles.")
+                }
+                try validate(cycle.measurements)
+            }
+        }
+    }
+    static func validate(_ day: DailySnapshot) throws {
+        try validateCycleRecords(day)
         func optionalRange<T: Comparable>(_ value: T?, _ range: ClosedRange<T>) -> Bool {
             value.map(range.contains) ?? true
         }

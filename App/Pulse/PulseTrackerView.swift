@@ -50,6 +50,9 @@ struct PulseTrackerView: View {
                         Button(L10n.text(tracker.isScanning ? "STOP SEARCHING" : "SEARCH FOR DEVICES")) {
                             if tracker.isScanning { tracker.stop() } else { tracker.scan() }
                         }.buttonStyle(PulseTrackerButton()).disabled(tracker.isConnecting)
+                        if tracker.isConnecting {
+                            Button(L10n.text("CANCEL CONNECTION")) { tracker.disconnect() }.buttonStyle(PulseTrackerButton(secondary: true))
+                        }
                         if tracker.isScanning {
                             ProgressView(L10n.text("Searching nearby Bluetooth trackers…")).font(PulseFont.body(12)).tint(PulseColor.load).frame(minHeight: 44)
                         }
