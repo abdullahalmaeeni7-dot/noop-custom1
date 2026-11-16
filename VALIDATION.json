@@ -143,12 +143,22 @@
     "physical_device_test": false
   },
   "current_native_build": {
-    "source": "5f2f068",
-    "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43816623740",
+    "provider": "GitHub Actions",
+    "source_commit": "17f90c402ac426ef1ba42c632b98e617e093ecd9",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242913",
+    "result": "success",
+    "runner": "macos-15-intel",
+    "portable_test_step": "passed",
     "device_build": "passed",
-    "package_validation": "passed",
+    "device_package_validation": "passed",
+    "architecture": "arm64",
+    "platform": "iOS device",
+    "artifact_name": "WHOOP-unsigned-iphone-ipa",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242913/artifacts/14204939967",
+    "artifact_size": "4.09 MB",
+    "artifact_archive_sha256": "d6e26004beeb9513b4700d83c6da1b1e02c2c590dba580cc29f4880a79797aa8",
     "signed": false,
-    "final_catalog_build": "pending final decimal-parser build"
+    "physical_device_test": false
   },
   "zip_import": {
     "offline": true,
@@ -191,21 +201,30 @@
     "reference_hierarchy_updated": true,
     "exact_parity_verified": false,
     "native_screenshot": {
-      "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324388",
-      "source_commit": "12cba1ea5d478b323494b185951478e705c01246",
+      "run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242961",
+      "source_commit": "17f90c402ac426ef1ba42c632b98e617e093ecd9",
       "capture_outcome": "success",
       "actual_images": true,
       "onboarding_inspected": true,
       "home_inspected": true,
+      "languages": [
+        "en",
+        "ar"
+      ],
       "synthetic_fixture": true,
-      "directory": "design/home/native-review-02",
+      "directory": "design/home/native-review-05",
       "dimensions_pixels": [
         1179,
         2556
       ],
-      "before_after": "design/home/native-review-02/before-after.jpg",
+      "comparison": "design/home/native-review-05/comparison.jpg",
+      "before_after": "design/home/native-review-05/before-after.jpg",
+      "branding_fixed_in_rtl": true,
+      "clockwise_gauges_in_rtl": true,
+      "floating_bar_bottom_gap_points": 26,
       "exact_parity_verified": false
-    }
+    },
+    "current_review_run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242961"
   },
   "nutrition_tests": {
     "calculator_and_routes_passed": 22,
@@ -219,20 +238,19 @@
   },
   "native_device_build": {
     "provider": "GitHub Actions",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324402",
-    "source_commit": "12cba1ea5d478b323494b185951478e705c01246",
+    "source_commit": "17f90c402ac426ef1ba42c632b98e617e093ecd9",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242913",
     "result": "success",
     "runner": "macos-15-intel",
-    "duration": "6m 52s",
     "portable_test_step": "passed",
     "device_build": "passed",
     "device_package_validation": "passed",
     "architecture": "arm64",
     "platform": "iOS device",
     "artifact_name": "WHOOP-unsigned-iphone-ipa",
-    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43764324402/artifacts/14182026860",
-    "artifact_size": "3.94 MB",
-    "artifact_archive_sha256": "4ec1185465e13be74ef08986c7545f574e717f6c1efb71662303abf8430bfb6b",
+    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43823242913/artifacts/14204939967",
+    "artifact_size": "4.09 MB",
+    "artifact_archive_sha256": "d6e26004beeb9513b4700d83c6da1b1e02c2c590dba580cc29f4880a79797aa8",
     "signed": false,
     "physical_device_test": false
   },
@@ -242,11 +260,12 @@
       "ar"
     ],
     "saved_preference": "whoop.language.v1",
-    "catalog_entries": 1032,
+    "catalog_entries": 1033,
     "rtl": true,
     "tests_passed": 5,
-    "sdk_typecheck": "passed in device build at 5f2f068; final catalog additions pending next native run",
-    "arabic_decimal_input": "strict full-string parsing; Arabic/Persian digits and decimal separator preserved, non-finite and trailing text rejected"
+    "sdk_typecheck": "passed in final arm64 iOS device build",
+    "arabic_decimal_input": "strict full-string parsing; Arabic/Persian digits and decimal separator preserved, non-finite and trailing text rejected",
+    "native_screenshots_verified": true
   },
   "gemini": {
     "native_rest_api": true,

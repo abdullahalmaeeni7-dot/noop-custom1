@@ -1,6 +1,6 @@
 # Current upload: personalized Profile, highlights and Live
 
-Tap the Home avatar to edit age (no numeric upper limit), WHOOP Age display and day streak. More → Export Data includes profile/highlights JSON and CSV plus the existing daily/HR exports. Profile choices are user-configured; records come from saved measurements. Full-screen Live and prior features are retained. All 143 portable tests pass. Native compilation and Files/storage/camera flows remain unverified. No compiled IPA, NOOP project or user records are included.
+Tap the Home avatar to edit age (no numeric upper limit), WHOOP Age display and day streak. More → Export Data includes profile/highlights JSON and CSV plus the existing daily/HR exports. Profile choices are user-configured; records come from saved measurements. Full-screen Live and prior features are retained. All 165 portable core tests pass. The current GitHub Actions build compiles against the real iOS device SDK and validates the unsigned arm64 package. Physical-device camera, signing and Files flows have not been exercised here. No compiled IPA, NOOP project or user records are included.
 
 # Build WHOOP from Windows using Codemagic
 
