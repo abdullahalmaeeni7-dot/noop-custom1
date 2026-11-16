@@ -5,7 +5,9 @@ import WHOOPCore
 
 /// Capture-only entry point, absent from device binaries. It uses the existing app views.
 enum GalleryLaunch {
+    static var overrideRoute: String?
     static var route: String? {
+        if let overrideRoute { return overrideRoute }
         let args = ProcessInfo.processInfo.arguments
         guard let index = args.firstIndex(of: "--gallery-screen"), args.indices.contains(index + 1) else { return nil }
         return args[index + 1]
