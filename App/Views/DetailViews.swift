@@ -19,6 +19,11 @@ struct MetricDetailView: View {
             if !embedded { header }
             if embedded { content } else { ScrollView { content }.scrollIndicators(.hidden) }
         }.background { WhoopBackground() }
+            .onAppear {
+                #if targetEnvironment(simulator)
+                if GalleryLaunch.route == "coach" { showingCoach = true }
+                #endif
+            }
             .alert(L10n.text("About this score"), isPresented: $showingInformation) {
                 Button(L10n.text("Done"), role: .cancel) { }
             } message: { Text(L10n.text(metric.description + " A comparison marker shows the previous recorded UTC day when available. Missing fields are not inferred from summary scores.")) }

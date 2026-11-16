@@ -201,6 +201,9 @@ struct NutritionDeepDive: View {
     @EnvironmentObject private var model: NutritionViewModel
     let kind: NutritionChartKind
     @State private var days = 7
+    #if targetEnvironment(simulator)
+    init(kind: NutritionChartKind) { self.kind = kind; _days = State(initialValue: GalleryLaunch.route?.hasSuffix("-30") == true ? 30 : 7) }
+    #endif
     private var title: String { kind == .calories ? "Calories" : kind == .protein ? "Protein" : "Net balance" }
     var body: some View {
         NPage(title: title) {

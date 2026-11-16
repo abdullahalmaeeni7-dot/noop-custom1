@@ -188,6 +188,11 @@ struct WHOOPProfileView: View {
                     ToolbarItem(placement: .topBarTrailing) { Button(action: edit) { Image(systemName: "gearshape").font(.system(size: 23, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel(L10n.text("Personalize profile")) }
                 }
         }.font(PulseFont.body(15)).foregroundStyle(PulseColor.text).tint(.white).preferredColorScheme(.dark)
+            .onAppear {
+                #if targetEnvironment(simulator)
+                if GalleryLaunch.route == "profile-edit" { edit() }
+                #endif
+            }
             .sheet(isPresented: $editing) { editor }
             .sheet(isPresented: $exporting) { MeasurementExportView(initialRange: range) }
     }

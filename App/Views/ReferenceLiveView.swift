@@ -47,7 +47,16 @@ struct ReferenceLiveView: View {
                 footer(width: width).frame(height: 100)
             }.frame(maxWidth: .infinity, maxHeight: .infinity).background(.black)
         }.ignoresSafeArea().statusBarHidden(true).preferredColorScheme(.dark)
-            .task { if photoData == nil { await openCamera() } }
+            .task {
+                #if targetEnvironment(simulator)
+                if let route = GalleryLaunch.route {
+                    mode = CameraOverlayMode(rawValue: String(route.dropFirst(5))) ?? .overview
+                    drawer = route == "live-controls"
+                    return
+                }
+                #endif
+                if photoData == nil { await openCamera() }
+            }
             .onReceive(clock) { date in now = date; camera.engine.update(snapshot()) }
             .onChange(of: mode) { _, _ in camera.engine.update(snapshot()) }
             .onChange(of: photo) { _, item in loadPhoto(item) }

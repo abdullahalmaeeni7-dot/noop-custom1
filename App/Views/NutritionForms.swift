@@ -61,6 +61,14 @@ struct NutritionFoodForm: View {
             Button(L10n.text("+ ANOTHER FOOD")) { drafts.append(FoodDraft(food: NutritionFood())) }.buttonStyle(NButton(secondary: true)).disabled(busy || drafts.count >= 30)
             Button(L10n.text(model.isSaving ? "SAVING…" : "SAVE FOOD")) { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || drafts.isEmpty || drafts.contains { $0.food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
             library
+        }.onAppear {
+            #if targetEnvironment(simulator)
+            if let route = GalleryLaunch.route {
+                mode = route == "food-ai-text" ? .text : route == "food-ai-photo" ? .photo : .manual
+                if route == "food-favorites-bottom" { favoritesOnly = true }
+                if route == "food-manual" { drafts = [FoodDraft(food: NutritionFood(name: "Eggs and toast", grams: 160, kcal: 310, protein: 19, carbs: 28, fat: 14))] }
+            }
+            #endif
         }.onDisappear { task?.cancel() }
             .task {
                 if let initialPhoto, !loadedInitialPhoto { loadedInitialPhoto = true; mode = .photo; preparePhoto(initialPhoto) }

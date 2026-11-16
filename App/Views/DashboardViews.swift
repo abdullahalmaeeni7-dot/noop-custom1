@@ -36,6 +36,10 @@ struct HomeView: View {
             ReferenceDashboard()
             if tracker.connectedName != nil { liveHeartRate }
             discover
+        }.onAppear {
+            #if targetEnvironment(simulator)
+            if GalleryLaunch.route == "home-actions" { quickMenu = true }
+            #endif
         }
     }
     private var myDay: some View {

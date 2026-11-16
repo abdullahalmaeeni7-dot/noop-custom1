@@ -281,6 +281,9 @@ final class LiveCameraModel: ObservableObject {
     @Published private(set) var status = "Open the camera when you are ready."
     private var openingID = UUID()
     func open(microphone: Bool) async {
+        #if targetEnvironment(simulator)
+        if GalleryLaunch.active { return }
+        #endif
         let attempt = UUID(); openingID = attempt; ready = false; status = "Opening camera…"
         let allowed = await AVCaptureDevice.requestAccess(for: .video)
         guard openingID == attempt, !Task.isCancelled else { return }

@@ -31,8 +31,15 @@ struct WHOOPApp: App {
 struct AppLaunchView: View {
     @AppStorage("whoop.setup.completed.v1") private var completed = false
     var body: some View {
+        #if targetEnvironment(simulator)
+        if let route = GalleryLaunch.route, !route.hasPrefix("onboarding-") { GalleryCaptureView(route: route) }
+        else if GalleryLaunch.active { FirstRunView { completed = true } }
+        else if completed { RootView() }
+        else { FirstRunView { completed = true } }
+        #else
         if completed { RootView() }
         else { FirstRunView { completed = true } }
+        #endif
     }
 }
 
@@ -81,7 +88,19 @@ private struct FirstRunView: View {
         }.foregroundStyle(PulseColor.text).font(PulseFont.body(16))
             .background(LinearGradient(colors: [PulseColor.top, PulseColor.background], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
             .preferredColorScheme(.dark)
-            .onAppear { if !initialized { draft = store.profile; initialized = true } }
+             .onAppear {
+                if !initialized { draft = store.profile; initialized = true }
+                #if targetEnvironment(simulator)
+                if let route = GalleryLaunch.route {
+                    step = route == "onboarding-profile" ? .profile : route == "onboarding-tracker" ? .tracker : route == "onboarding-data" ? .data : .welcome
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 1_300_000_000)
+                        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("gallery-ready.json")
+                        if let data = try? JSONEncoder().encode(["route": route]) { try? data.write(to: url) }
+                    }
+                }
+                #endif
+            }
             .sheet(item: $sheet) { route in
                 switch route { case .health: HealthImportView(); case .account: AccountView() }
             }

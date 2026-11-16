@@ -1,0 +1,402 @@
+[
+  {
+    "route": "onboarding-welcome",
+    "title": "Welcome",
+    "category": "Getting started"
+  },
+  {
+    "route": "onboarding-profile",
+    "title": "First-run profile",
+    "category": "Getting started"
+  },
+  {
+    "route": "onboarding-tracker",
+    "title": "Find your tracker",
+    "category": "Getting started"
+  },
+  {
+    "route": "onboarding-data",
+    "title": "Choose data source",
+    "category": "Getting started"
+  },
+  {
+    "route": "home",
+    "title": "Home overview",
+    "category": "Home"
+  },
+  {
+    "route": "home-actions",
+    "title": "Quick actions",
+    "category": "Home"
+  },
+  {
+    "route": "home-day",
+    "title": "My day and activities",
+    "category": "Home"
+  },
+  {
+    "route": "home-plan",
+    "title": "Journal and plan",
+    "category": "Home"
+  },
+  {
+    "route": "home-dashboard",
+    "title": "Dashboard metrics",
+    "category": "Home"
+  },
+  {
+    "route": "home-trends",
+    "title": "Strain and Recovery trends",
+    "category": "Home"
+  },
+  {
+    "route": "home-discover",
+    "title": "Discover more",
+    "category": "Home"
+  },
+  {
+    "route": "sleep",
+    "title": "Sleep",
+    "category": "Scores"
+  },
+  {
+    "route": "sleep-bottom",
+    "title": "Sleep trends",
+    "category": "Scores"
+  },
+  {
+    "route": "recovery",
+    "title": "Recovery",
+    "category": "Scores"
+  },
+  {
+    "route": "recovery-bottom",
+    "title": "Recovery trends",
+    "category": "Scores"
+  },
+  {
+    "route": "strain-detail",
+    "title": "Strain",
+    "category": "Scores"
+  },
+  {
+    "route": "strain-detail-bottom",
+    "title": "Strain activities and trends",
+    "category": "Scores"
+  },
+  {
+    "route": "health",
+    "title": "Health and personal age",
+    "category": "Health"
+  },
+  {
+    "route": "health-bottom",
+    "title": "Health measurements",
+    "category": "Health"
+  },
+  {
+    "route": "health-monitor",
+    "title": "Health Monitor",
+    "category": "Health"
+  },
+  {
+    "route": "health-monitor-bottom",
+    "title": "Health Monitor details",
+    "category": "Health"
+  },
+  {
+    "route": "stress",
+    "title": "Stress data",
+    "category": "Health"
+  },
+  {
+    "route": "profile",
+    "title": "Profile overview",
+    "category": "Profile"
+  },
+  {
+    "route": "profile-highlights",
+    "title": "Profile highlights",
+    "category": "Profile"
+  },
+  {
+    "route": "profile-records",
+    "title": "Personal records",
+    "category": "Profile"
+  },
+  {
+    "route": "profile-bottom",
+    "title": "Profile activity summary and export",
+    "category": "Profile"
+  },
+  {
+    "route": "profile-edit",
+    "title": "Personalize profile",
+    "category": "Profile"
+  },
+  {
+    "route": "nutrition",
+    "title": "Nutrition overview",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-meals",
+    "title": "Meals",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-bottom",
+    "title": "Exercise and Day in Review",
+    "category": "Nutrition"
+  },
+  {
+    "route": "food-manual",
+    "title": "Manual food entry",
+    "category": "Nutrition"
+  },
+  {
+    "route": "food-ai-text",
+    "title": "AI text entry",
+    "category": "Nutrition"
+  },
+  {
+    "route": "food-ai-photo",
+    "title": "AI photo entry",
+    "category": "Nutrition"
+  },
+  {
+    "route": "food-recent-bottom",
+    "title": "Recent foods",
+    "category": "Nutrition"
+  },
+  {
+    "route": "food-favorites-bottom",
+    "title": "Favorite foods",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-calories",
+    "title": "Calories deep dive \u00b7 7 days",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-calories-30",
+    "title": "Calories deep dive \u00b7 30 days",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-calories-bottom",
+    "title": "Calories by meal",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-protein",
+    "title": "Protein deep dive",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-deficit",
+    "title": "Deficit deep dive \u00b7 7 days",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-deficit-30",
+    "title": "Deficit deep dive \u00b7 30 days",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-activity",
+    "title": "Log exercise",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-weight",
+    "title": "Weight chart and entry",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-weight-bottom",
+    "title": "Weight history",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-settings",
+    "title": "Nutrition profile and goals",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-settings-bottom",
+    "title": "Nutrition controls and export",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-service",
+    "title": "Connect Gemini service",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-date",
+    "title": "Choose nutrition date",
+    "category": "Nutrition"
+  },
+  {
+    "route": "nutrition-camera",
+    "title": "Meal camera controls \u00b7 simulator",
+    "category": "Nutrition"
+  },
+  {
+    "route": "live-overview",
+    "title": "Live \u00b7 Overview",
+    "category": "Live"
+  },
+  {
+    "route": "live-strain",
+    "title": "Live \u00b7 Strain",
+    "category": "Live"
+  },
+  {
+    "route": "live-recovery",
+    "title": "Live \u00b7 Recovery",
+    "category": "Live"
+  },
+  {
+    "route": "live-sleep",
+    "title": "Live \u00b7 Sleep",
+    "category": "Live"
+  },
+  {
+    "route": "live-live",
+    "title": "Live \u00b7 live stats",
+    "category": "Live"
+  },
+  {
+    "route": "live-controls",
+    "title": "Live capture controls",
+    "category": "Live"
+  },
+  {
+    "route": "live-settings",
+    "title": "Live Activities and media settings",
+    "category": "Live"
+  },
+  {
+    "route": "journal",
+    "title": "Daily journal",
+    "category": "Training and journal"
+  },
+  {
+    "route": "journal-bottom",
+    "title": "Journal notes",
+    "category": "Training and journal"
+  },
+  {
+    "route": "activity-add",
+    "title": "Add activity",
+    "category": "Training and journal"
+  },
+  {
+    "route": "activities",
+    "title": "Activity library",
+    "category": "Training and journal"
+  },
+  {
+    "route": "workout",
+    "title": "Record a workout",
+    "category": "Training and journal"
+  },
+  {
+    "route": "tracker",
+    "title": "Tracker connection",
+    "category": "Connections and data"
+  },
+  {
+    "route": "tracker-bottom",
+    "title": "Tracker connection capabilities",
+    "category": "Connections and data"
+  },
+  {
+    "route": "account",
+    "title": "WHOOP account connection",
+    "category": "Connections and data"
+  },
+  {
+    "route": "account-bottom",
+    "title": "Account sync controls",
+    "category": "Connections and data"
+  },
+  {
+    "route": "apple-health",
+    "title": "Apple Health import",
+    "category": "Connections and data"
+  },
+  {
+    "route": "export",
+    "title": "Export measurements and profile",
+    "category": "Connections and data"
+  },
+  {
+    "route": "export-bottom",
+    "title": "Export formats",
+    "category": "Connections and data"
+  },
+  {
+    "route": "data-help",
+    "title": "Import WHOOP ZIP and file help",
+    "category": "Connections and data"
+  },
+  {
+    "route": "data-help-bottom",
+    "title": "File validation details",
+    "category": "Connections and data"
+  },
+  {
+    "route": "community",
+    "title": "Community",
+    "category": "More"
+  },
+  {
+    "route": "more",
+    "title": "More and language",
+    "category": "More"
+  },
+  {
+    "route": "more-bottom",
+    "title": "Data and app controls",
+    "category": "More"
+  },
+  {
+    "route": "tiers",
+    "title": "Choose local tier",
+    "category": "More"
+  },
+  {
+    "route": "tiers-bottom",
+    "title": "Tier capabilities",
+    "category": "More"
+  },
+  {
+    "route": "day-review",
+    "title": "Day in Review",
+    "category": "More"
+  },
+  {
+    "route": "coach",
+    "title": "Coach availability",
+    "category": "More"
+  },
+  {
+    "route": "coach-preview",
+    "title": "Coach layout \u00b7 illustrative conversation",
+    "category": "More"
+  },
+  {
+    "route": "strain-reference",
+    "title": "Strain reference calculator",
+    "category": "More"
+  },
+  {
+    "route": "about",
+    "title": "About this app",
+    "category": "More"
+  }
+]

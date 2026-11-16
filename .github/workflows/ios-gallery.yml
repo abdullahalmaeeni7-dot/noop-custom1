@@ -1,0 +1,89 @@
+name: Capture every iPhone screen
+on:
+  workflow_dispatch:
+  push:
+    branches: ['capture/all-screens-*']
+permissions:
+  contents: read
+jobs:
+  gallery:
+    runs-on: macos-15
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26
+        run: |
+          python3 - <<'PY'
+          import glob,os,re
+          from pathlib import Path
+          selected=max(glob.glob('/Applications/Xcode*26*.app/Contents/Developer'),key=lambda p:tuple(map(int,re.findall(r'\d+',Path(p).parents[1].name))))
+          with open(os.environ['GITHUB_ENV'],'a') as out:out.write('DEVELOPER_DIR='+selected+'\n')
+          PY
+      - name: Build actual simulator application
+        timeout-minutes: 23
+        run: |
+          set -euo pipefail
+          mkdir -p build/gallery
+          xcrun simctl list runtimes -j > build/gallery/runtimes.json
+          SIM_RUNTIME=$(python3 - <<'PY'
+          import json
+          rs=[r for r in json.load(open('build/gallery/runtimes.json'))['runtimes'] if r.get('isAvailable') and '.iOS-' in r['identifier']]
+          print(max(rs,key=lambda r:tuple(map(int,r['version'].split('.'))))['identifier'])
+          PY
+          )
+          SIM_DEVICE=$(xcrun simctl create 'WHOOP full gallery' com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro "$SIM_RUNTIME")
+          echo "SIM_DEVICE=$SIM_DEVICE" >> "$GITHUB_ENV"
+          xcrun simctl boot "$SIM_DEVICE"
+          xcrun simctl bootstatus "$SIM_DEVICE" -b
+          if ! xcodebuild -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -sdk iphonesimulator -destination "id=$SIM_DEVICE" -derivedDataPath build/GalleryDerived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build/gallery/build.log 2>&1; then
+            python3 - <<'PY'
+          from pathlib import Path
+          lines=Path('build/gallery/build.log').read_text(errors='replace').splitlines()
+          for line in [x for x in lines if 'error:' in x or 'fatal error:' in x][:16]:print('::error::'+line.replace('%','%25'))
+          PY
+            exit 1
+          fi
+          xcrun simctl status_bar "$SIM_DEVICE" override --time '9:34' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+      - name: Capture English and Arabic screens
+        run: python3 Scripts/gallery/capture.py
+      - name: Make searchable gallery and photo sheets
+        run: |
+          python3 -m venv build/gallery-tools
+          build/gallery-tools/bin/pip -q install pillow==11.3.0
+          build/gallery-tools/bin/python Scripts/gallery/render.py
+      - name: Publish photo gallery
+        run: |
+          set -euo pipefail
+          GALLERY_WORKTREE=$(mktemp -d)
+          git worktree add --detach "$GALLERY_WORKTREE" HEAD
+          git -C "$GALLERY_WORKTREE" switch --orphan "screen-gallery/$GITHUB_RUN_ID"
+          cp build/gallery/README.md build/gallery/index.html build/gallery/manifest.json build/gallery/sheet-*.jpg "$GALLERY_WORKTREE/"
+          cp -R build/gallery/photos "$GALLERY_WORKTREE/"
+          git -C "$GALLERY_WORKTREE" add .
+          git -C "$GALLERY_WORKTREE" -c user.name='WHOOP screen gallery' -c user.email='gallery@users.noreply.github.com' commit -m "Native gallery at $GITHUB_SHA"
+          git -C "$GALLERY_WORKTREE" push origin "HEAD:refs/heads/screen-gallery/$GITHUB_RUN_ID"
+          git worktree remove "$GALLERY_WORKTREE"
+      - name: Upload all photos ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: WHOOP-all-screens
+          path: build/gallery/WHOOP-all-screens.zip
+          retention-days: 14
+      - name: Upload capture diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: WHOOP-gallery-diagnostics
+          path: |
+            build/gallery/manifest.json
+            build/gallery/build.log
+          if-no-files-found: ignore
+      - name: Stop isolated simulator
+        if: always()
+        run: |
+          if [[ -n "${SIM_DEVICE:-}" ]]; then
+            xcrun simctl shutdown "$SIM_DEVICE" || true
+            xcrun simctl delete "$SIM_DEVICE" || true
+          fi
