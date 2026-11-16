@@ -1,4 +1,4 @@
-name: Capture every iPhone screen
+name: Capture every iPhone screen (Intel backup)
 on:
   workflow_dispatch:
   push:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   gallery:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 40
     permissions:
       contents: write
