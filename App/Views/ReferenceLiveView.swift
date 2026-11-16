@@ -59,9 +59,9 @@ struct ReferenceLiveView: View {
             }
             .onDisappear { task?.cancel(); camera.close() }
             .sheet(isPresented: $drawer) { controls }
-            .alert("Live", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
-                Button("OK", role: .cancel) { message = nil }
-            } message: { Text(message ?? "") }
+            .alert(L10n.text("Live"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+                Button(L10n.text("OK"), role: .cancel) { message = nil }
+            } message: { Text(L10n.text(message ?? "")) }
     }
 
     private func canvas(width: CGFloat, height: CGFloat) -> some View {
@@ -74,10 +74,10 @@ struct ReferenceLiveView: View {
                 Color(white: 0.08)
                 VStack(spacing: 16) {
                     Image(systemName: "camera").font(.system(size: 36, weight: .light))
-                    Text(camera.status).font(PulseFont.body(14)).multilineTextAlignment(.center)
-                    Button("OPEN CAMERA") { task = Task { await openCamera() } }
+                    Text(L10n.text(camera.status)).font(PulseFont.body(14)).multilineTextAlignment(.center)
+                    Button(L10n.text("OPEN CAMERA")) { task = Task { await openCamera() } }
                         .font(PulseFont.label(12)).frame(minHeight: 48)
-                    Button("IPHONE CAMERA SETTINGS") {
+                    Button(L10n.text("IPHONE CAMERA SETTINGS")) {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }.font(PulseFont.label(10)).frame(minHeight: 44)
                 }.foregroundStyle(.white).padding(32).offset(y: -height * 0.1)
@@ -95,12 +95,12 @@ struct ReferenceLiveView: View {
                 }.padding(.horizontal, width * 0.018).padding(.top, height * 0.017)
                 Spacer()
                 if camera.recording {
-                    Label("RECORDING", systemImage: "record.circle.fill").font(PulseFont.label(10))
+                    Label(L10n.text("RECORDING"), systemImage: "record.circle.fill").font(PulseFont.label(10))
                         .foregroundStyle(.red).padding(8).background(.black.opacity(0.6), in: Capsule())
                 }
                 captureControls(width: width).padding(.bottom, height * 0.013)
             }.foregroundStyle(.white)
-            if busy { ProgressView("Preparing media…").padding(20).background(.black.opacity(0.8), in: RoundedRectangle(cornerRadius: 12)).tint(.white) }
+            if busy { ProgressView(L10n.text("Preparing media…")).padding(20).background(.black.opacity(0.8), in: RoundedRectangle(cornerRadius: 12)).tint(.white) }
         }.frame(width: width, height: height).clipShape(RoundedRectangle(cornerRadius: 8))
             .simultaneousGesture(DragGesture(minimumDistance: 50).onEnded { drag in
                 guard abs(drag.translation.width) > abs(drag.translation.height) * 1.5, let index = CameraOverlayMode.allCases.firstIndex(of: mode) else { return }
@@ -108,7 +108,7 @@ struct ReferenceLiveView: View {
                 select(CameraOverlayMode.allCases[next])
             })
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Live camera, \(mode.rawValue). \(snapshot().source)")
+            .accessibilityLabel(L10n.text("Live camera, \(mode.rawValue). \(snapshot().source)"))
     }
 
     private func captureControls(width: CGFloat) -> some View {
@@ -120,9 +120,9 @@ struct ReferenceLiveView: View {
                 }.frame(width: 38, height: 38).clipped().background(.black.opacity(0.2))
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.5), lineWidth: 3))
                     .clipShape(RoundedRectangle(cornerRadius: 4)).frame(maxWidth: .infinity, minHeight: 48)
-            }.accessibilityLabel("Choose a saved photo").disabled(camera.recording || busy)
+            }.accessibilityLabel(L10n.text("Choose a saved photo")).disabled(camera.recording || busy)
             Button { drawer = true } label: { Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 23)).frame(maxWidth: .infinity, minHeight: 48) }
-                .accessibilityLabel("Overlay and capture settings").disabled(camera.recording || camera.starting || busy)
+                .accessibilityLabel(L10n.text("Overlay and capture settings")).disabled(camera.recording || camera.starting || busy)
             Button(action: shutter) {
                 ZStack {
                     Circle().fill(mode == .live ? Color.red : .white.opacity(0.4)).frame(width: 69, height: 69)
@@ -141,7 +141,7 @@ struct ReferenceLiveView: View {
                 .accessibilityLabel(torch ? "Turn camera light off" : "Turn camera light on").disabled(photoData != nil || busy || !camera.ready)
             Button { torch = false; camera.engine.flip() } label: {
                 Image(systemName: "camera.rotate").font(.system(size: 29, weight: .light)).frame(maxWidth: .infinity, minHeight: 48)
-            }.accessibilityLabel("Switch front and back cameras").disabled(camera.recording || camera.starting || busy || photoData != nil)
+            }.accessibilityLabel(L10n.text("Switch front and back cameras")).disabled(camera.recording || camera.starting || busy || photoData != nil)
         }.buttonStyle(PulsePressStyle()).background(AppGlassSurface(shape: Capsule(), solid: Color(white: 0.1), interactive: true))
     }
 
@@ -152,7 +152,7 @@ struct ReferenceLiveView: View {
                     HStack(spacing: 0) {
                         ForEach(CameraOverlayMode.allCases, id: \.rawValue) { item in
                             Button { select(item) } label: {
-                                Text(item.rawValue.uppercased()).font(PulseFont.label(10)).tracking(2)
+                                Text(L10n.text(item.rawValue.uppercased())).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 2)
                                     .foregroundStyle(mode == item ? .white : .white.opacity(0.45)).frame(width: 108, height: 44)
                             }.id(item.rawValue).disabled(camera.recording || camera.starting || busy)
                         }
@@ -162,7 +162,7 @@ struct ReferenceLiveView: View {
                     .onChange(of: mode) { _, value in withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.22)) { reader.scrollTo(value.rawValue, anchor: .center) } }
             }.frame(height: 48).position(x: width / 2, y: 30)
             Button { drawer = true } label: { Image(systemName: "arrowtriangle.up.fill").font(.system(size: 12)).frame(width: 60, height: 44) }
-                .foregroundStyle(.white).accessibilityLabel("Open Live controls").position(x: width / 2, y: 68)
+                .foregroundStyle(.white).accessibilityLabel(L10n.text("Open Live controls")).position(x: width / 2, y: 68)
         }.background(.black)
     }
     private func select(_ selection: CameraOverlayMode) {
@@ -254,25 +254,25 @@ struct ReferenceLiveView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     PulseCard {
-                        Text("\(day.source == .example ? "Example" : "Saved") day stats").font(PulseFont.body(20).weight(.semibold))
+                        Text(L10n.text("\(day.source == .example ? "Example" : "Saved") day stats")).font(PulseFont.body(20).weight(.semibold))
                         DatePicker("Recorded day · UTC", selection: $store.selectedDate, displayedComponents: .date)
                             .frame(minHeight: 44).onChange(of: store.selectedDate) { _, _ in useHomeExample = false }
-                        Text("Overview shows day Strain, Recovery and hours asleep. Live shows received heart rate and day totals; calories are not a workout estimate.")
+                        Text(L10n.text("Overview shows day Strain, Recovery and hours asleep. Live shows received heart rate and day totals; calories are not a workout estimate."))
                             .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
                         if store.isExampleMode, reference != nil {
-                            Toggle("Use Home reference example", isOn: $useHomeExample).frame(minHeight: 44)
+                            Toggle(L10n.text("Use Home reference example"), isOn: $useHomeExample).frame(minHeight: 44)
                         }
-                        Button("CONNECT TRACKER") { showTracker = true }.font(PulseFont.label(12)).frame(minHeight: 44)
+                        Button(L10n.text("CONNECT TRACKER")) { showTracker = true }.font(PulseFont.label(12)).frame(minHeight: 44)
                     }
                     PulseCard {
-                        Text("CAPTURE").font(PulseFont.label(11)).tracking(1)
-                        Text(camera.status).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
-                        Text("Use Live for video, or the other modes for a photo. Video clips stop after five minutes or when the app leaves the foreground.")
+                        Text(L10n.text("CAPTURE")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
+                        Text(L10n.text(camera.status)).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                        Text(L10n.text("Use Live for video, or the other modes for a photo. Video clips stop after five minutes or when the app leaves the foreground."))
                             .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
-                        Toggle("Microphone audio", isOn: $microphone).frame(minHeight: 44)
+                        Toggle(L10n.text("Microphone audio"), isOn: $microphone).frame(minHeight: 44)
                             .onChange(of: microphone) { _, _ in if photoData == nil { task = Task { await openCamera() } } }
                         if photoData != nil {
-                            Button("RETURN TO CAMERA") {
+                            Button(L10n.text("RETURN TO CAMERA")) {
                                 photoData = nil; photoImage = nil; photo = nil; drawer = false
                                 task = Task { await openCamera() }
                             }.font(PulseFont.label(12)).frame(minHeight: 44)
@@ -280,49 +280,49 @@ struct ReferenceLiveView: View {
                     }.disabled(camera.recording || busy)
                     if let mediaURL {
                         PulseCard {
-                            Text("Media ready").font(PulseFont.body(20).weight(.semibold))
+                            Text(L10n.text("Media ready")).font(PulseFont.body(20).weight(.semibold))
                             ShareLink(item: mediaURL) {
-                                Label("SHARE OR SAVE TO FILES", systemImage: "square.and.arrow.up").frame(minHeight: 48)
+                                Label(L10n.text("SHARE OR SAVE TO FILES"), systemImage: "square.and.arrow.up").frame(minHeight: 48)
                             }.font(PulseFont.label(12))
-                            Button("SAVE TO PHOTOS") { saveToPhotos(mediaURL) }.font(PulseFont.label(12)).frame(minHeight: 48).disabled(busy)
+                            Button(L10n.text("SAVE TO PHOTOS")) { saveToPhotos(mediaURL) }.font(PulseFont.label(12)).frame(minHeight: 48).disabled(busy)
                         }
                     }
                     PulseCard {
-                        Button("EXPORT TRANSPARENT STATS PNG") { exportTransparent() }.font(PulseFont.label(12)).frame(minHeight: 48).disabled(busy || camera.recording)
-                        Toggle("Lock Screen Live Activities", isOn: $liveActivity.enabled).frame(minHeight: 44)
-                        Text(liveActivity.status).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                        Button(L10n.text("EXPORT TRANSPARENT STATS PNG")) { exportTransparent() }.font(PulseFont.label(12)).frame(minHeight: 48).disabled(busy || camera.recording)
+                        Toggle(L10n.text("Lock Screen Live Activities"), isOn: $liveActivity.enabled).frame(minHeight: 44)
+                        Text(L10n.text(liveActivity.status)).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                     }
                     workoutControls
                 }.padding(20)
-            }.background(PulseColor.background).navigationTitle("Live Controls").navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { drawer = false }.frame(minWidth: 44, minHeight: 44) } }
+            }.background(PulseColor.background).navigationTitle(L10n.text("Live Controls")).navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(L10n.text("Done")) { drawer = false }.frame(minWidth: 44, minHeight: 44) } }
         }.font(PulseFont.body(15)).foregroundStyle(PulseColor.text).tint(PulseColor.sleep).preferredColorScheme(.dark)
             .environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
             .presentationDetents([.medium, .large]).presentationDragIndicator(.visible)
             .sheet(isPresented: $showTracker) { PulseTrackerView().environmentObject(device) }
-            .confirmationDialog("Discard this workout?", isPresented: $confirmDiscard, titleVisibility: .visible) {
-                Button("Discard workout", role: .destructive) { recorder.discard() }
+            .confirmationDialog(L10n.text("Discard this workout?"), isPresented: $confirmDiscard, titleVisibility: .visible) {
+                Button(L10n.text("Discard workout"), role: .destructive) { recorder.discard() }
             }
     }
     private var workoutControls: some View {
         PulseCard {
-            Text("WORKOUT").font(PulseFont.label(11)).tracking(1)
+            Text(L10n.text("WORKOUT")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
             if recorder.isRecording {
-                Text("\(recorder.name) · \(recorder.elapsedSeconds / 60) min · \(recorder.samples) samples").font(PulseFont.body(16))
-                Text(recorder.status).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
-                Button(recorder.isPaused ? "RESUME WORKOUT" : "PAUSE WORKOUT") { recorder.togglePause() }
+                Text(L10n.text("\(recorder.name) · \(recorder.elapsedSeconds / 60) min · \(recorder.samples) samples")).font(PulseFont.body(16))
+                Text(L10n.text(recorder.status)).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                Button(L10n.text(recorder.isPaused ? "RESUME WORKOUT" : "PAUSE WORKOUT")) { recorder.togglePause() }
                     .font(PulseFont.label(12)).frame(minHeight: 44).disabled(camera.recording)
-                Button("FINISH AND SAVE WORKOUT") {
+                Button(L10n.text("FINISH AND SAVE WORKOUT")) {
                     do { try recorder.save(to: store) } catch { message = error.localizedDescription }
                 }.font(PulseFont.label(12)).frame(minHeight: 44).disabled(camera.recording)
-                Button("Discard workout", role: .destructive) { confirmDiscard = true }.frame(minHeight: 44).disabled(camera.recording)
+                Button(L10n.text("Discard workout"), role: .destructive) { confirmDiscard = true }.frame(minHeight: 44).disabled(camera.recording)
             } else {
-                TextField("Activity name", text: $activityName).frame(minHeight: 44)
+                TextField(L10n.text("Activity name"), text: $activityName).frame(minHeight: 44)
                 Stepper("Resting HR: \(Int(resting))", value: $resting, in: 30...110).frame(minHeight: 44)
                 Stepper("Maximum HR: \(Int(maximum))", value: $maximum, in: 120...230).frame(minHeight: 44)
-                Text("Use your known heart-rate limits. Starting a workout saves received samples when you finish; the local Strain estimate is separate from the saved day Strain shown in the overlay.")
+                Text(L10n.text("Use your known heart-rate limits. Starting a workout saves received samples when you finish; the local Strain estimate is separate from the saved day Strain shown in the overlay."))
                     .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
-                Button("START WORKOUT") {
+                Button(L10n.text("START WORKOUT")) {
                     do { try recorder.start(name: activityName, resting: resting, maximum: maximum) }
                     catch { message = error.localizedDescription }
                 }.font(PulseFont.label(12)).frame(minHeight: 44).disabled(activityName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

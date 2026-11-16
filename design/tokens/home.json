@@ -153,6 +153,7 @@
   ],
   "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified.",
   "membershipExpiryBanner": false,
-  "functional_layout_revision": 6,
-  "functional_layout_note": "Measured reference tokens now apply to real Home. Navigation adds the previously requested Nutrition tab. System glass, unavailable-data labels and functional service actions intentionally differ from static screenshots."
+  "functional_layout_revision": 7,
+  "functional_layout_note": "Measured reference tokens now apply to real Home. Navigation adds the previously requested Nutrition tab. System glass, unavailable-data labels and functional service actions intentionally differ from static screenshots.",
+  "sizing_implementation": "Shared ReferenceSize values in App/Pulse/PulseComponents.swift; real Home uses the same ring geometry and day-strip width as the screenshot preview. RTL mirrors layout without changing base point sizes. Dynamic Type and the requested extra Nutrition tab remain supported."
 }

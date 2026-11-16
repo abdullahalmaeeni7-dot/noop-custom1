@@ -33,7 +33,7 @@ struct PulseHomeView: View {
                     .sheet(isPresented: $showingCoach) { PulseCoachPreview(data: data) }
                     .sheet(item: $panel) { PulseHomePanelView(panel: $0, data: data, day: data.days[index]) }
             } else {
-                ContentUnavailableView("Sample data could not load", systemImage: "exclamationmark.circle", description: Text("The WHOOP reference resource must be included in the app build."))
+                ContentUnavailableView(L10n.text("Sample data could not load"), systemImage: "exclamationmark.circle", description: Text(L10n.text("The WHOOP reference resource must be included in the app build.")))
             }
         }.font(PulseFont.body()).foregroundStyle(PulseColor.text)
             .background(LinearGradient(colors: [PulseColor.top, PulseColor.background], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
@@ -53,7 +53,7 @@ struct PulseHomeView: View {
                     insight(day)
                     HStack(spacing: 11) {
                         PulseReferenceMonitor(title: "HEALTH MONITOR", badge: "!", value: day.healthStatus, detail: day.healthDetail, tint: PulseColor.yellow) { panel = .health }
-                        PulseReferenceMonitor(title: "STRESS MONITOR", badge: day.stressValue.formatted(.number.precision(.fractionLength(1))), value: day.tension, detail: day.stressUpdated, tint: PulseColor.mint) { panel = .stress }
+                        PulseReferenceMonitor(title: "STRESS MONITOR", badge: day.stressValue.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(1))), value: day.tension, detail: day.stressUpdated, tint: PulseColor.mint) { panel = .stress }
                     }
                     myDay(data, day: day).zIndex(3)
                     plan
@@ -61,9 +61,9 @@ struct PulseHomeView: View {
                     discover
                     HStack(spacing: 8) {
                         WhoopWordmark().frame(width: 65, height: 12).accessibilityLabel("WHOOP")
-                        Text("PEAK").font(PulseFont.body(10)).tracking(3).foregroundStyle(PulseColor.sleep)
+                        Text("PEAK").font(PulseFont.body(10)).tracking(AppLanguage.isArabic ? 0 : 3).foregroundStyle(PulseColor.sleep)
                     }.frame(maxWidth: .infinity).padding(.top, 11)
-                    Text("Illustrative reference data · Bluetooth readings are separate").font(PulseFont.body(9)).foregroundStyle(PulseColor.muted).frame(maxWidth: .infinity).padding(.bottom, 20)
+                    Text(L10n.text("Illustrative reference data · Bluetooth readings are separate")).font(PulseFont.body(9)).foregroundStyle(PulseColor.muted).frame(maxWidth: .infinity).padding(.bottom, 20)
                 }.padding(.horizontal, 14.5).padding(.top, 22).padding(.bottom, 100)
                     .frame(maxWidth: 600).frame(maxWidth: .infinity)
                     .background(GeometryReader { proxy in Color.clear.preference(key: PulseHomeOffset.self, value: proxy.frame(in: .named("pulseHomeScroll")).minY) })
@@ -89,10 +89,10 @@ struct PulseHomeView: View {
                 HStack(spacing: -5) {
                     Circle().fill(LinearGradient(colors: [Color(red: 1, green: 0.71, blue: 0.44), Color(red: 1, green: 0.52, blue: 0.47)], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: 29, height: 29).overlay(Text(store.profile.initials(fallback: data.initials)).font(PulseFont.body(10).weight(.medium)).foregroundStyle(.black))
-                    HStack(spacing: 7) { Text("🔥").font(.system(size: 15)); Text(streak.formatted()).font(PulseFont.number(11)).lineLimit(1).minimumScaleFactor(0.3) }
+                    HStack(spacing: 7) { Text("🔥").font(.system(size: 15)); Text(L10n.text(streak.formatted())).font(PulseFont.number(11)).lineLimit(1).minimumScaleFactor(0.3) }
                         .frame(width: 57, height: 29).background(PulseColor.card, in: RoundedRectangle(cornerRadius: 11))
                 }.frame(minHeight: 44)
-            }.buttonStyle(PulsePressStyle()).accessibilityLabel("Profile, \(streak)-day displayed streak")
+            }.buttonStyle(PulsePressStyle()).accessibilityLabel(L10n.text("Profile, \(streak)-day displayed streak"))
             Spacer(minLength: 3)
             Button { showingTracker = true } label: {
                 HStack(spacing: 4) {
@@ -111,7 +111,7 @@ struct PulseHomeView: View {
             HStack(spacing: 32) {
                 PulseRing(value: "\(day.sleep)%", fraction: Double(day.sleep) / 100, previous: nil, tint: PulseColor.sleep, label: "SLEEP") { panel = .sleep }
                 PulseRing(value: "\(day.readiness)%", fraction: Double(day.readiness) / 100, previous: nil, tint: recoveryColor(day.readiness), label: "RECOVERY") { panel = .recovery }
-                PulseRing(value: day.load.formatted(.number.precision(.fractionLength(1))), fraction: day.load / 21, previous: 0.5, tint: PulseColor.load, label: "STRAIN") { panel = .strain }
+                PulseRing(value: day.load.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(1))), fraction: day.load / 21, previous: 0.5, tint: PulseColor.load, label: "STRAIN") { panel = .strain }
             }.padding(.horizontal, 15)
         }.frame(maxWidth: .infinity)
     }
@@ -128,7 +128,7 @@ struct PulseHomeView: View {
         Button { panel = destination } label: {
             HStack(spacing: 7) {
                 ZStack { Circle().stroke(.white.opacity(0.10), lineWidth: 2); Circle().trim(from: 0, to: value).stroke(color, lineWidth: 2).rotationEffect(.degrees(-90)) }.frame(width: 20, height: 20)
-                Text(title).font(PulseFont.label(10)).tracking(0.8)
+                Text(L10n.text(title)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
             }.frame(minHeight: 39)
         }.buttonStyle(PulsePressStyle())
     }
@@ -136,8 +136,8 @@ struct PulseHomeView: View {
         PulseCard(padding: 18) {
             HStack(alignment: .top, spacing: 13) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(day.insightTitle).font(PulseFont.body(13.5).weight(.semibold))
-                    Text(day.insightBody).font(PulseFont.body(13)).foregroundStyle(PulseColor.text.opacity(0.75)).lineSpacing(2).fixedSize(horizontal: false, vertical: true)
+                    Text(L10n.text(day.insightTitle)).font(PulseFont.body(13.5).weight(.semibold))
+                    Text(L10n.text(day.insightBody)).font(PulseFont.body(13)).foregroundStyle(PulseColor.text.opacity(0.75)).lineSpacing(2).fixedSize(horizontal: false, vertical: true)
                 }
                 VStack(spacing: 5) { Image(systemName: "checkmark").font(.system(size: 15)); Text("1").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted) }.padding(5).background(.white.opacity(0.10), in: RoundedRectangle(cornerRadius: 9))
             }.frame(minHeight: 75, alignment: .top)
@@ -147,7 +147,7 @@ struct PulseHomeView: View {
         VStack(spacing: 15) {
             VStack(spacing: 5) {
                 HStack {
-                    Text("My Day").font(PulseFont.section)
+                    Text(L10n.text("My Day")).font(PulseFont.section)
                     Spacer()
                     Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { quickMenu.toggle() } } label: {
                         Image(systemName: quickMenu ? "xmark" : "plus").font(.system(size: 23, weight: .regular))
@@ -165,7 +165,7 @@ struct PulseHomeView: View {
                 Button { panel = .review } label: {
                     HStack(spacing: 9) {
                         Image(systemName: "moon").font(.system(size: 20, weight: .light)).foregroundStyle(Color(red: 0.67, green: 0.61, blue: 0.88))
-                        Text("\(store.profile.displayName.isEmpty ? data.firstName : store.profile.displayName)'s Day In Review").font(PulseFont.body(13.5))
+                        Text(L10n.text("\(store.profile.displayName.isEmpty ? data.firstName : store.profile.displayName)'s Day In Review")).font(PulseFont.body(13.5))
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 15, weight: .light)).foregroundStyle(PulseColor.sleep)
                     }.padding(.horizontal, 14).frame(minHeight: 44)
@@ -180,20 +180,20 @@ struct PulseHomeView: View {
     private func tonight(_ day: PulseHomeDay) -> some View {
         PulseCard {
             VStack(spacing: 14) {
-                HStack { Text("TONIGHT’S SLEEP").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 13, weight: .light)).foregroundStyle(PulseColor.muted) }
+                HStack { Text(L10n.text("TONIGHT’S SLEEP")).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 13, weight: .light)).foregroundStyle(PulseColor.muted) }
                 HStack(alignment: .top) {
                     VStack(spacing: 7) {
                         Label(day.bedtime, systemImage: "sun.horizon").font(PulseFont.number(22))
-                        Text("RECOMMENDED\nBEDTIME").font(PulseFont.label(9)).tracking(0.7).foregroundStyle(PulseColor.muted).multilineTextAlignment(.center)
+                        Text(L10n.text("RECOMMENDED\nBEDTIME")).font(PulseFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.7).foregroundStyle(PulseColor.muted).multilineTextAlignment(.center)
                     }.frame(maxWidth: .infinity)
                     Text("---------").font(PulseFont.body(11)).foregroundStyle(PulseColor.muted.opacity(0.5)).padding(.top, 7).accessibilityHidden(true)
                     VStack(spacing: 7) {
                         Label(day.plannedWake, systemImage: "sun.horizon").font(PulseFont.number(22))
-                        Text("ALARM OFF").font(PulseFont.label(9)).tracking(0.8).foregroundStyle(PulseColor.yellow)
+                        Text(L10n.text("ALARM OFF")).font(PulseFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(PulseColor.yellow)
                     }.frame(maxWidth: .infinity)
                 }.padding(.vertical, 7)
                 Button { panel = .alarm } label: {
-                    Label("SET ALARM", systemImage: "sensor.tag.radiowaves.forward").font(PulseFont.label(10)).tracking(0.9).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 8))
+                    Label(L10n.text("SET ALARM"), systemImage: "sensor.tag.radiowaves.forward").font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.9).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 8))
                 }.buttonStyle(PulsePressStyle()).frame(minHeight: 44)
             }
         }
@@ -201,7 +201,7 @@ struct PulseHomeView: View {
     private func activities(_ day: PulseHomeDay) -> some View {
         PulseCard(padding: 11) {
             VStack(spacing: 11) {
-                HStack { Text("TODAY’S ACTIVITIES").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "arrow.up.right.and.arrow.down.left").font(.system(size: 14)).foregroundStyle(PulseColor.muted) }.padding(.horizontal, 3).padding(.top, 4).padding(.bottom, 3)
+                HStack { Text(L10n.text("TODAY’S ACTIVITIES")).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "arrow.up.right.and.arrow.down.left").font(.system(size: 14)).foregroundStyle(PulseColor.muted) }.padding(.horizontal, 3).padding(.top, 4).padding(.bottom, 3)
                 ForEach(day.activities) { activity in
                     Button { panel = activity.isSleep ? .sleep : .activity } label: { PulseReferenceActivityRow(activity: activity) }.buttonStyle(PulsePressStyle())
                 }
@@ -214,37 +214,37 @@ struct PulseHomeView: View {
     }
     private func smallAction(_ title: String, _ icon: String, _ destination: PulseHomePanel) -> some View {
         Button { panel = destination } label: {
-            Label(title, systemImage: icon).font(PulseFont.label(9)).tracking(0.8).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+            Label(L10n.text(title), systemImage: icon).font(PulseFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.8).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
         }.buttonStyle(PulsePressStyle()).frame(minHeight: 44)
     }
     private func journal(_ data: PulseHomeData) -> some View {
         PulseCard {
             VStack(spacing: 19) {
-                Button { panel = .journal } label: { HStack { Text("MY JOURNAL").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 13)).foregroundStyle(PulseColor.muted) } }.buttonStyle(PulsePressStyle())
+                Button { panel = .journal } label: { HStack { Text(L10n.text("MY JOURNAL")).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 13)).foregroundStyle(PulseColor.muted) } }.buttonStyle(PulsePressStyle())
                 HStack {
                     ForEach(Array(data.days.enumerated()), id: \.element.id) { item in
                         Button { index = item.offset } label: {
                             VStack(spacing: 9) {
-                                Text(item.element.weekday.uppercased()).font(PulseFont.label(9)).tracking(0.7)
+                                Text(L10n.text(item.element.weekday.uppercased())).font(PulseFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.7)
                                 Circle().fill(item.offset == index ? .white.opacity(0.22) : .clear).overlay(Circle().stroke(item.offset == index ? .white.opacity(0.7) : .white.opacity(0.20), lineWidth: 0.8)).frame(width: 19, height: 19)
                             }.frame(maxWidth: .infinity, minHeight: 44).foregroundStyle(item.offset == index ? PulseColor.text : PulseColor.muted)
-                        }.buttonStyle(PulsePressStyle()).accessibilityLabel("Journal for \(item.element.weekday), November \(item.element.dayNumber)")
+                        }.buttonStyle(PulsePressStyle()).accessibilityLabel(L10n.text("Journal for \(item.element.weekday), November \(item.element.dayNumber)"))
                     }
                 }.padding(.vertical, 7)
-                Button { panel = .journal } label: { Label("BEHAVIOR INSIGHTS", systemImage: "lightbulb").font(PulseFont.label(10)).tracking(0.9).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 8)) }.buttonStyle(PulsePressStyle()).frame(minHeight: 44)
+                Button { panel = .journal } label: { Label(L10n.text("BEHAVIOR INSIGHTS"), systemImage: "lightbulb").font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.9).frame(maxWidth: .infinity, minHeight: 36).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 8)) }.buttonStyle(PulsePressStyle()).frame(minHeight: 44)
             }.padding(.vertical, 4)
         }
     }
     private var plan: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("My Plan").font(PulseFont.section)
+            Text(L10n.text("My Plan")).font(PulseFont.section)
             Button { panel = .plan } label: {
                 PulseCard(padding: 18) {
                     HStack(spacing: 5) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Build Your Best Self").font(PulseFont.body(13.5).weight(.semibold))
-                            Text("Set goals, track progress, and turn small actions into long-term wins.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted).lineSpacing(3)
-                            HStack(spacing: 9) { Text("EXPLORE PLANS").font(PulseFont.label(10)).tracking(0.9); Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)) }.foregroundStyle(PulseColor.sleep)
+                            Text(L10n.text("Build Your Best Self")).font(PulseFont.body(13.5).weight(.semibold))
+                            Text(L10n.text("Set goals, track progress, and turn small actions into long-term wins.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted).lineSpacing(3)
+                            HStack(spacing: 9) { Text(L10n.text("EXPLORE PLANS")).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.9); Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)) }.foregroundStyle(PulseColor.sleep)
                         }
                         PulsePlanArtwork()
                     }.frame(minHeight: 94)
@@ -255,38 +255,38 @@ struct PulseHomeView: View {
     private func dashboard(_ data: PulseHomeData, day: PulseHomeDay) -> some View {
         VStack(spacing: 11) {
             HStack {
-                Text("My Dashboard").font(PulseFont.section)
+                Text(L10n.text("My Dashboard")).font(PulseFont.section)
                 Spacer()
-                Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { customizing.toggle() } } label: { Label("CUSTOMIZE", systemImage: "pencil").font(PulseFont.label(9)).tracking(0.8).frame(minHeight: 44) }.buttonStyle(PulsePressStyle())
+                Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { customizing.toggle() } } label: { Label(L10n.text("CUSTOMIZE"), systemImage: "pencil").font(PulseFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.8).frame(minHeight: 44) }.buttonStyle(PulsePressStyle())
             }.frame(height: 34).padding(.bottom, 1)
             if customizing {
                 PulseCard {
                     ForEach(day.statistics) { stat in
-                        Toggle(stat.title, isOn: Binding(get: { !hiddenMetrics.contains(stat.id) }, set: { visible in if visible { hiddenMetrics.remove(stat.id) } else { hiddenMetrics.insert(stat.id) } })).font(PulseFont.body(12)).frame(minHeight: 44)
+                        Toggle(L10n.text(stat.title), isOn: Binding(get: { !hiddenMetrics.contains(stat.id) }, set: { visible in if visible { hiddenMetrics.remove(stat.id) } else { hiddenMetrics.insert(stat.id) } })).font(PulseFont.body(12)).frame(minHeight: 44)
                     }
                 }.tint(PulseColor.mint)
             }
             ForEach(day.statistics.prefix(3).filter { !hiddenMetrics.contains($0.id) }) { PulseReferenceMetric(metric: $0) }
             PulseCard {
-                HStack { Text("STRAIN & RECOVERY").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "info.circle").font(.system(size: 14)).foregroundStyle(PulseColor.muted) }
+                HStack { Text(L10n.text("STRAIN & RECOVERY")).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "info.circle").font(.system(size: 14)).foregroundStyle(PulseColor.muted) }
                 PulseWeekChart(days: data.days, selected: index)
             }
             Button { panel = .stress } label: {
                 PulseCard {
                     VStack(spacing: 17) {
-                        HStack { Text("STRESS MONITOR").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 15, weight: .light)).foregroundStyle(PulseColor.muted) }
-                        HStack { Text("Last updated \(day.stressUpdated)").font(PulseFont.body(10.5)).foregroundStyle(PulseColor.muted); Spacer(); Text(day.tension).font(PulseFont.label(11)).tracking(0.6).foregroundStyle(PulseColor.mint); Text(day.stressValue.formatted(.number.precision(.fractionLength(1)))).font(PulseFont.number(16)) }
+                        HStack { Text(L10n.text("STRESS MONITOR")).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.right").font(.system(size: 15, weight: .light)).foregroundStyle(PulseColor.muted) }
+                        HStack { Text(L10n.text("Last updated \(day.stressUpdated)")).font(PulseFont.body(10.5)).foregroundStyle(PulseColor.muted); Spacer(); Text(L10n.text(day.tension)).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.6).foregroundStyle(PulseColor.mint); Text(L10n.text(day.stressValue.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(1))))).font(PulseFont.number(16)) }
                         PulseStressChart(values: day.stressValues)
                     }
                 }
             }.buttonStyle(PulsePressStyle())
             ForEach(day.statistics.dropFirst(3).filter { !hiddenMetrics.contains($0.id) }) { PulseReferenceMetric(metric: $0) }
-            Button { panel = .weight } label: { PulseCard { HStack { Label("WEIGHT", systemImage: "scalemass").font(PulseFont.label(10.5)).tracking(0.8); Spacer(); Image(systemName: "chevron.right").foregroundStyle(PulseColor.muted) }.frame(minHeight: 27) } }.buttonStyle(PulsePressStyle())
+            Button { panel = .weight } label: { PulseCard { HStack { Label(L10n.text("WEIGHT"), systemImage: "scalemass").font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.right").foregroundStyle(PulseColor.muted) }.frame(minHeight: 27) } }.buttonStyle(PulsePressStyle())
         }
     }
     private var discover: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Discover More").font(PulseFont.section).padding(.bottom, 2)
+            Text(L10n.text("Discover More")).font(PulseFont.section).padding(.bottom, 2)
             PulseDiscoverCard(title: "Test with Advanced Labs", detail: "Clinician-reviewed lab results of up to 122+ biomarkers. HSA/FSA eligible.", cta: "GO TO ADVANCED LABS", symbol: "testtube.2", tone: PulseColor.mint) { panel = .labs }
             PulseDiscoverCard(title: "Explore the WHOOP shop", detail: "New bands, smart apparel, batteries and accessories", cta: "GO TO SHOP", symbol: "bag", tone: PulseColor.sleep) { panel = .shop }
             PulseDiscoverCard(title: "Get your friend on WHOOP", detail: "Get a 1 month credit for each friend you refer", cta: "REFER A FRIEND", symbol: "person.2", tone: .orange) { panel = .referral }

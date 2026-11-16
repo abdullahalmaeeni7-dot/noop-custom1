@@ -1,4 +1,5 @@
 import SwiftUI
+import WHOOPCore
 
 struct PulseReferenceMonitor: View {
     let title: String
@@ -12,15 +13,15 @@ struct PulseReferenceMonitor: View {
             PulseCard {
                 VStack(alignment: .leading, spacing: 15) {
                     HStack {
-                        Text(title).font(PulseFont.label(11)).tracking(0.8)
+                        Text(L10n.text(title)).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right").font(.system(size: 13, weight: .light)).foregroundStyle(PulseColor.muted)
                     }
                     HStack(spacing: 7) {
-                        Text(badge).font(PulseFont.number(13)).foregroundStyle(tint).frame(width: 23, height: 23).background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 4))
+                        Text(L10n.text(badge)).font(PulseFont.number(13)).foregroundStyle(tint).frame(width: 23, height: 23).background(tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 4))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(value).font(PulseFont.label(11)).tracking(0.8).foregroundStyle(tint)
-                            Text(detail).font(PulseFont.body(10.5)).foregroundStyle(PulseColor.muted)
+                            Text(L10n.text(value)).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(tint)
+                            Text(L10n.text(detail)).font(PulseFont.body(10.5)).foregroundStyle(PulseColor.muted)
                         }
                     }
                 }.frame(height: 57, alignment: .center)
@@ -34,12 +35,12 @@ struct PulseReferenceActivityRow: View {
         HStack(spacing: 12) {
             HStack(spacing: 5) {
                 Image(systemName: activity.symbol).font(.system(size: activity.isSleep ? 18 : 20, weight: .light))
-                Text(activity.metric).font(PulseFont.number(17)).monospacedDigit()
+                Text(L10n.text(activity.metric)).font(PulseFont.number(17)).monospacedDigit()
             }.frame(width: 86, height: 36).background(activity.isSleep ? PulseColor.sleep : PulseColor.load, in: RoundedRectangle(cornerRadius: 7))
-            Text(activity.title).font(PulseFont.label(10.5)).tracking(1)
+            Text(L10n.text(activity.title)).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 1)
             Spacer(minLength: 1)
             VStack(alignment: .trailing, spacing: 4) {
-                Text(activity.start); Text(activity.end)
+                Text(L10n.text(activity.start)); Text(L10n.text(activity.end))
             }.font(PulseFont.compact(10)).foregroundStyle(PulseColor.muted)
             Rectangle().fill(activity.isSleep ? PulseColor.sleep : PulseColor.load).frame(width: 1.5, height: 25).overlay(alignment: .top) { Circle().fill(.white).frame(width: 2, height: 2) }.overlay(alignment: .bottom) { Circle().fill(.white).frame(width: 2, height: 2) }
         }.padding(7).frame(minHeight: 51).background(.white.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
@@ -53,11 +54,11 @@ struct PulseReferenceMetric: View {
         PulseCard(padding: 10) {
             HStack(spacing: 9) {
                 Image(systemName: metric.symbol).font(.system(size: 19, weight: .light)).foregroundStyle(PulseColor.muted).frame(width: 18)
-                Text(metric.title).font(PulseFont.label(10)).tracking(0.7)
+                Text(L10n.text(metric.title)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.7)
                 Spacer(minLength: 2)
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(metric.value).font(PulseFont.number(20)).monospacedDigit()
-                    Text(metric.baseline).font(PulseFont.compact(10)).foregroundStyle(PulseColor.muted)
+                    Text(L10n.text(metric.value)).font(PulseFont.number(20)).monospacedDigit()
+                    Text(L10n.text(metric.baseline)).font(PulseFont.compact(10)).foregroundStyle(PulseColor.muted)
                 }
                 Image(systemName: metric.direction < 0 ? "arrowtriangle.down.fill" : "arrowtriangle.up.fill").font(.system(size: 6)).foregroundStyle(tint)
             }.frame(minHeight: 27)
@@ -97,9 +98,9 @@ struct PulseDiscoverCard: View {
                         Image(systemName: symbol).font(.system(size: 29, weight: .light)).foregroundStyle(tone)
                     }.frame(width: 66, height: 66)
                     VStack(alignment: .leading, spacing: 9) {
-                        Text(title).font(PulseFont.body(13.5).weight(.semibold))
-                        Text(detail).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted).lineSpacing(2).fixedSize(horizontal: false, vertical: true)
-                        HStack(spacing: 8) { Text(cta).font(PulseFont.label(10)).tracking(1); Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)) }.foregroundStyle(PulseColor.sleep)
+                        Text(L10n.text(title)).font(PulseFont.body(13.5).weight(.semibold))
+                        Text(L10n.text(detail)).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted).lineSpacing(2).fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: 8) { Text(L10n.text(cta)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 1); Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)) }.foregroundStyle(PulseColor.sleep)
                     }
                 }.frame(minHeight: 78)
             }
@@ -124,7 +125,7 @@ struct PulseQuickMenu: View {
         Button { action(panel) } label: {
             HStack(spacing: 13) {
                 Image(systemName: symbol).font(.system(size: 20, weight: .light)).foregroundStyle(PulseColor.muted).frame(width: 20)
-                Text(title).font(PulseFont.label(10)).tracking(0.9)
+                Text(L10n.text(title)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.9)
                 Spacer(minLength: 0)
             }.frame(height: 51).contentShape(Rectangle())
         }.buttonStyle(PulsePressStyle())

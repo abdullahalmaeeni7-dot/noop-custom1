@@ -1,3 +1,5 @@
+Arabic is available from the globe on first launch or **More → Language → العربية**. The app remembers the choice and mirrors the interface. Nutrition AI can use a separate Gemini service without WHOOP OAuth: follow [the deployment and pairing guide](Server/NUTRITION-SETUP.md). No provider key is bundled in the app. Shared point measurements now drive Home rings, cards, the day selector and navigation; reference geometry is documented in [design tokens](design/tokens/home.json).
+
 # WHOOP iPhone app
 
 First launch opens Welcome → Profile → Find your tracker → Import data → Home. Later launches use your saved profile and measurements. Import the official WHOOP web-export ZIP directly; no account bridge is needed for ZIP imports.

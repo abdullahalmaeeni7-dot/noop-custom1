@@ -91,6 +91,10 @@ jobs:
           fi
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
           xcrun simctl status_bar "$SIM_DEVICE" override --time '9:34' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+          for REVIEW_LANGUAGE in en ar; do
+          xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
+          xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
+          export REVIEW_LANGUAGE
           APP_CONTAINER=$(xcrun simctl get_app_container "$SIM_DEVICE" local.whoop.reconstruction data)
           export APP_CONTAINER
           python3 - <<'PYTHON'
@@ -106,17 +110,28 @@ jobs:
           preferences = container/'Library/Preferences/local.whoop.reconstruction.plist'
           preferences.parent.mkdir(parents=True,exist_ok=True)
           with preferences.open('wb') as output:
-              plistlib.dump({'whoop.setup.completed.v1':True},output)
+              plistlib.dump({'whoop.setup.completed.v1':True,'whoop.language.v1':os.environ['REVIEW_LANGUAGE'],'AppleLanguages':[os.environ['REVIEW_LANGUAGE']]},output)
           PYTHON
           xcrun simctl launch "$SIM_DEVICE" local.whoop.reconstruction
           sleep 5
-          xcrun simctl io "$SIM_DEVICE" screenshot build/visual-review/02-home.png
+          xcrun simctl io "$SIM_DEVICE" screenshot "build/visual-review/02-home-$REVIEW_LANGUAGE.png"
           xcrun simctl terminate "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
+          APP_CONTAINER=$(xcrun simctl get_app_container "$SIM_DEVICE" local.whoop.reconstruction data)
+          export APP_CONTAINER
+          python3 - <<'PYTHON'
+          import os, pathlib, plistlib
+          pref = pathlib.Path(os.environ['APP_CONTAINER'])/'Library/Preferences/local.whoop.reconstruction.plist'
+          pref.parent.mkdir(parents=True,exist_ok=True)
+          with pref.open('wb') as output:
+              plistlib.dump({'whoop.language.v1':os.environ['REVIEW_LANGUAGE'],'AppleLanguages':[os.environ['REVIEW_LANGUAGE']]},output)
+          PYTHON
           xcrun simctl launch "$SIM_DEVICE" local.whoop.reconstruction
           sleep 4
-          xcrun simctl io "$SIM_DEVICE" screenshot build/visual-review/01-first-launch.png
+          xcrun simctl io "$SIM_DEVICE" screenshot "build/visual-review/01-first-launch-$REVIEW_LANGUAGE.png"
+          xcrun simctl terminate "$SIM_DEVICE" local.whoop.reconstruction
+          done
           python3 - <<'PYTHON'
           import json, os
           from pathlib import Path

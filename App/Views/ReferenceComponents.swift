@@ -23,15 +23,15 @@ struct ReferenceMetricRow: View {
                 Image(systemName: symbol).font(.system(size: compact ? 15 : 18, weight: .light))
                     .foregroundStyle(WColor.muted).frame(width: compact ? 20 : 24)
             }
-            Text(title.uppercased()).font(WFont.label(compact ? 10 : 11)).tracking(0.7)
+            Text(L10n.text(title.uppercased())).font(WFont.label(compact ? 10 : 11)).tracking(AppLanguage.isArabic ? 0 : 0.7)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 5)
             VStack(alignment: .trailing, spacing: 1) {
                 HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(value == "—" ? "NO DATA" : value).font(WFont.number(value == "—" ? 12 : compact ? 20 : 22, bold: true))
-                    if !unit.isEmpty && value != "—" { Text(unit).font(WFont.body(10)).foregroundStyle(WColor.muted) }
+                    Text(L10n.text(value == "—" ? "NO DATA" : value)).font(WFont.number(value == "—" ? 12 : compact ? 20 : 22, bold: true))
+                    if !unit.isEmpty && value != "—" { Text(L10n.text(unit)).font(WFont.body(10)).foregroundStyle(WColor.muted) }
                 }
-                if let previous { Text(previous).font(WFont.number(10)).foregroundStyle(WColor.muted) }
+                if let previous { Text(L10n.text(previous)).font(WFont.number(10)).foregroundStyle(WColor.muted) }
             }
             if let difference, difference.isFinite, difference != 0 {
                 Image(systemName: difference > 0 ? "arrowtriangle.up.fill" : "arrowtriangle.down.fill")
@@ -55,8 +55,8 @@ struct MonitorShortcut: View {
                 HStack(alignment: .top, spacing: 7) {
                     Image(systemName: symbol).font(.system(size: 16, weight: .light)).foregroundStyle(color)
                     VStack(alignment: .leading, spacing: 7) {
-                        Text(title).font(WFont.label(9)).tracking(0.5)
-                        Text(value).font(WFont.label(9)).foregroundStyle(color)
+                        Text(L10n.text(title)).font(WFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.5)
+                        Text(L10n.text(value)).font(WFont.label(9)).foregroundStyle(color)
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").font(.system(size: 8)).foregroundStyle(WColor.muted)
@@ -73,16 +73,16 @@ struct ReferenceActivityRow: View {
             HStack(spacing: 11) {
                 HStack(spacing: 5) {
                     Image(systemName: activity.name.localizedCaseInsensitiveContains("walk") ? "figure.walk" : activity.name.localizedCaseInsensitiveContains("soccer") ? "figure.soccer" : "figure.run").font(.system(size: 20, weight: .light))
-                    Text(activity.strain.map { decimalText($0) } ?? "—").font(WFont.number(17, bold: true))
+                    Text(L10n.text(activity.strain.map { decimalText($0) } ?? "—")).font(WFont.number(17, bold: true))
                 }.frame(width: 79, height: 39).background(WColor.blue.opacity(0.8), in: RoundedRectangle(cornerRadius: 4))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(activity.name.uppercased()).font(WFont.label(11)).lineLimit(1)
-                    if activity.strainIsEstimate == true { Text("LOCAL STRAIN ESTIMATE").font(WFont.label(7)).foregroundStyle(WColor.muted) }
+                    Text(L10n.text(activity.name.uppercased())).font(WFont.label(11)).lineLimit(1)
+                    if activity.strainIsEstimate == true { Text(L10n.text("LOCAL STRAIN ESTIMATE")).font(WFont.label(7)).foregroundStyle(WColor.muted) }
                 }
                 Spacer(minLength: 4)
                 VStack(alignment: .trailing, spacing: 3) {
-                    Text(utcDateText(activity.start, style: .dateTime.hour().minute())).font(WFont.number(10))
-                    Text(utcDateText(activity.start.addingTimeInterval(Double(activity.durationMinutes) * 60), style: .dateTime.hour().minute())).font(WFont.number(10)).foregroundStyle(WColor.muted)
+                    Text(L10n.text(utcDateText(activity.start, style: .dateTime.hour().minute()))).font(WFont.number(10))
+                    Text(L10n.text(utcDateText(activity.start.addingTimeInterval(Double(activity.durationMinutes) * 60), style: .dateTime.hour().minute()))).font(WFont.number(10)).foregroundStyle(WColor.muted)
                 }
             }
         }
@@ -123,10 +123,10 @@ struct ReferenceDashboard: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("My Dashboard").font(WFont.body(20).weight(.semibold))
+                Text(L10n.text("My Dashboard")).font(WFont.body(20).weight(.semibold))
                 Spacer()
                 Button { customizing = true } label: {
-                    Label("CUSTOMIZE", systemImage: "pencil").font(WFont.label(10)).tracking(0.6).foregroundStyle(.white).frame(minHeight: 44)
+                    Label(L10n.text("CUSTOMIZE"), systemImage: "pencil").font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.6).foregroundStyle(.white).frame(minHeight: 44)
                 }
             }
             ForEach([DashboardItem.calories, .steps, .restingHeartRate].filter { mask & $0.bit != 0 }) { item in
@@ -143,17 +143,17 @@ struct ReferenceDashboard: View {
                 }
             }
             if mask == 0 {
-                Button("CHOOSE YOUR METRICS") { customizing = true }.buttonStyle(WButton(filled: false))
+                Button(L10n.text("CHOOSE YOUR METRICS")) { customizing = true }.buttonStyle(WButton(filled: false))
             }
         }
         .sheet(isPresented: $customizing) {
             SheetScaffold(title: "MY DASHBOARD") {
                 VStack(spacing: 14) {
-                    Text("Choose the measurements you want to see. Unavailable measurements stay blank.")
+                    Text(L10n.text("Choose the measurements you want to see. Unavailable measurements stay blank."))
                         .font(WFont.body(15)).foregroundStyle(WColor.muted)
                     WCard {
                         ForEach(DashboardItem.allCases) { item in
-                            Toggle(item.title, isOn: Binding(get: { mask & item.bit != 0 }, set: { enabled in
+                            Toggle(L10n.text(item.title), isOn: Binding(get: { mask & item.bit != 0 }, set: { enabled in
                                 if enabled { mask |= item.bit } else { mask &= ~item.bit }
                             })).font(WFont.body(15)).padding(.vertical, 8)
                         }
@@ -182,10 +182,10 @@ struct DetailInsight: View {
     let action: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(text).font(WFont.body(16)).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
+            Text(L10n.text(text)).font(WFont.body(16)).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
             Button(action: action) {
                 HStack(spacing: 7) {
-                    Text(actionTitle).font(WFont.label(10)).tracking(0.7)
+                    Text(L10n.text(actionTitle)).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.7)
                     Image(systemName: "arrow.right").font(.system(size: 18, weight: .light))
                 }.foregroundStyle(WColor.purple)
             }
@@ -214,12 +214,12 @@ struct HealthAgeCard: View {
                         }
                     }
                     VStack(spacing: 4) {
-                        Text(store.profile.whoopAge.isEmpty ? "NO DATA" : store.profile.whoopAge).font(WFont.number(store.profile.whoopAge.isEmpty ? 20 : 34, bold: true)).lineLimit(1).minimumScaleFactor(0.4)
-                        Text("WHOOP AGE").font(WFont.label(11)).tracking(0.8)
-                        Text(store.profile.whoopAge.isEmpty ? "Not available" : "Personalized display").font(WFont.body(12)).foregroundStyle(WColor.muted)
+                        Text(L10n.text(store.profile.whoopAge.isEmpty ? "NO DATA" : store.profile.whoopAge)).font(WFont.number(store.profile.whoopAge.isEmpty ? 20 : 34, bold: true)).lineLimit(1).minimumScaleFactor(0.4)
+                        Text(L10n.text("WHOOP AGE")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                        Text(L10n.text(store.profile.whoopAge.isEmpty ? "Not available" : "Personalized display")).font(WFont.body(12)).foregroundStyle(WColor.muted)
                     }
                 }.frame(width: 190, height: 190)
-                Text(store.profile.whoopAge.isEmpty ? "An age score is not included in your current data. You can personalize its display in Profile." : "Your chosen profile value. This is not a calculated health-age measurement.")
+                Text(L10n.text(store.profile.whoopAge.isEmpty ? "An age score is not included in your current data. You can personalize its display in Profile." : "Your chosen profile value. This is not a calculated health-age measurement."))
                     .font(WFont.body(12)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
         }.frame(maxWidth: .infinity).padding(.vertical, 20).accessibilityElement(children: .combine)
     }
@@ -230,17 +230,17 @@ struct StressMonitorView: View {
     var body: some View {
         SheetScaffold(title: "STRESS MONITOR") {
             VStack(spacing: 24) {
-                Text("TODAY").font(WFont.label(10)).tracking(1.2)
+                Text(L10n.text("TODAY")).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 1.2)
                 ZStack {
                     Circle().trim(from: 0, to: 0.75)
                         .stroke(AngularGradient(colors: [WColor.sleep, Color.teal, WColor.yellow], center: .center, startAngle: .degrees(135), endAngle: .degrees(405)), style: StrokeStyle(lineWidth: 7, lineCap: .round))
                         .rotationEffect(.degrees(135))
                     VStack(spacing: 8) {
                         Text("—").font(WFont.number(57, bold: true))
-                        Text("NO STRESS DATA").font(WFont.label(10)).tracking(0.8).foregroundStyle(WColor.muted)
+                        Text(L10n.text("NO STRESS DATA")).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(WColor.muted)
                     }
                 }.frame(width: 224, height: 224)
-                Text("A stress score is not supplied by your current data. Heart-rate samples alone are not a WHOOP stress measurement.")
+                Text(L10n.text("A stress score is not supplied by your current data. Heart-rate samples alone are not a WHOOP stress measurement."))
                     .font(WFont.body(15)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
                 if !store.selectedDay.heartRates.isEmpty {
                     SectionHeading(title: "Heart rate", subtitle: "Your recorded heart rate, not a stress score")
@@ -258,27 +258,27 @@ struct DayReviewView: View {
     var body: some View {
         SheetScaffold(title: "DAY IN REVIEW") {
             VStack(alignment: .leading, spacing: 22) {
-                Text(utcDateText(store.selectedDate, style: .dateTime.weekday(.wide).month(.abbreviated).day())).font(WFont.body(16)).foregroundStyle(WColor.muted)
+                Text(L10n.text(utcDateText(store.selectedDate, style: .dateTime.weekday(.wide).month(.abbreviated).day()))).font(WFont.body(16)).foregroundStyle(WColor.muted)
                 SourceBadge(source: day.source, isEmpty: !selectedDayExists(in: store))
-                Text(store.profile.displayName.isEmpty ? "Your day, in focus" : "Your day, \(store.profile.displayName)").font(WFont.body(26).weight(.semibold))
+                Text(L10n.text(store.profile.displayName.isEmpty ? "Your day, in focus" : "Your day, \(store.profile.displayName)")).font(WFont.body(26).weight(.semibold))
                 WCard(padding: 18) {
                     VStack(alignment: .leading, spacing: 14) {
                         if !selectedDayExists(in: store) {
-                            Text("Import your measurements to review your sleep, Recovery and Strain here.")
+                            Text(L10n.text("Import your measurements to review your sleep, Recovery and Strain here."))
                         } else {
-                            if let recovery = day.recovery { Text("Your recorded Recovery is \(recovery)%.") }
-                            if let strain = day.strain { Text("You reached \(decimalText(strain)) day Strain.") }
-                            if day.sleepMinutes > 0 { Text("You logged \(durationText(day.sleepMinutes)) of sleep.") }
-                            if day.steps > 0 { Text("You recorded \(day.steps.formatted()) steps.") }
-                            if let hrv = day.hrv { Text("Your HRV was \(decimalText(hrv, places: 0)) ms.") }
+                            if let recovery = day.recovery { Text(L10n.text("Your recorded Recovery is \(recovery)%.")) }
+                            if let strain = day.strain { Text(L10n.text("You reached \(decimalText(strain)) day Strain.")) }
+                            if day.sleepMinutes > 0 { Text(L10n.text("You logged \(durationText(day.sleepMinutes)) of sleep.")) }
+                            if day.steps > 0 { Text(L10n.text("You recorded \(day.steps.formatted()) steps.")) }
+                            if let hrv = day.hrv { Text(L10n.text("Your HRV was \(decimalText(hrv, places: 0)) ms.")) }
                         }
-                        Text("\(store.dayActivities.count) saved activities for this day.")
+                        Text(L10n.text("\(store.dayActivities.count) saved activities for this day."))
                     }.font(WFont.body(18)).lineSpacing(5)
                 }
                 if !store.dayActivities.isEmpty {
                     ForEach(store.dayActivities) { ReferenceActivityRow(activity: $0) }
                 }
-                Text("Summary of saved measurements · no AI interpretation").font(WFont.body(12)).foregroundStyle(WColor.muted)
+                Text(L10n.text("Summary of saved measurements · no AI interpretation")).font(WFont.body(12)).foregroundStyle(WColor.muted)
             }
         }
     }
@@ -296,15 +296,15 @@ struct WeeklyReadinessChart: View {
         WCard(padding: 15) {
             VStack(alignment: .leading, spacing: 22) {
                 HStack {
-                    Text("STRAIN & RECOVERY").font(WFont.label(12)).tracking(0.8)
+                    Text(L10n.text("STRAIN & RECOVERY")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                     Spacer()
-                    Image(systemName: "info.circle").foregroundStyle(WColor.muted).accessibilityLabel("Strain uses a 0 to 21 scale; Recovery uses 0 to 100 percent")
+                    Image(systemName: "info.circle").foregroundStyle(WColor.muted).accessibilityLabel(L10n.text("Strain uses a 0 to 21 scale; Recovery uses 0 to 100 percent"))
                 }
                 if recorded.contains(where: { $0.strain != nil || $0.recovery != nil }) {
                     chart.frame(height: 220)
                     HStack(spacing: 20) {
-                        Label("STRAIN · 0–21", systemImage: "circle.fill").foregroundStyle(WColor.blue)
-                        Label("RECOVERY · 0–100%", systemImage: "circle.fill").foregroundStyle(WColor.yellow)
+                        Label(L10n.text("STRAIN · 0–21"), systemImage: "circle.fill").foregroundStyle(WColor.blue)
+                        Label(L10n.text("RECOVERY · 0–100%"), systemImage: "circle.fill").foregroundStyle(WColor.yellow)
                     }.font(WFont.label(8))
                 } else { MissingInline(symbol: "chart.xyaxis.line", message: "Import a recorded week to see Strain and Recovery trends.") }
             }
@@ -329,19 +329,19 @@ struct WeeklyReadinessChart: View {
                 }
             }
             .chartXAxis { AxisMarks(values: dates) { AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: false).foregroundStyle(WColor.muted) } }
-            .accessibilityLabel("Seven-day Strain and Recovery chart. Missing days are not joined.")
+            .accessibilityLabel(L10n.text("Seven-day Strain and Recovery chart. Missing days are not joined."))
     }
     @ChartContentBuilder private func points(_ day: DailySnapshot) -> some ChartContent {
         if let strain = day.strain {
             PointMark(x: .value("Day", DayCalendar.start(of: day.date)), y: .value("Strain", strain)).foregroundStyle(WColor.blue).symbolSize(55)
-                .annotation(position: .top) { Text(decimalText(strain)).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
-                .accessibilityLabel(Text("Strain on " + utcDateText(day.date, style: .dateTime.month().day())))
-                .accessibilityValue(Text(decimalText(strain)))
+                .annotation(position: .top) { Text(L10n.text(decimalText(strain))).font(WFont.number(11, bold: true)).foregroundStyle(WColor.blue) }
+                .accessibilityLabel(Text(L10n.text("Strain on ") + utcDateText(day.date, style: .dateTime.month().day())))
+                .accessibilityValue(Text(L10n.text(decimalText(strain))))
         }
         if let recovery = day.recovery {
             PointMark(x: .value("Day", DayCalendar.start(of: day.date)), y: .value("Recovery scaled to Strain axis", Double(recovery) * 21 / 100)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))).symbolSize(55)
                 .annotation(position: .bottom) { Text("\(recovery)%").font(WFont.number(10, bold: true)).foregroundStyle(PulseColor.recoveryScore(Double(recovery))) }
-                .accessibilityLabel(Text("Recovery on " + utcDateText(day.date, style: .dateTime.month().day())))
+                .accessibilityLabel(Text(L10n.text("Recovery on ") + utcDateText(day.date, style: .dateTime.month().day())))
                 .accessibilityValue(Text("\(recovery)%"))
         }
     }
@@ -378,9 +378,9 @@ struct HomeMetricStrip: View {
                             Circle().trim(from: 0, to: metric.fraction(store.selectedDay))
                                 .stroke(metric == .recovery ? PulseColor.recoveryScore(store.selectedDay.recovery.map(Double.init)) : metric.color, lineWidth: 2).rotationEffect(.degrees(-90))
                         }.frame(width: 21, height: 21)
-                        Text(metric.title).font(WFont.label(10)).tracking(0.8)
+                        Text(L10n.text(metric.title)).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                     }.frame(maxWidth: .infinity, minHeight: 44)
-                }.buttonStyle(.plain).accessibilityLabel("\(metric.title), \(metric.value(store.selectedDay) == nil ? "no data" : metric.text(store.selectedDay)). Open details")
+                }.buttonStyle(.plain).accessibilityLabel(L10n.text("\(metric.title), \(metric.value(store.selectedDay) == nil ? "no data" : metric.text(store.selectedDay)). Open details"))
             }
         }
     }

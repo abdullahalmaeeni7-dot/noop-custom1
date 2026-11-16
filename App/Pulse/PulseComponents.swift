@@ -1,4 +1,5 @@
 import SwiftUI
+import WHOOPCore
 
 /// Provisional values are documented, with their provenance, in design/tokens/home.json.
 enum PulseColor {
@@ -26,11 +27,25 @@ private extension Color {
     }
 }
 enum PulseFont {
-    static func body(_ size: CGFloat = 13) -> Font { .custom("ProximaNova-Regular", size: size, relativeTo: .body) }
-    static func label(_ size: CGFloat = 9) -> Font { .custom("DINPro-Bold", size: size, relativeTo: .caption) }
+    static func body(_ size: CGFloat = 13) -> Font { AppLanguage.isArabic ? .system(size: size) : .custom("ProximaNova-Regular", size: size, relativeTo: .body) }
+    static func label(_ size: CGFloat = 9) -> Font { AppLanguage.isArabic ? .system(size: size, weight: .bold) : .custom("DINPro-Bold", size: size, relativeTo: .caption) }
     static func number(_ size: CGFloat = 31) -> Font { .custom("DINPro-Bold", size: size, relativeTo: .title) }
     static func compact(_ size: CGFloat) -> Font { .custom("DINPro-Medium", size: size, relativeTo: .body) }
     static let section = body(20).weight(.semibold)
+}
+/// Point geometry from the 945 × 2048 reference at a 393 × 852 viewport.
+/// Touch areas can extend beyond the visible shape without enlarging it.
+enum ReferenceSize {
+    static let pageInset: CGFloat = 14.5
+    static let ringDiameter: CGFloat = 81
+    static let ringStroke: CGFloat = 5.8
+    static let cardRadius: CGFloat = 13
+    static let cardPadding: CGFloat = 14
+    static let dayStripWidth: CGFloat = 126
+    static let dayStripHeight: CGFloat = 28
+    static let navigationHeight: CGFloat = 58
+    static let avatar: CGFloat = 29
+    static let minimumTouch: CGFloat = 44
 }
 struct PulseCard<Content: View>: View {
     private let content: Content
@@ -40,7 +55,7 @@ struct PulseCard<Content: View>: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content }.padding(padding).frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 13, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
+            .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius, style: .continuous), tint: PulseColor.card.opacity(0.13), solid: PulseColor.card))
     }
 }
 struct PulseRing: View {
@@ -56,28 +71,28 @@ struct PulseRing: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 ZStack {
-                    Circle().inset(by: 3).stroke(.white.opacity(0.10), lineWidth: 5.8)
+                    Circle().inset(by: 3).stroke(.white.opacity(0.10), lineWidth: ReferenceSize.ringStroke)
                     Circle().inset(by: 3).trim(from: 0, to: progress)
-                        .stroke(tint, style: StrokeStyle(lineWidth: 5.8, lineCap: .round))
+                        .stroke(tint, style: StrokeStyle(lineWidth: ReferenceSize.ringStroke, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     if let previous {
                         Circle().inset(by: 3).trim(from: max(0, previous - 0.002), to: min(1, previous + 0.002))
-                            .stroke(.white.opacity(0.75), lineWidth: 5.8).rotationEffect(.degrees(-90))
+                            .stroke(.white.opacity(0.75), lineWidth: ReferenceSize.ringStroke).rotationEffect(.degrees(-90))
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
-                        Text(value.hasSuffix("%") ? String(value.dropLast()) : value).font(PulseFont.number(value == "NO DATA" ? 12 : 26))
+                        Text(L10n.text(value.hasSuffix("%") ? String(value.dropLast()) : value)).font(PulseFont.number(value == "NO DATA" ? 12 : 26))
                             .contentTransition(.numericText(value: Double(value.replacingOccurrences(of: "%", with: "")) ?? 0))
                         if value.hasSuffix("%") { Text("%").font(PulseFont.number(17)) }
-                    }.tracking(-0.8).monospacedDigit().minimumScaleFactor(0.7).padding(9)
+                    }.environment(\.layoutDirection, .leftToRight).tracking(AppLanguage.isArabic ? 0 : -0.8).monospacedDigit().minimumScaleFactor(0.7).padding(9)
                         .animation(reduceMotion ? nil : .easeOut(duration: 0.7), value: value)
-                }.aspectRatio(1, contentMode: .fit).frame(maxWidth: 81)
+                }.aspectRatio(1, contentMode: .fit).frame(maxWidth: ReferenceSize.ringDiameter)
                 HStack(spacing: 3) {
-                    Text(label).font(PulseFont.label(10)).tracking(0.8)
+                    Text(L10n.text(label)).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                     Image(systemName: "chevron.right").font(.system(size: 6, weight: .bold))
                 }
             }.frame(maxWidth: .infinity).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(PulseColor.text)
-            .accessibilityLabel("\(label), \(value). View today's context")
+            .accessibilityLabel(L10n.text("\(label), \(value). View today's context"))
             .onAppear { animate() }.onChange(of: fraction) { _, _ in animate() }
     }
     private func animate() {
@@ -95,19 +110,19 @@ struct PulseDayStrip: View {
             Button { select(index - 1) } label: {
                 Image(systemName: "chevron.left").frame(width: 44, height: 44).contentShape(Rectangle())
             }.offset(x: -45).disabled(index == 0).opacity(index == 0 ? 0.3 : 1)
-                .accessibilityLabel("Previous sample day")
+                .accessibilityLabel(L10n.text("Previous sample day"))
             Menu {
                 ForEach(Array(days.enumerated()), id: \.element.id) { item in
-                    Button(item.element.date == "TODAY" ? "NOVEMBER 9" : item.element.date) { select(item.offset) }
+                    Button(L10n.text(item.element.date == "TODAY" ? "NOVEMBER 9" : item.element.date)) { select(item.offset) }
                 }
             } label: {
-                Text(days[index].date).font(PulseFont.label(10.5)).tracking(0.9)
+                Text(L10n.text(days[index].date)).font(PulseFont.label(10.5)).tracking(AppLanguage.isArabic ? 0 : 0.9)
                     .fixedSize().frame(width: 44, height: 44).contentShape(Rectangle())
-            }.accessibilityLabel("Select sample day, \(days[index].date)")
+            }.accessibilityLabel(L10n.text("Select sample day, \(days[index].date)"))
             Button { select(index + 1) } label: {
                 Image(systemName: "chevron.right").frame(width: 44, height: 44).contentShape(Rectangle())
             }.offset(x: 45).disabled(index == days.count - 1).opacity(index == days.count - 1 ? 0.3 : 1)
-                .accessibilityLabel("Next sample day")
+                .accessibilityLabel(L10n.text("Next sample day"))
         }.font(.system(size: 11, weight: .bold)).frame(width: 126, height: 44)
             .buttonStyle(PulsePressStyle()).foregroundStyle(PulseColor.text)
     }
@@ -133,7 +148,7 @@ struct PulseTabBar: View {
                                         .overlay { if item.offset == 1 { Image(systemName: "waveform.path.ecg").font(.system(size: 9, weight: .light)) } }
                                 }
                             }.frame(height: 22)
-                            Text(item.element.1).font(PulseFont.body(8.5).weight(item.offset == 0 ? .semibold : .regular))
+                            Text(L10n.text(item.element.1)).font(PulseFont.body(8.5).weight(item.offset == 0 ? .semibold : .regular))
                         }.frame(maxWidth: .infinity, minHeight: 58).contentShape(Rectangle())
                     }.buttonStyle(.plain).disabled(item.offset != 0 && item.offset != 3)
                         .foregroundStyle(item.offset == 0 ? PulseColor.text : PulseColor.muted)
@@ -147,7 +162,7 @@ struct PulseTabBar: View {
                     Circle().stroke(LinearGradient(colors: [.purple, PulseColor.load], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.1).frame(width: 29, height: 29)
                     WhoopMonogram().frame(width: 18, height: 15)
                 }.frame(width: 58, height: 58).overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(0.08), lineWidth: 0.7))
-            }.buttonStyle(.plain).accessibilityLabel("Open WHOOP Coach sample conversation")
+            }.buttonStyle(.plain).accessibilityLabel(L10n.text("Open WHOOP Coach sample conversation"))
         }
     }
 }
@@ -157,7 +172,7 @@ struct PulseIconButton: View {
     let action: () -> Void
     var body: some View {
         Button(action: action) { Image(systemName: symbol).font(.system(size: 22, weight: .light)).frame(width: 44, height: 44) }
-            .buttonStyle(.plain).accessibilityLabel(label)
+            .buttonStyle(.plain).accessibilityLabel(L10n.text(label))
     }
 }
 struct PulseMonitor: View {
@@ -172,8 +187,8 @@ struct PulseMonitor: View {
                 HStack(spacing: 7) {
                     Image(systemName: symbol).font(.system(size: 17, weight: .light)).foregroundStyle(tint)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(title).font(PulseFont.label(8)).tracking(0.6)
-                        HStack(spacing: 4) { Circle().fill(tint).frame(width: 4, height: 4); Text(subtitle).font(PulseFont.label(7)).foregroundStyle(tint) }
+                        Text(L10n.text(title)).font(PulseFont.label(8)).tracking(AppLanguage.isArabic ? 0 : 0.6)
+                        HStack(spacing: 4) { Circle().fill(tint).frame(width: 4, height: 4); Text(L10n.text(subtitle)).font(PulseFont.label(7)).foregroundStyle(tint) }
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").font(.system(size: 8)).foregroundStyle(PulseColor.muted)
@@ -187,14 +202,14 @@ struct PulseMetricLine: View {
     var body: some View {
         PulseCard(padding: 11) {
             HStack {
-                Text(metric.title.uppercased()).font(PulseFont.label(8)).tracking(0.6)
+                Text(L10n.text(metric.title.uppercased())).font(PulseFont.label(8)).tracking(AppLanguage.isArabic ? 0 : 0.6)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(metric.value).font(PulseFont.number(23)).monospacedDigit()
-                        Text(metric.unit).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted)
+                        Text(L10n.text(metric.value)).font(PulseFont.number(23)).monospacedDigit()
+                        Text(L10n.text(metric.unit)).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted)
                     }
-                    Text(metric.baseline).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted)
+                    Text(L10n.text(metric.baseline)).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted)
                 }
                 Image(systemName: metric.direction > 0 ? "arrowtriangle.up.fill" : metric.direction < 0 ? "arrowtriangle.down.fill" : "circle.fill")
                     .font(.system(size: 5)).foregroundStyle(PulseColor.muted).frame(width: 8)
@@ -215,7 +230,7 @@ struct PulseSparkline: View {
                     if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
                 }
             }.stroke(PulseColor.load, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
-        }.accessibilityLabel("Illustrative daily pulse trace, in beats per minute")
+        }.accessibilityLabel(L10n.text("Illustrative daily pulse trace, in beats per minute"))
     }
 }
 

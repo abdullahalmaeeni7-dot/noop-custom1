@@ -19,20 +19,20 @@ struct MetricDetailView: View {
             if !embedded { header }
             if embedded { content } else { ScrollView { content }.scrollIndicators(.hidden) }
         }.background { WhoopBackground() }
-            .alert("About this score", isPresented: $showingInformation) {
-                Button("Done", role: .cancel) { }
-            } message: { Text(metric.description + " A comparison marker shows the previous recorded UTC day when available. Missing fields are not inferred from summary scores.") }
-            .alert("WHOOP Coach", isPresented: $showingCoach) {
-                Button("Done", role: .cancel) { }
-            } message: { Text("WHOOP Coach is not connected in this edition. You can view your recorded measurements and activities here; personalized Coach responses are unavailable.") }
+            .alert(L10n.text("About this score"), isPresented: $showingInformation) {
+                Button(L10n.text("Done"), role: .cancel) { }
+            } message: { Text(L10n.text(metric.description + " A comparison marker shows the previous recorded UTC day when available. Missing fields are not inferred from summary scores.")) }
+            .alert(L10n.text("WHOOP Coach"), isPresented: $showingCoach) {
+                Button(L10n.text("Done"), role: .cancel) { }
+            } message: { Text(L10n.text("WHOOP Coach is not connected in this edition. You can view your recorded measurements and activities here; personalized Coach responses are unavailable.")) }
     }
     private var content: some View {
                 VStack(spacing: 23) {
                     ScoreRing(metric: metric, day: day, large: true,
                               comparisonFraction: previous.flatMap { metric.value($0) == nil ? nil : metric.fraction($0) })
                         .padding(.top, 13).padding(.bottom, 5)
-                    Text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : "IMPORTED MEASUREMENTS")
-                        .font(WFont.label(7)).tracking(0.9).foregroundStyle(WColor.muted)
+                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : "IMPORTED MEASUREMENTS"))
+                        .font(WFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.9).foregroundStyle(WColor.muted)
                     WCard(padding: 16) { statistics }
                         .overlay(alignment: .top) {
                             StatisticsPointer().fill(WColor.card).frame(width: 18, height: 9).offset(y: -8)
@@ -40,10 +40,10 @@ struct MetricDetailView: View {
                     DetailInsight(text: insight, actionTitle: "LEARN MORE WITH COACH") { showingCoach = true }
                     if metric == .strain {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Today’s Activities").font(WFont.number(24, bold: true))
+                            Text(L10n.text("Today’s Activities")).font(WFont.number(24, bold: true))
                             ForEach(store.dayActivities) { activity in ReferenceActivityRow(activity: activity) }
                             if store.dayActivities.isEmpty {
-                                Text("No activities recorded for this day.").font(WFont.body(14)).foregroundStyle(WColor.muted)
+                                Text(L10n.text("No activities recorded for this day.")).font(WFont.body(14)).foregroundStyle(WColor.muted)
                             }
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -52,7 +52,7 @@ struct MetricDetailView: View {
                         SectionHeading(title: "Heart rate")
                         WCard { HeartRateChart(samples: day.heartRates).frame(height: 160) }
                     }
-                    Text(day.source == .example ? "These are illustrative measurements, not readings from your body." : "Unavailable measurements are shown as a dash. Supplied scores are preserved as recorded.")
+                    Text(L10n.text(day.source == .example ? "These are illustrative measurements, not readings from your body." : "Unavailable measurements are shown as a dash. Supplied scores are preserved as recorded."))
                         .font(WFont.body(12)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
                 }.padding(.horizontal, 17).padding(.bottom, 30).frame(maxWidth: 600).frame(maxWidth: .infinity)
     }
@@ -61,15 +61,15 @@ struct MetricDetailView: View {
         HStack {
             Button { dismiss() } label: {
                 Image(systemName: "chevron.left").font(.system(size: 25, weight: .light)).frame(width: 42, height: 44)
-            }.accessibilityLabel("Back")
+            }.accessibilityLabel(L10n.text("Back"))
             Spacer()
-            Text(DayCalendar.utc.isDateInToday(day.date) ? "TODAY" : utcDateText(day.date, style: .dateTime.month(.abbreviated).day()).uppercased())
-                .font(WFont.label(12)).tracking(1.5)
+            Text(L10n.text(DayCalendar.utc.isDateInToday(day.date) ? "TODAY" : utcDateText(day.date, style: .dateTime.month(.abbreviated).day()).uppercased()))
+                .font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.5)
             Spacer()
             Button { showingInformation = true } label: {
                 Image(systemName: "info.circle").font(.system(size: 26, weight: .ultraLight))
                     .foregroundStyle(WColor.muted).frame(width: 42, height: 44)
-            }.accessibilityLabel("About this score")
+            }.accessibilityLabel(L10n.text("About this score"))
         }.foregroundStyle(.white).padding(.horizontal, 14).padding(.top, 5).padding(.bottom, 10)
     }
 
@@ -110,7 +110,7 @@ struct MetricDetailView: View {
 
     private var trendCard: some View {
         VStack(alignment: .leading, spacing: 11) {
-            Text("Recent Days").font(WFont.number(22, bold: true))
+            Text(L10n.text("Recent Days")).font(WFont.number(22, bold: true))
             WCard {
                 Chart {
                     ForEach(trend) { item in
@@ -156,7 +156,7 @@ struct MetricDetailView: View {
     private func legend(_ title: String, color: Color) -> some View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 1).fill(color).frame(width: 11, height: 3)
-            Text(title).font(WFont.body(10)).foregroundStyle(WColor.muted)
+            Text(L10n.text(title)).font(WFont.body(10)).foregroundStyle(WColor.muted)
         }
     }
 }
@@ -175,8 +175,8 @@ struct DetailValueRow: View {
     var color: Color = .white
     var body: some View {
         HStack {
-            Text(title).font(WFont.body(15)).foregroundStyle(WColor.muted)
-            Spacer(); Text(value).font(WFont.number(27, bold: true)).foregroundStyle(color)
+            Text(L10n.text(title)).font(WFont.body(15)).foregroundStyle(WColor.muted)
+            Spacer(); Text(L10n.text(value)).font(WFont.number(27, bold: true)).foregroundStyle(color)
         }
     }
 }
@@ -192,30 +192,30 @@ struct JournalEditorView: View {
     var body: some View {
         SheetScaffold(title: "DAILY JOURNAL") {
             VStack(alignment: .leading, spacing: 22) {
-                Text(utcDateText(store.selectedDate, style: Date.FormatStyle(date: .complete, time: .omitted))).font(WFont.body(14)).foregroundStyle(WColor.muted)
-                Text("WHAT SHAPED\nYOUR DAY?").font(WFont.number(35, bold: true))
-                Text("Build a record of your habits. Your answers stay on this iPhone.").font(WFont.body(16)).foregroundStyle(WColor.muted)
+                Text(L10n.text(utcDateText(store.selectedDate, style: Date.FormatStyle(date: .complete, time: .omitted)))).font(WFont.body(14)).foregroundStyle(WColor.muted)
+                Text(L10n.text("WHAT SHAPED\nYOUR DAY?")).font(WFont.number(35, bold: true))
+                Text(L10n.text("Build a record of your habits. Your answers stay on this iPhone.")).font(WFont.body(16)).foregroundStyle(WColor.muted)
                 WCard {
-                    Toggle("Consumed caffeine", isOn: $caffeine).padding(.vertical, 8)
+                    Toggle(L10n.text("Consumed caffeine"), isOn: $caffeine).padding(.vertical, 8)
                     Divider().padding(.vertical, 10)
-                    Toggle("Consumed alcohol", isOn: $alcohol).padding(.vertical, 8)
+                    Toggle(L10n.text("Consumed alcohol"), isOn: $alcohol).padding(.vertical, 8)
                     Divider().padding(.vertical, 10)
-                    Toggle("Ate close to bedtime", isOn: $lateMeal).padding(.vertical, 8)
+                    Toggle(L10n.text("Ate close to bedtime"), isOn: $lateMeal).padding(.vertical, 8)
                 }.tint(WColor.green)
                 SectionHeading(title: "Anything else?")
                 TextEditor(text: $note).font(WFont.body(16)).scrollContentBackground(.hidden)
                     .frame(minHeight: 140).padding(12).background(WColor.card, in: RoundedRectangle(cornerRadius: 14))
-                    .accessibilityLabel("Journal notes")
+                    .accessibilityLabel(L10n.text("Journal notes"))
                     .onChange(of: note) { _, value in if value.count > LocalBackupCodec.maximumNoteCharacters { note = String(value.prefix(LocalBackupCodec.maximumNoteCharacters)) } }
-                Text("\(note.count)/\(LocalBackupCodec.maximumNoteCharacters) characters").font(WFont.body(12)).foregroundStyle(WColor.muted)
-                Button("SAVE JOURNAL") {
+                Text(L10n.text("\(note.count)/\(LocalBackupCodec.maximumNoteCharacters) characters")).font(WFont.body(12)).foregroundStyle(WColor.muted)
+                Button(L10n.text("SAVE JOURNAL")) {
                     store.saveJournal(JournalEntry(date: store.selectedDate, caffeine: caffeine, alcohol: alcohol, lateMeal: lateMeal, note: note))
                     dismiss()
                 }.buttonStyle(WButton())
-                Button("Delete this journal entry", role: .destructive) { confirmDelete = true }.frame(maxWidth: .infinity)
+                Button(L10n.text("Delete this journal entry"), role: .destructive) { confirmDelete = true }.frame(maxWidth: .infinity)
             }
-        }.confirmationDialog("Delete this day's journal entry?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete entry", role: .destructive) { store.deleteJournal(); dismiss() }
+        }.confirmationDialog(L10n.text("Delete this day's journal entry?"), isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button(L10n.text("Delete entry"), role: .destructive) { store.deleteJournal(); dismiss() }
         }.onAppear {
             let entry = store.currentJournal
             caffeine = entry.caffeine; alcohol = entry.alcohol; lateMeal = entry.lateMeal; note = entry.note
@@ -234,28 +234,28 @@ struct ActivityEditorView: View {
     var body: some View {
         SheetScaffold(title: "LOG ACTIVITY") {
             VStack(alignment: .leading, spacing: 24) {
-                Text("MAKE YOUR\nMOVEMENT COUNT.").font(WFont.number(35, bold: true))
-                Text(utcDateText(store.selectedDate, style: Date.FormatStyle(date: .complete, time: .omitted))).font(WFont.body(15)).foregroundStyle(WColor.muted)
+                Text(L10n.text("MAKE YOUR\nMOVEMENT COUNT.")).font(WFont.number(35, bold: true))
+                Text(L10n.text(utcDateText(store.selectedDate, style: Date.FormatStyle(date: .complete, time: .omitted)))).font(WFont.body(15)).foregroundStyle(WColor.muted)
                 WCard {
                     HStack {
-                        Text("Activity").font(WFont.body(16)); Spacer()
-                        Picker("Activity", selection: $activity) { ForEach(types, id: \.self) { Text($0).tag($0) } }.tint(WColor.blue)
+                        Text(L10n.text("Activity")).font(WFont.body(16)); Spacer()
+                        Picker(L10n.text("Activity"), selection: $activity) { ForEach(types, id: \.self) { Text(L10n.text($0)).tag($0) } }.tint(WColor.blue)
                     }
                     if activity == "Other" {
                         Divider().padding(.vertical, 10)
-                        TextField("Activity name", text: $customName).textInputAutocapitalization(.words).font(WFont.body(16))
+                        TextField(L10n.text("Activity name"), text: $customName).textInputAutocapitalization(.words).font(WFont.body(16))
                     }
                     Divider().padding(.vertical, 14)
                     Stepper(value: $minutes, in: 1...600, step: 1) {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("Duration").font(WFont.body(15)).foregroundStyle(WColor.muted)
-                            Text(durationText(minutes)).font(WFont.number(27, bold: true))
+                            Text(L10n.text("Duration")).font(WFont.body(15)).foregroundStyle(WColor.muted)
+                            Text(L10n.text(durationText(minutes))).font(WFont.number(27, bold: true))
                         }
                     }.tint(.white)
                 }
-                Text("This records an activity and its duration. It does not add an estimated strain or calorie score.")
+                Text(L10n.text("This records an activity and its duration. It does not add an estimated strain or calorie score."))
                     .font(WFont.body(14)).foregroundStyle(WColor.muted)
-                Button("SAVE ACTIVITY") { store.logActivity(name: name, minutes: minutes); dismiss() }
+                Button(L10n.text("SAVE ACTIVITY")) { store.logActivity(name: name, minutes: minutes); dismiss() }
                     .buttonStyle(WButton()).disabled(name.isEmpty)
             }
         }
@@ -274,29 +274,29 @@ struct DeviceSheetView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(name).font(WFont.number(23, bold: true))
-                                Text("CONNECTED").font(WFont.label(10)).tracking(0.8).foregroundStyle(WColor.green)
+                                Text(L10n.text("CONNECTED")).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(WColor.green)
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 3) {
-                                Text(decimalText(device.heartRate, places: 0)).font(WFont.number(39, bold: true))
-                                Text("LIVE BPM").font(WFont.label(9)).foregroundStyle(WColor.muted)
+                                Text(L10n.text(decimalText(device.heartRate, places: 0))).font(WFont.number(39, bold: true))
+                                Text(L10n.text("LIVE BPM")).font(WFont.label(9)).foregroundStyle(WColor.muted)
                             }
                         }
                     }
                     if device.canStartCustomStream || device.startingCustomStream {
-                        Button(device.startingCustomStream ? "STARTING LIVE HEART RATE…" : "START DEVICE HEART RATE") {
+                        Button(L10n.text(device.startingCustomStream ? "STARTING LIVE HEART RATE…" : "START DEVICE HEART RATE")) {
                             device.startCustomStream()
                         }.buttonStyle(WButton()).disabled(device.startingCustomStream)
-                        Text("This optional request uses a recovered device protocol and still needs physical-strap testing. It does not sync history or validate the full device initialization sequence.")
+                        Text(L10n.text("This optional request uses a recovered device protocol and still needs physical-strap testing. It does not sync history or validate the full device initialization sequence."))
                             .font(WFont.body(13)).foregroundStyle(WColor.muted)
                     }
-                    Button("DISCONNECT") { device.disconnect() }.buttonStyle(WButton(filled: false))
+                    Button(L10n.text("DISCONNECT")) { device.disconnect() }.buttonStyle(WButton(filled: false))
                 } else {
-                    Button(device.isScanning ? "STOP SEARCHING" : "SEARCH FOR DEVICES") {
+                    Button(L10n.text(device.isScanning ? "STOP SEARCHING" : "SEARCH FOR DEVICES")) {
                         if device.isScanning { device.stop() } else { device.scan() }
                     }.buttonStyle(WButton())
                 }
-                if device.isScanning { ProgressView().tint(WColor.blue).accessibilityLabel("Searching nearby Bluetooth devices") }
+                if device.isScanning { ProgressView().tint(WColor.blue).accessibilityLabel(L10n.text("Searching nearby Bluetooth devices")) }
                 if !device.devices.isEmpty {
                     SectionHeading(title: "Nearby devices")
                     ForEach(device.devices) { item in
@@ -305,7 +305,7 @@ struct DeviceSheetView: View {
                                 HStack(spacing: 12) {
                                     Image(systemName: "sensor.tag.radiowaves.forward").foregroundStyle(WColor.blue)
                                     Text(item.name).font(WFont.body(16))
-                                    Spacer(); Text("\(item.rssi) dBm").font(WFont.body(11)).foregroundStyle(WColor.muted)
+                                    Spacer(); Text(L10n.text("\(item.rssi) dBm")).font(WFont.body(11)).foregroundStyle(WColor.muted)
                                     Image(systemName: "chevron.right").font(.system(size: 10))
                                 }
                             }
@@ -317,27 +317,27 @@ struct DeviceSheetView: View {
                 if let history = device.lastHistoryRecord {
                     WCard {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("HISTORICAL NOTIFICATIONS").font(WFont.label(11)).tracking(0.8)
-                            Text("\(device.historicalFrames) received · revision \(history.rawRevision)")
+                            Text(L10n.text("HISTORICAL NOTIFICATIONS")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                            Text(L10n.text("\(device.historicalFrames) received · revision \(history.rawRevision)"))
                                 .font(WFont.body(14)).foregroundStyle(WColor.muted)
-                            if let counter = history.packetCounter { Text("Packet counter \(counter)").font(WFont.body(13)) }
+                            if let counter = history.packetCounter { Text(L10n.text("Packet counter \(counter)")).font(WFont.body(13)) }
                             if let time = history.deviceTime,
                                let date = time.validatedDate(in: Date(timeIntervalSince1970: 946_684_800)...Date().addingTimeInterval(86_400)) {
-                                Text("Device time: \(utcDateText(date, style: .dateTime.year().month().day().hour().minute().second())) UTC")
+                                Text(L10n.text("Device time: \(utcDateText(date, style: .dateTime.year().month().day().hour().minute().second())) UTC"))
                                     .font(WFont.body(13))
                             }
-                            Text("Only the common packet header is decoded. No historical heart rate is inferred, and no transfer acknowledgement or erase command is sent.")
+                            Text(L10n.text("Only the common packet header is decoded. No historical heart rate is inferred, and no transfer acknowledgement or erase command is sent."))
                                 .font(WFont.body(13)).foregroundStyle(WColor.muted)
                             ShareLink(item: history.rawFrame.base64EncodedString()) {
-                                Label("Share latest raw frame text", systemImage: "square.and.arrow.up")
+                                Label(L10n.text("Share latest raw frame text"), systemImage: "square.and.arrow.up")
                             }.font(WFont.body(14))
                         }
                     }
                 }
                 WCard {
                     VStack(alignment: .leading, spacing: 9) {
-                        Text("ABOUT THIS CONNECTION").font(WFont.label(11)).tracking(0.8)
-                        Text("Live heart rate can use standard Bluetooth broadcasts or validated WHOOP notifications when the device streams them. A connection does not sync history or generate daily Recovery and sleep scores.")
+                        Text(L10n.text("ABOUT THIS CONNECTION")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                        Text(L10n.text("Live heart rate can use standard Bluetooth broadcasts or validated WHOOP notifications when the device streams them. A connection does not sync history or generate daily Recovery and sleep scores."))
                             .font(WFont.body(14)).foregroundStyle(WColor.muted)
                     }
                 }

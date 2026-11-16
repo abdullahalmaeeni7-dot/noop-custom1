@@ -1,0 +1,11 @@
+.git
+.build
+node_modules
+build
+*.zip
+*.ipa
+.env
+.env.*
+Server/.env
+Server/.env.*
+Server/data

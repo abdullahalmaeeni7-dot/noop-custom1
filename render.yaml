@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: private-nutrition-ai
+    runtime: docker
+    dockerfilePath: ./Server/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_MODEL
+        value: gemini-2.5-flash
+      - key: AI_API_URL
+        value: https://generativelanguage.googleapis.com/v1beta
+      - key: AI_API_KEY
+        sync: false
+      - key: NUTRITION_ACCESS_TOKEN
+        generateValue: true

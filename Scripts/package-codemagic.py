@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a flat, complete iOS build upload with fewer than 100 browser-upload files."""
+"""Create a flat, complete iOS build upload including every required localized resource."""
 from pathlib import Path
 import hashlib,json,zipfile
 
@@ -13,7 +13,8 @@ files.extend(ROOT/p for p in ['Package.swift','Package.resolved','codemagic.yaml
     'Scripts/tests/test_validate_ipa.py','Scripts/validate-nutrition-resource.py','lib/nutrition/calc.ts'])
 files=sorted(set(files))
 assert all(p.is_file() for p in files)
-assert len(files)+1<=100, 'Keep this package within the GitHub browser upload batch limit.'
+# Localized resources must never be omitted to meet a web upload batch limit.
+# Git push is preferred; browser uploads can be split into batches of 100.
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 manifest={'scope':'Complete iOS unsigned cloud-build inputs, not a compiled IPA. No credentials or backend deployment.',
           'files':[{'path':str(p.relative_to(ROOT)),'bytes':p.stat().st_size,'sha256':sha(p)} for p in files]}

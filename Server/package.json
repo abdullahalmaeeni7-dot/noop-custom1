@@ -4,6 +4,7 @@
   "type": "module",
   "engines": { "node": ">=24.5" },
   "scripts": {
+    "start:nutrition": "node --env-file-if-exists=.env nutrition-server.mjs",
     "start": "node --use-env-proxy --env-file-if-exists=.env server.mjs",
     "test": "node --test test/*.test.mjs"
   }

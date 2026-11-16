@@ -32,7 +32,7 @@ async function readJSON(req, limit = JSON_LIMIT) {
 // Only production fetch is selected by server.mjs. Dependency injection is for
 // tests; no config/environment variable can change the upstream target hosts.
 export function createBridge({ config, store, transport = globalThis.fetch, now = Date.now,
-  limits = {}, nutritionConfig = { apiKey: process.env.AI_API_KEY, apiURL: process.env.AI_API_URL, model: process.env.AI_MODEL }, nutritionTransport = globalThis.fetch }) {
+  limits = {}, nutritionConfig = { provider: process.env.AI_PROVIDER, apiKey: process.env.AI_API_KEY, apiURL: process.env.AI_API_URL, model: process.env.AI_MODEL }, nutritionTransport = globalThis.fetch }) {
   const pending = new Map(), pairings = new Map(), refreshing = new Map(), rates = new Map();
   let exchanges = 0;
   const nutrition = createNutritionAPI(nutritionConfig, nutritionTransport);

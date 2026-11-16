@@ -1,4 +1,5 @@
 import SwiftUI
+import WHOOPCore
 
 /// Scales and plots fixture values only; no physiological score is calculated here.
 struct PulseWeekChart: View {
@@ -20,7 +21,7 @@ struct PulseWeekChart: View {
                     let y = top + CGFloat(line) * plotHeight / 3
                     Path { p in p.move(to: CGPoint(x: left - 15, y: y)); p.addLine(to: CGPoint(x: right + 15, y: y)) }.stroke(.white.opacity(0.06), lineWidth: 0.7)
                     Text("\(21 - line * 7)").font(PulseFont.body(9).weight(.semibold)).foregroundStyle(PulseColor.load).position(x: 8, y: y)
-                    Text(["100%", "66%", "33%", "0%"][line]).font(PulseFont.body(9).weight(.semibold)).foregroundStyle(line == 0 ? PulseColor.readiness : line == 1 ? PulseColor.recoveryYellow : .red).position(x: width - 7, y: y)
+                    Text(L10n.text(["100%", "66%", "33%", "0%"][line])).font(PulseFont.body(9).weight(.semibold)).foregroundStyle(line == 0 ? PulseColor.readiness : line == 1 ? PulseColor.recoveryYellow : .red).position(x: width - 7, y: y)
                 }
                 linePath(days.map { Double($0.readiness) / 100 }, left: left, top: top, step: step, height: plotHeight).stroke(.white.opacity(0.29), lineWidth: 1.6)
                 linePath(days.map { $0.load / 21 }, left: left, top: top, step: step, height: plotHeight).stroke(PulseColor.load.opacity(0.55), lineWidth: 1.6)
@@ -30,7 +31,7 @@ struct PulseWeekChart: View {
                     let recoveryY = bottom - CGFloat(item.element.readiness) / 100 * plotHeight
                     Circle().fill(PulseColor.card).overlay(Circle().stroke(PulseColor.load, lineWidth: 1.8)).frame(width: 8, height: 8).position(x: x, y: strainY)
                     Circle().fill(PulseColor.card).overlay(Circle().stroke(recoveryColor(item.element.readiness), lineWidth: 1.8)).frame(width: 8, height: 8).position(x: x, y: recoveryY)
-                    Text(item.element.load.formatted(.number.precision(.fractionLength(1)))).font(PulseFont.number(11)).foregroundStyle(PulseColor.load)
+                    Text(L10n.text(item.element.load.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(1))))).font(PulseFont.number(11)).foregroundStyle(PulseColor.load)
                         .position(x: x, y: strainY + (item.offset == 3 ? 15 : -13))
                     if item.offset != 4 {
                         Text("\(item.element.readiness)%").font(PulseFont.number(11)).foregroundStyle(recoveryColor(item.element.readiness))
@@ -41,7 +42,7 @@ struct PulseWeekChart: View {
                 }
             }
         }.frame(height: 223).accessibilityElement(children: .ignore)
-            .accessibilityLabel("Illustrative seven-day Strain and Recovery chart. Selected day Strain \(days[selected].load), Recovery \(days[selected].readiness) percent.")
+            .accessibilityLabel(L10n.text("Illustrative seven-day Strain and Recovery chart. Selected day Strain \(days[selected].load), Recovery \(days[selected].readiness) percent."))
     }
     private func linePath(_ values: [Double], left: CGFloat, top: CGFloat, step: CGFloat, height: CGFloat) -> Path {
         Path { path in
@@ -62,7 +63,7 @@ struct PulseStressChart: View {
                 ForEach(0..<4) { row in
                     let y = top + CGFloat(row) * (bottom - top) / 3
                     Path { p in p.move(to: CGPoint(x: left, y: y)); p.addLine(to: CGPoint(x: right, y: y)) }.stroke(.white.opacity(0.11), lineWidth: 0.7)
-                    Text(Double(3 - row).formatted(.number.precision(.fractionLength(1)))).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted).position(x: 9, y: y)
+                    Text(L10n.text(Double(3 - row).formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(1))))).font(PulseFont.body(8)).foregroundStyle(PulseColor.muted).position(x: 9, y: y)
                 }
                 ForEach([0.37, 0.70], id: \.self) { fraction in
                     Path { p in let x = left + (right - left) * fraction; p.move(to: CGPoint(x: x, y: top)); p.addLine(to: CGPoint(x: x, y: bottom)) }.stroke(.white.opacity(0.11), lineWidth: 0.7)
@@ -82,9 +83,9 @@ struct PulseStressChart: View {
                 Path { p in p.move(to: CGPoint(x: right, y: top - 10)); p.addLine(to: CGPoint(x: right, y: bottom + 7)) }.stroke(.white.opacity(0.65), style: StrokeStyle(lineWidth: 0.8, dash: [4, 3]))
                 Circle().fill(.white).frame(width: 4, height: 4).position(x: right, y: bottom + 7)
                 HStack {
-                    Text("9:33 AM"); Spacer(); Text("2:00 PM"); Spacer(); Text("6:00 PM"); Spacer(); Text("9:29 PM").foregroundStyle(PulseColor.text)
+                    Text(L10n.text("9:33 AM")); Spacer(); Text(L10n.text("2:00 PM")); Spacer(); Text(L10n.text("6:00 PM")); Spacer(); Text(L10n.text("9:29 PM")).foregroundStyle(PulseColor.text)
                 }.font(PulseFont.body(8).weight(.medium)).foregroundStyle(PulseColor.muted).frame(width: width - 9).position(x: width / 2, y: 181)
             }
-        }.frame(height: 194).accessibilityLabel("Illustrative stress graph, scale zero to three, ending at 1.8. Not a live sensor calculation.")
+        }.frame(height: 194).accessibilityLabel(L10n.text("Illustrative stress graph, scale zero to three, ending at 1.8. Not a live sensor calculation."))
     }
 }

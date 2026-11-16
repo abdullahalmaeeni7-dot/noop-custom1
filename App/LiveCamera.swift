@@ -34,7 +34,7 @@ enum LiveOverlayRenderer {
             let panel = CGRect(x: width * 0.05, y: size.height - panelHeight - width * 0.03, width: width * 0.90, height: panelHeight)
             if !transparent { UIColor.black.withAlphaComponent(0.55).setFill(); UIBezierPath(roundedRect: panel, cornerRadius: width * 0.025).fill() }
             let heading = UIFont.systemFont(ofSize: width * 0.021, weight: .semibold)
-            let title = snapshot.title.uppercased() as NSString
+            let title = L10n.text(snapshot.title.uppercased()) as NSString
             title.draw(at: CGPoint(x: panel.minX + width * 0.03, y: panel.minY + width * 0.025), withAttributes: [.font: heading, .foregroundColor: UIColor.white])
             let values = snapshot.rendered(at: Date()), count = max(1, values.count), column = (panel.width - width * 0.06) / CGFloat(count)
             for (index, value) in values.enumerated() {
@@ -42,10 +42,10 @@ enum LiveOverlayRenderer {
                 let font = UIFont.systemFont(ofSize: width * (count == 1 ? 0.10 : 0.064), weight: .bold)
                 (value as NSString).draw(in: CGRect(x: x, y: panel.minY + panel.height * 0.29, width: column, height: panel.height * 0.42), withAttributes: [.font: font, .foregroundColor: UIColor.white])
                 if snapshot.labels.indices.contains(index) {
-                    (snapshot.labels[index] as NSString).draw(in: CGRect(x: x, y: panel.minY + panel.height * 0.70, width: column - 4, height: panel.height * 0.13), withAttributes: [.font: UIFont.systemFont(ofSize: width * 0.016, weight: .medium), .foregroundColor: UIColor(white: 0.85, alpha: 1)])
+                    (L10n.text(snapshot.labels[index]) as NSString).draw(in: CGRect(x: x, y: panel.minY + panel.height * 0.70, width: column - 4, height: panel.height * 0.13), withAttributes: [.font: UIFont.systemFont(ofSize: width * 0.016, weight: .medium), .foregroundColor: UIColor(white: 0.85, alpha: 1)])
                 }
             }
-            (snapshot.source as NSString).draw(in: CGRect(x: panel.minX + width * 0.03, y: panel.maxY - width * 0.025, width: panel.width - width * 0.06, height: width * 0.02), withAttributes: [.font: UIFont.systemFont(ofSize: width * 0.013, weight: .medium), .foregroundColor: UIColor(white: 0.75, alpha: 1)])
+            (L10n.text(snapshot.source) as NSString).draw(in: CGRect(x: panel.minX + width * 0.03, y: panel.maxY - width * 0.025, width: panel.width - width * 0.06, height: width * 0.02), withAttributes: [.font: UIFont.systemFont(ofSize: width * 0.013, weight: .medium), .foregroundColor: UIColor(white: 0.75, alpha: 1)])
             _ = context
         }
     }
@@ -318,14 +318,14 @@ extension LiveOverlayRenderer {
         let w = size.width, h = size.height
         func font(_ points: CGFloat) -> UIFont { UIFont(name: "DINPro-Bold", size: points) ?? .systemFont(ofSize: points, weight: .bold) }
         func text(_ value: String, center: CGPoint, size: CGFloat, color: UIColor = .white, tracking: CGFloat = 0) {
-            let attributes: [NSAttributedString.Key: Any] = [.font: font(size), .foregroundColor: color, .kern: tracking]
-            let label = NSAttributedString(string: value, attributes: attributes), bounds = label.size()
+            let attributes: [NSAttributedString.Key: Any] = [.font: font(size), .foregroundColor: color, .kern: AppLanguage.isArabic ? 0 : tracking]
+            let label = NSAttributedString(string: L10n.text(value), attributes: attributes), bounds = label.size()
             label.draw(at: CGPoint(x: center.x - bounds.width / 2, y: center.y - bounds.height / 2))
         }
         func label(_ value: String, rect: CGRect, size: CGFloat, color: UIColor = .white) {
             let paragraph = NSMutableParagraphStyle(); paragraph.alignment = .center; paragraph.lineSpacing = w * 0.004
-            (value as NSString).draw(with: rect, options: [.usesLineFragmentOrigin, .usesFontLeading],
-                                    attributes: [.font: font(size), .foregroundColor: color, .kern: w * 0.004,
+            (L10n.text(value) as NSString).draw(with: rect, options: [.usesLineFragmentOrigin, .usesFontLeading],
+                                    attributes: [.font: font(size), .foregroundColor: color, .kern: AppLanguage.isArabic ? 0 : w * 0.004,
                                                  .paragraphStyle: paragraph], context: nil)
         }
         func color(_ tone: CameraOverlayTone) -> UIColor {

@@ -20,6 +20,7 @@ struct NutritionSettingsView: View {
     @State private var preview: NutritionCalculation.Goals?
     @State private var busy = false
     @State private var confirmingReset = false
+    @State private var showingService = false
     @State private var exporting = false
     @State private var exportDocument = JSONExportDocument()
     @State private var task: Task<Void, Never>?
@@ -28,22 +29,22 @@ struct NutritionSettingsView: View {
             NHeading(title: "Build your targets", subtitle: "Mifflin–St Jeor maintenance, with manual overrides")
             NCard {
                 VStack(spacing: 9) {
-                    Picker("Units", selection: $settings.units) { Text("Metric").tag(NutritionUnits.metric); Text("Imperial").tag(NutritionUnits.imperial) }.pickerStyle(.segmented).frame(minHeight: 44)
+                    Picker(L10n.text("Units"), selection: $settings.units) { Text(L10n.text("Metric")).tag(NutritionUnits.metric); Text(L10n.text("Imperial")).tag(NutritionUnits.imperial) }.pickerStyle(.segmented).frame(minHeight: 44)
                     field("Age (18–100)", text: $age, whole: true)
-                    Picker("Sex used by formula", selection: $settings.sex) { Text("Female").tag(NutritionSex.female); Text("Male").tag(NutritionSex.male) }.frame(minHeight: 44)
+                    Picker(L10n.text("Sex used by formula"), selection: $settings.sex) { Text(L10n.text("Female")).tag(NutritionSex.female); Text(L10n.text("Male")).tag(NutritionSex.male) }.frame(minHeight: 44)
                     field(settings.units == .metric ? "Height (cm)" : "Height (inches)", text: $height)
                     field(settings.units == .metric ? "Weight (kg)" : "Weight (lb)", text: $weight)
-                    Picker("Activity level", selection: $settings.activity) {
-                        ForEach(NutritionActivity.allCases, id: \.self) { Text(activityTitle($0)).tag($0) }
+                    Picker(L10n.text("Activity level"), selection: $settings.activity) {
+                        ForEach(NutritionActivity.allCases, id: \.self) { Text(L10n.text(activityTitle($0))).tag($0) }
                     }.frame(minHeight: 44)
-                    Picker("Goal", selection: $settings.goal) { Text("Lose").tag(NutritionGoal.lose); Text("Maintain").tag(NutritionGoal.maintain); Text("Gain").tag(NutritionGoal.gain) }.pickerStyle(.segmented).frame(minHeight: 44)
+                    Picker(L10n.text("Goal"), selection: $settings.goal) { Text(L10n.text("Lose")).tag(NutritionGoal.lose); Text(L10n.text("Maintain")).tag(NutritionGoal.maintain); Text(L10n.text("Gain")).tag(NutritionGoal.gain) }.pickerStyle(.segmented).frame(minHeight: 44)
                 }
             }
-            Text("Enter profile values in the units selected above. The latest weight log on or before the selected day takes precedence over profile weight. Calculated goals use a 500 kcal loss offset or 300 kcal gain offset, with a default 30% protein / 40% carbs / 30% fat split. These are configurable estimates.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+            Text(L10n.text("Enter profile values in the units selected above. The latest weight log on or before the selected day takes precedence over profile weight. Calculated goals use a 500 kcal loss offset or 300 kcal gain offset, with a default 30% protein / 40% carbs / 30% fat split. These are configurable estimates.")).font(NFont.body(11)).foregroundStyle(NColor.muted)
             NCard {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Manual overrides").font(NFont.number(17))
-                    Text("Leave blank to calculate automatically. A manual calorie goal can be used without a complete profile.").font(NFont.body(12)).foregroundStyle(NColor.muted)
+                    Text(L10n.text("Manual overrides")).font(NFont.number(17))
+                    Text(L10n.text("Leave blank to calculate automatically. A manual calorie goal can be used without a complete profile.")).font(NFont.body(12)).foregroundStyle(NColor.muted)
                     field("Maintenance (kcal)", text: $maintenance)
                     field("Calorie goal (kcal)", text: $calories)
                     field("Protein target (g)", text: $protein)
@@ -54,54 +55,55 @@ struct NutritionSettingsView: View {
             if let preview {
                 NCard {
                     VStack(alignment: .leading, spacing: 9) {
-                        Text("Calculated targets").font(NFont.number(18))
-                        Text("Maintenance \(nText(preview.maintenance)) kcal · Goal \(nText(preview.calories)) kcal").font(NFont.body(13))
-                        Text("Protein \(nText(preview.protein)) g · Carbs \(nText(preview.carbs)) g · Fat \(nText(preview.fat)) g").font(NFont.body(12)).foregroundStyle(NColor.muted)
+                        Text(L10n.text("Calculated targets")).font(NFont.number(18))
+                        Text(L10n.text("Maintenance \(nText(preview.maintenance)) kcal · Goal \(nText(preview.calories)) kcal")).font(NFont.body(13))
+                        Text(L10n.text("Protein \(nText(preview.protein)) g · Carbs \(nText(preview.carbs)) g · Fat \(nText(preview.fat)) g")).font(NFont.body(12)).foregroundStyle(NColor.muted)
                     }
                 }
             }
-            if busy { NLoadingCard(); ProgressView("Calculating…").tint(NColor.cyan).frame(maxWidth: .infinity, minHeight: 44) }
+            if busy { NLoadingCard(); ProgressView(L10n.text("Calculating…")).tint(NColor.cyan).frame(maxWidth: .infinity, minHeight: 44) }
             if let error { NError(message: error) }
-            Button("CALCULATE TARGETS") { calculate(save: false) }.buttonStyle(NButton(secondary: true)).disabled(busy)
-            Button("SAVE SETTINGS") { calculate(save: true) }.buttonStyle(NButton()).disabled(busy || model.isSaving)
+            Button(L10n.text("CALCULATE TARGETS")) { calculate(save: false) }.buttonStyle(NButton(secondary: true)).disabled(busy)
+            Button(L10n.text("SAVE SETTINGS")) { calculate(save: true) }.buttonStyle(NButton()).disabled(busy || model.isSaving)
             NCard {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("AI connection").font(NFont.number(17))
-                    Text("AI uses your existing secure account connection. Configure AI_API_KEY and AI_API_URL only in the server environment, then restart that service. No key is entered or stored on this iPhone.").font(NFont.body(12)).foregroundStyle(NColor.muted)
+                    Text(L10n.text("AI connection")).font(NFont.number(17))
+                    Text(L10n.text("Connect your private Gemini service. The Gemini key stays on the server; this iPhone stores only its separate access code in Keychain.")).font(NFont.body(12)).foregroundStyle(NColor.muted)
                 }
             }
-            Button("EXPORT NUTRITION JSON") { export() }.buttonStyle(NButton(secondary: true))
-            Button("RESET NUTRITION DATA", role: .destructive) { confirmingReset = true }.font(NFont.label(12)).frame(maxWidth: .infinity, minHeight: 44)
-        }.onAppear(perform: load)
+            Button(L10n.text("CONNECT NUTRITION SERVICE")) { showingService = true }.buttonStyle(NButton(secondary: true))
+            Button(L10n.text("EXPORT NUTRITION JSON")) { export() }.buttonStyle(NButton(secondary: true))
+            Button(L10n.text("RESET NUTRITION DATA"), role: .destructive) { confirmingReset = true }.font(NFont.label(12)).frame(maxWidth: .infinity, minHeight: 44)
+        }.sheet(isPresented: $showingService) { NutritionServiceView() }.onAppear(perform: load)
             .onDisappear { task?.cancel() }
-            .confirmationDialog("Delete all nutrition entries, weights, favorites and settings?", isPresented: $confirmingReset, titleVisibility: .visible) {
-                Button("Reset nutrition only", role: .destructive) {
+            .confirmationDialog(L10n.text("Delete all nutrition entries, weights, favorites and settings?"), isPresented: $confirmingReset, titleVisibility: .visible) {
+                Button(L10n.text("Reset nutrition only"), role: .destructive) {
                     task = Task { do { try await model.commit(store) { $0 = NutritionData() }; load() } catch { self.error = error.localizedDescription } }
                 }
-            } message: { Text("Your other app records stay unchanged. Export your nutrition JSON first if you want a copy.") }
+            } message: { Text(L10n.text("Your other app records stay unchanged. Export your nutrition JSON first if you want a copy.")) }
             .fileExporter(isPresented: $exporting, document: exportDocument, contentType: .json, defaultFilename: "nutrition-export") { result in if case .failure(let error) = result { self.error = error.localizedDescription } }
     }
     private func field(_ title: String, text: Binding<String>, whole: Bool = false) -> some View {
         HStack {
-            Text(title).font(NFont.body(13))
+            Text(L10n.text(title)).font(NFont.body(13))
             Spacer()
-            TextField(title, text: text).keyboardType(whole ? .numberPad : .decimalPad).multilineTextAlignment(.trailing)
-                .frame(maxWidth: 125, minHeight: 44).font(NFont.body(15)).accessibilityLabel(title)
+            TextField(L10n.text(title), text: text).keyboardType(whole ? .numberPad : .decimalPad).multilineTextAlignment(.trailing)
+                .frame(maxWidth: 125, minHeight: 44).font(NFont.body(15)).accessibilityLabel(L10n.text(title))
         }
     }
     private func activityTitle(_ activity: NutritionActivity) -> String {
         switch activity { case .sedentary: return "Sedentary"; case .light: return "Light"; case .moderate: return "Moderate"; case .active: return "Active"; case .veryActive: return "Very active" }
     }
     private func parse(_ text: String, label: String) throws -> Double? {
-        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value = AppLanguage.canonicalDigits(text).trimmingCharacters(in: .whitespacesAndNewlines)
         if value.isEmpty { return nil }
-        guard let parsed = Double(value.replacingOccurrences(of: ",", with: ".")), parsed.isFinite else { throw NutritionError.invalid("Enter a valid number for \(label).") }
+        guard let parsed = Double(AppLanguage.canonicalDigits(value).replacingOccurrences(of: ",", with: ".")), parsed.isFinite else { throw NutritionError.invalid("Enter a valid number for \(label).") }
         return parsed
     }
     private func draft() throws -> NutritionSettings {
         var s = settings
         if age.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { s.age = nil }
-        else { guard let value = Int(age), (18...100).contains(value) else { throw NutritionError.invalid("Enter an age from 18 to 100.") }; s.age = value }
+        else { guard let value = Int(AppLanguage.canonicalDigits(age)), (18...100).contains(value) else { throw NutritionError.invalid("Enter an age from 18 to 100.") }; s.age = value }
         s.height = try parse(height, label: "height"); s.weight = try parse(weight, label: "weight")
         s.maintenanceOverride = try parse(maintenance, label: "maintenance"); s.calorieOverride = try parse(calories, label: "calorie goal")
         s.proteinOverride = try parse(protein, label: "protein"); s.carbsOverride = try parse(carbs, label: "carbs"); s.fatOverride = try parse(fat, label: "fat")
@@ -164,40 +166,87 @@ struct NutritionWeightView: View {
                         }.chartForegroundStyleScale(["Recorded": NColor.cyan, "7-day average": NColor.yellow]).frame(height: 200)
                             .chartXAxis { AxisMarks(values: .automatic(desiredCount: 4)) { _ in AxisValueLabel(format: utcDateFormat(.dateTime.month(.abbreviated).day())).foregroundStyle(NColor.muted) } }
                             .chartYAxis { AxisMarks(position: .trailing) { _ in AxisGridLine().foregroundStyle(Color.white.opacity(0.06)); AxisValueLabel().foregroundStyle(NColor.muted) } }
-                            .accessibilityElement(children: .ignore).accessibilityLabel("Recorded weight and seven-day rolling average, in \(c.weightUnit.rawValue). Last 30 calendar days.")
+                            .accessibilityElement(children: .ignore).accessibilityLabel(L10n.text("Recorded weight and seven-day rolling average, in \(c.weightUnit.rawValue). Last 30 calendar days."))
                     }
                 }
             }
             NCard {
                 VStack(spacing: 9) {
                     DatePicker("Date", selection: $date, in: ...Date(), displayedComponents: .date).font(NFont.body(13)).frame(minHeight: 44).environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
-                    Picker("Weight unit", selection: $unit) { Text("kg").tag(NutritionWeightUnit.kg); Text("lb").tag(NutritionWeightUnit.lb) }.pickerStyle(.segmented).frame(minHeight: 44)
-                    TextField("Weight", text: $value).keyboardType(.decimalPad).font(NFont.body(18)).frame(minHeight: 44).accessibilityLabel("Weight value")
-                    Button("SAVE WEIGHT") { save() }.buttonStyle(NButton()).disabled(model.isSaving || value.isEmpty)
+                    Picker(L10n.text("Weight unit"), selection: $unit) { Text(L10n.text("kg")).tag(NutritionWeightUnit.kg); Text(L10n.text("lb")).tag(NutritionWeightUnit.lb) }.pickerStyle(.segmented).frame(minHeight: 44)
+                    TextField(L10n.text("Weight"), text: $value).keyboardType(.decimalPad).font(NFont.body(18)).frame(minHeight: 44).accessibilityLabel(L10n.text("Weight value"))
+                    Button(L10n.text("SAVE WEIGHT")) { save() }.buttonStyle(NButton()).disabled(model.isSaving || value.isEmpty)
                 }
             }
-            Text("Saving again on the same UTC date replaces that day's weight. Unit conversions and the rolling average are calculated by the shared nutrition engine.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+            Text(L10n.text("Saving again on the same UTC date replaces that day's weight. Unit conversions and the rolling average are calculated by the shared nutrition engine.")).font(NFont.body(11)).foregroundStyle(NColor.muted)
             if let error { NError(message: error) }
             if store.nutrition.weights.isEmpty { NEmpty(title: "Your entries will appear here", detail: "Add your first weight above.", symbol: "calendar") }
             ForEach(store.nutrition.weights.sorted { $0.day > $1.day }) { entry in
                 NCard {
                     HStack {
-                        Text(entry.day).font(NFont.body(13)); Spacer()
+                        Text(L10n.text(entry.day)).font(NFont.body(13)); Spacer()
                         Text("\(nText(entry.value, digits: 1)) \(entry.unit.rawValue)").font(NFont.label(14))
                         Button(role: .destructive) {
                             task = Task { do { try await model.commit(store) { $0.weights.removeAll { $0.id == entry.id } } } catch { self.error = error.localizedDescription } }
-                        } label: { Image(systemName: "trash").frame(width: 44, height: 44) }.disabled(model.isSaving).accessibilityLabel("Delete weight for \(entry.day)")
+                        } label: { Image(systemName: "trash").frame(width: 44, height: 44) }.disabled(model.isSaving).accessibilityLabel(L10n.text("Delete weight for \(entry.day)"))
                     }
                 }
             }
         }.onAppear { date = store.selectedDate; unit = store.nutrition.settings.units == .metric ? .kg : .lb }.onDisappear { task?.cancel() }
     }
     private func save() {
-        guard let number = Double(value.replacingOccurrences(of: ",", with: ".")), number.isFinite else { error = "Enter a valid weight."; return }
+        guard let number = Double(AppLanguage.canonicalDigits(value).replacingOccurrences(of: ",", with: ".")), number.isFinite else { error = "Enter a valid weight."; return }
         let entry = NutritionWeight(day: NutritionDay.key(date), value: number, unit: unit)
         task = Task { @MainActor in
             do { try await model.commit(store) { data in data.weights.removeAll { $0.day == entry.day }; data.weights.append(entry) }; value = ""; error = nil }
             catch { self.error = error.localizedDescription }
         }
+    }
+}
+
+
+struct NutritionServiceView: View {
+    @EnvironmentObject private var account: AccountModel
+    @State private var accessCode = ""
+    @State private var message: String?
+    @State private var task: Task<Void, Never>?
+    var body: some View {
+        SheetScaffold(title: "Nutrition AI") {
+            VStack(alignment: .leading, spacing: 18) {
+                NHeading(title: "Connect Gemini", subtitle: "Your private nutrition service")
+                Text(L10n.text("Deploy the included server first. Enter its HTTPS address and the separate NUTRITION_ACCESS_TOKEN from your hosting dashboard. Your Gemini API key belongs only in the server’s AI_API_KEY setting.")).font(NFont.body(14)).foregroundStyle(NColor.muted)
+                NCard {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(L10n.text("Service address")).font(NFont.label(12))
+                        TextField("https://your-service.onrender.com", text: $account.nutritionServiceURL)
+                            .keyboardType(.URL).textContentType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                            .frame(minHeight: 44).environment(\.layoutDirection, .leftToRight).accessibilityLabel(L10n.text("Service address"))
+                        SecureField(L10n.text("Server access code"), text: $accessCode)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled().frame(minHeight: 44)
+                            .environment(\.layoutDirection, .leftToRight)
+                        Button(L10n.text("CONNECT NUTRITION SERVICE")) {
+                            message = nil
+                            task = Task { @MainActor in
+                                do { try await account.connectNutrition(accessCode: accessCode); accessCode = ""; message = "Nutrition service connected. You can now analyze meals." }
+                                catch { if !Task.isCancelled { message = error is NutritionError ? error.localizedDescription : "Could not connect. Check the HTTPS address, server access code and hosting status." } }
+                            }
+                        }.buttonStyle(NButton()).disabled(account.isConnectingNutrition || accessCode.isEmpty)
+                        if account.isConnectingNutrition { ProgressView(L10n.text("Connecting…")).tint(NColor.cyan).frame(minHeight: 44) }
+                        if account.nutritionServiceConnected {
+                            Label(L10n.text("Nutrition service connected"), systemImage: "checkmark.circle.fill").foregroundStyle(NColor.green)
+                            Button(L10n.text("Disconnect nutrition service")) {
+                                do { try account.disconnectNutrition(); message = nil; accessCode = "" } catch { message = "Could not update secure storage. Unlock your iPhone and retry." }
+                            }.frame(minHeight: 44)
+                        }
+                    }
+                }
+                if let message { Text(L10n.text(message)).font(NFont.body(14)).fixedSize(horizontal: false, vertical: true) }
+                Link(destination: URL(string: "https://render.com/deploy?repo=https://github.com/abdullahalmaeeni7-dot/noop-custom1")!) {
+                    Label(L10n.text("SET UP GEMINI SERVER"), systemImage: "arrow.up.right.square").frame(maxWidth: .infinity, minHeight: 44)
+                }
+                Text(L10n.text("Hosting setup opens outside this app. Use a replacement Gemini key in the host’s private environment settings. Camera capture and manual food entry work without this connection.")).font(NFont.body(12)).foregroundStyle(NColor.muted)
+                NNote()
+            }
+        }.onDisappear { task?.cancel(); accessCode = "" }
     }
 }

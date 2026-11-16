@@ -29,16 +29,16 @@ struct NutritionFoodForm: View {
     init(initialPhoto: Data? = nil) { self.initialPhoto = initialPhoto }
     var body: some View {
         NPage(title: "Add food") {
-            Picker("Meal type", selection: $meal) { ForEach(NutritionMeal.allCases) { Text($0.title).tag($0) } }.pickerStyle(.segmented).frame(minHeight: 44).disabled(busy)
-            Picker("Entry method", selection: $mode) { ForEach(FoodInputMode.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.segmented).frame(minHeight: 44).disabled(busy)
+            Picker(L10n.text("Meal type"), selection: $meal) { ForEach(NutritionMeal.allCases) { Text(L10n.text($0.title)).tag($0) } }.pickerStyle(.segmented).frame(minHeight: 44).disabled(busy)
+            Picker(L10n.text("Entry method"), selection: $mode) { ForEach(FoodInputMode.allCases) { Text(L10n.text($0.rawValue)).tag($0) } }.pickerStyle(.segmented).frame(minHeight: 44).disabled(busy)
             if mode == .text { textEntry }
             if mode == .photo { photoEntry }
-            if busy { NLoadingCard(); ProgressView("Preparing editable estimates…").tint(NColor.cyan).frame(maxWidth: .infinity, minHeight: 44); Button("CANCEL") { task?.cancel() }.buttonStyle(NButton(secondary: true)) }
+            if busy { NLoadingCard(); ProgressView(L10n.text("Preparing editable estimates…")).tint(NColor.cyan).frame(maxWidth: .infinity, minHeight: 44); Button(L10n.text("CANCEL")) { task?.cancel() }.buttonStyle(NButton(secondary: true)) }
             if let error {
                 NError(message: error)
                 if mode != .manual {
-                    Button("CONNECTION SETTINGS") { showingConnection = true }.buttonStyle(NButton(secondary: true))
-                    Button("ENTER FOOD MANUALLY") { mode = .manual; self.error = nil }.buttonStyle(NButton(secondary: true))
+                    Button(L10n.text("CONNECTION SETTINGS")) { showingConnection = true }.buttonStyle(NButton(secondary: true))
+                    Button(L10n.text("ENTER FOOD MANUALLY")) { mode = .manual; self.error = nil }.buttonStyle(NButton(secondary: true))
                 }
             }
             NHeading(title: mode == .manual ? "Your food" : "Review before saving", subtitle: "Check each portion, calorie value and macro. Nothing saves automatically.")
@@ -46,26 +46,26 @@ struct NutritionFoodForm: View {
                 NCard {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            TextField("Food name", text: $draft.food.name).font(NFont.label(15)).frame(minHeight: 44).accessibilityLabel("Food name")
-                            Button(role: .destructive) { drafts.removeAll { $0.id == draft.id } } label: { Image(systemName: "xmark.circle").frame(width: 44, height: 44) }.accessibilityLabel("Remove food draft")
+                            TextField(L10n.text("Food name"), text: $draft.food.name).font(NFont.label(15)).frame(minHeight: 44).accessibilityLabel(L10n.text("Food name"))
+                            Button(role: .destructive) { drafts.removeAll { $0.id == draft.id } } label: { Image(systemName: "xmark.circle").frame(width: 44, height: 44) }.accessibilityLabel(L10n.text("Remove food draft"))
                         }
                         optionalNumber("Portion (grams)", value: $draft.food.grams)
                         NNumberField(title: "Calories (kcal)", value: $draft.food.kcal)
                         NNumberField(title: "Protein (g)", value: $draft.food.protein)
                         NNumberField(title: "Carbs (g)", value: $draft.food.carbs)
                         NNumberField(title: "Fat (g)", value: $draft.food.fat)
-                        if let confidence = draft.food.confidence { Text("AI confidence: \(confidence.formatted(.percent.precision(.fractionLength(0)))) · editable estimate").font(NFont.body(10)).foregroundStyle(NColor.muted).padding(.top, 7) }
+                        if let confidence = draft.food.confidence { Text(L10n.text("AI confidence: \(confidence.formatted(.percent.locale(AppLanguage.current.locale).precision(.fractionLength(0)))) · editable estimate")).font(NFont.body(10)).foregroundStyle(NColor.muted).padding(.top, 7) }
                     }
                 }.disabled(busy || model.isSaving)
             }
-            Button("+ ANOTHER FOOD") { drafts.append(FoodDraft(food: NutritionFood())) }.buttonStyle(NButton(secondary: true)).disabled(busy || drafts.count >= 30)
-            Button(model.isSaving ? "SAVING…" : "SAVE FOOD") { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || drafts.isEmpty || drafts.contains { $0.food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+            Button(L10n.text("+ ANOTHER FOOD")) { drafts.append(FoodDraft(food: NutritionFood())) }.buttonStyle(NButton(secondary: true)).disabled(busy || drafts.count >= 30)
+            Button(L10n.text(model.isSaving ? "SAVING…" : "SAVE FOOD")) { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || drafts.isEmpty || drafts.contains { $0.food.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
             library
         }.onDisappear { task?.cancel() }
             .task {
                 if let initialPhoto, !loadedInitialPhoto { loadedInitialPhoto = true; mode = .photo; preparePhoto(initialPhoto) }
             }
-            .sheet(isPresented: $showingConnection) { AccountView().preferredColorScheme(.dark) }
+            .sheet(isPresented: $showingConnection) { NutritionServiceView().preferredColorScheme(.dark) }
             .fullScreenCover(isPresented: $showingCamera) {
                 NutritionCameraView { data in showingCamera = false; preparePhoto(data) }
             }
@@ -85,46 +85,46 @@ struct NutritionFoodForm: View {
     private var textEntry: some View {
         NCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Describe what you ate").font(NFont.label(14))
-                TextField("2 eggs and a slice of toast", text: $description, axis: .vertical).lineLimit(3...6).font(NFont.body(15)).accessibilityLabel("Meal description")
+                Text(L10n.text("Describe what you ate")).font(NFont.label(14))
+                TextField(L10n.text("2 eggs and a slice of toast"), text: $description, axis: .vertical).lineLimit(3...6).font(NFont.body(15)).accessibilityLabel(L10n.text("Meal description"))
                     .onChange(of: description) { _, value in if value.count > 2_000 { description = String(value.prefix(2_000)) } }
-                Text("Only this description is sent to the AI provider configured on your server.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+                Text(L10n.text("Only this description is sent to the AI provider configured on your server.")).font(NFont.body(11)).foregroundStyle(NColor.muted)
                 connectionHelp
-                Button("ESTIMATE FOODS") { analyze() }.buttonStyle(NButton()).disabled(busy || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Button(L10n.text("ESTIMATE FOODS")) { analyze() }.buttonStyle(NButton()).disabled(busy || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
     }
     private var photoEntry: some View {
         NCard {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Scan a meal photo").font(NFont.label(14))
+                Text(L10n.text("Scan a meal photo")).font(NFont.label(14))
                 HStack(spacing: 12) {
-                    Button { error = nil; showingCamera = true } label: { Label("TAKE PHOTO", systemImage: "camera").frame(maxWidth: .infinity, minHeight: 48) }
+                    Button { error = nil; showingCamera = true } label: { Label(L10n.text("TAKE PHOTO"), systemImage: "camera").frame(maxWidth: .infinity, minHeight: 48) }
                         .buttonStyle(NButton()).disabled(busy).accessibilityIdentifier("nutritionTakePhoto")
-                    PhotosPicker(selection: $photoItem, matching: .images) { Label("LIBRARY", systemImage: "photo").frame(maxWidth: .infinity, minHeight: 48) }
+                    PhotosPicker(selection: $photoItem, matching: .images) { Label(L10n.text("LIBRARY"), systemImage: "photo").frame(maxWidth: .infinity, minHeight: 48) }
                         .buttonStyle(NButton(secondary: true)).disabled(busy)
                 }
                 if let imagePreview {
                     Image(uiImage: imagePreview).resizable().scaledToFit().frame(maxWidth: .infinity, maxHeight: 240)
-                        .clipShape(RoundedRectangle(cornerRadius: 16)).accessibilityLabel("Meal photo ready to analyze")
+                        .clipShape(RoundedRectangle(cornerRadius: 16)).accessibilityLabel(L10n.text("Meal photo ready to analyze"))
                 }
-                if imageDataURL != nil { Label("Photo compressed and ready", systemImage: "checkmark.circle").font(NFont.body(13)).foregroundStyle(NColor.green) }
-                Text("Photos are resized and re-encoded on this iPhone before upload. Tap Analyze to send the meal photo to your configured provider. Photos are not saved in your nutrition log.").font(NFont.body(11)).foregroundStyle(NColor.muted)
+                if imageDataURL != nil { Label(L10n.text("Photo compressed and ready"), systemImage: "checkmark.circle").font(NFont.body(13)).foregroundStyle(NColor.green) }
+                Text(L10n.text("Photos are resized and re-encoded on this iPhone before upload. Tap Analyze to send the meal photo to your configured provider. Photos are not saved in your nutrition log.")).font(NFont.body(11)).foregroundStyle(NColor.muted)
                 connectionHelp
-                Button("ANALYZE PHOTO") { analyze() }.buttonStyle(NButton()).disabled(busy || imageDataURL == nil)
+                Button(L10n.text("ANALYZE PHOTO")) { analyze() }.buttonStyle(NButton()).disabled(busy || imageDataURL == nil)
             }
         }
     }
     @ViewBuilder private var connectionHelp: some View {
         if let issue = account.nutritionConnectionIssue {
-            Text(issue).font(NFont.body(12)).foregroundStyle(NColor.muted)
-            Button("CONNECT NUTRITION SERVICE") { showingConnection = true }.buttonStyle(NButton(secondary: true))
+            Text(L10n.text(issue)).font(NFont.body(12)).foregroundStyle(NColor.muted)
+            Button(L10n.text("CONNECT NUTRITION SERVICE")) { showingConnection = true }.buttonStyle(NButton(secondary: true))
         }
     }
     private var library: some View {
         VStack(alignment: .leading, spacing: 12) {
             NHeading(title: "Your foods")
-            Picker("Food library", selection: $favoritesOnly) { Text("Recent").tag(false); Text("Favorites").tag(true) }.pickerStyle(.segmented).frame(minHeight: 44)
+            Picker(L10n.text("Food library"), selection: $favoritesOnly) { Text(L10n.text("Recent")).tag(false); Text(L10n.text("Favorites")).tag(true) }.pickerStyle(.segmented).frame(minHeight: 44)
             if favoritesOnly {
                 if store.nutrition.favorites.isEmpty { NEmpty(title: "No favorites yet", detail: "Tap the star beside a saved meal to keep it here.", symbol: "star") }
                 ForEach(store.nutrition.favorites) { favorite in
@@ -147,18 +147,18 @@ struct NutritionFoodForm: View {
     private func foodLibraryRow(_ food: NutritionFood, remove: (() -> Void)?) -> some View {
         NCard {
             HStack {
-                VStack(alignment: .leading, spacing: 4) { Text(food.name).font(NFont.label(13)); Text("\(nText(food.kcal)) kcal").font(NFont.body(11)).foregroundStyle(NColor.muted) }
+                VStack(alignment: .leading, spacing: 4) { Text(food.name).font(NFont.label(13)); Text(L10n.text("\(nText(food.kcal)) kcal")).font(NFont.body(11)).foregroundStyle(NColor.muted) }
                 Spacer()
                 Button {
                     if drafts.count == 1 && drafts[0].food.name.isEmpty { drafts = [FoodDraft(food: food)] }
                     else if drafts.count < 30 { drafts.append(FoodDraft(food: food)) }
-                } label: { Image(systemName: "plus.circle").frame(width: 44, height: 44) }.disabled(busy || drafts.count >= 30).accessibilityLabel("Add \(food.name) to review")
-                if let remove { Button(role: .destructive, action: remove) { Image(systemName: "trash").frame(width: 44, height: 44) }.disabled(model.isSaving).accessibilityLabel("Remove favorite \(food.name)") }
+                } label: { Image(systemName: "plus.circle").frame(width: 44, height: 44) }.disabled(busy || drafts.count >= 30).accessibilityLabel(L10n.text("Add \(food.name) to review"))
+                if let remove { Button(role: .destructive, action: remove) { Image(systemName: "trash").frame(width: 44, height: 44) }.disabled(model.isSaving).accessibilityLabel(L10n.text("Remove favorite \(food.name)")) }
             }
         }
     }
     private func optionalNumber(_ title: String, value: Binding<Double?>) -> some View {
-        HStack { Text(title).font(NFont.body(13)); Spacer(); TextField(title, value: value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 110, minHeight: 44).font(NFont.body(15)).accessibilityLabel(title) }
+        HStack { Text(L10n.text(title)).font(NFont.body(13)); Spacer(); TextField(L10n.text(title), value: value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 110, minHeight: 44).font(NFont.body(15)).accessibilityLabel(L10n.text(title)) }
     }
     private func setPhoto(_ data: Data) throws {
         let encoded = try NutritionPhoto.compress(data)
@@ -220,29 +220,29 @@ struct NutritionCameraView: View {
             VStack(spacing: 24) {
                 HStack {
                     Button { dismiss() } label: { Image(systemName: "xmark").frame(width: 48, height: 48) }
-                        .accessibilityLabel("Close meal camera")
-                    Spacer(); Text("MEAL CAMERA").font(NFont.label(13)).tracking(1.4); Spacer(); Color.clear.frame(width: 48, height: 48)
+                        .accessibilityLabel(L10n.text("Close meal camera"))
+                    Spacer(); Text(L10n.text("MEAL CAMERA")).font(NFont.label(13)).tracking(AppLanguage.isArabic ? 0 : 1.4); Spacer(); Color.clear.frame(width: 48, height: 48)
                 }.padding(.horizontal, 16)
                 Spacer()
                 if camera.ready {
                     RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.75), style: StrokeStyle(lineWidth: 1.5, dash: [20, 180]))
                         .frame(maxWidth: 330).frame(height: 280).padding(.horizontal, 30).accessibilityHidden(true)
-                    Text("Fit your meal in the frame").font(NFont.body(16)).padding(12).background(.black.opacity(0.45), in: Capsule())
+                    Text(L10n.text("Fit your meal in the frame")).font(NFont.body(16)).padding(12).background(.black.opacity(0.45), in: Capsule())
                 } else {
                     VStack(spacing: 16) {
                         Image(systemName: accessDenied ? "camera.badge.exclamationmark" : "camera").font(.system(size: 38, weight: .light))
-                        Text(accessDenied ? "Allow camera access in iPhone Settings to photograph a meal." : camera.status)
+                        Text(L10n.text(accessDenied ? "Allow camera access in iPhone Settings to photograph a meal." : camera.status))
                             .font(NFont.body(16)).multilineTextAlignment(.center)
                         if accessDenied {
-                            Button("OPEN IPHONE SETTINGS") {
+                            Button(L10n.text("OPEN IPHONE SETTINGS")) {
                                 if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                             }.buttonStyle(NButton())
                         } else {
-                            Button("OPEN CAMERA") { Task { await camera.open(microphone: false) } }.buttonStyle(NButton())
+                            Button(L10n.text("OPEN CAMERA")) { Task { await camera.open(microphone: false) } }.buttonStyle(NButton())
                         }
                     }.padding(28)
                 }
-                if let error { Text(error).font(NFont.body(14)).multilineTextAlignment(.center).padding(14).background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 16)) }
+                if let error { Text(L10n.text(error)).font(NFont.body(14)).multilineTextAlignment(.center).padding(14).background(.black.opacity(0.7), in: RoundedRectangle(cornerRadius: 16)) }
                 Spacer()
                 HStack {
                     Color.clear.frame(width: 48, height: 48)
@@ -253,12 +253,12 @@ struct NutritionCameraView: View {
                             Circle().fill(.white).frame(width: 64, height: 64)
                             if capturing { ProgressView().tint(.black) }
                         }.frame(width: 90, height: 90)
-                    }.disabled(!camera.ready || capturing).accessibilityLabel("Photograph meal").accessibilityIdentifier("nutritionCameraShutter")
+                    }.disabled(!camera.ready || capturing).accessibilityLabel(L10n.text("Photograph meal")).accessibilityIdentifier("nutritionCameraShutter")
                     Spacer()
                     Button { camera.engine.flip() } label: { Image(systemName: "camera.rotate").font(.system(size: 25)).frame(width: 48, height: 48) }
-                        .disabled(!camera.ready || capturing).accessibilityLabel("Switch meal camera")
+                        .disabled(!camera.ready || capturing).accessibilityLabel(L10n.text("Switch meal camera"))
                 }.padding(.horizontal, 28).padding(.bottom, 18)
-                Text("Review the photo before sending it for estimates.").font(NFont.body(12)).foregroundStyle(.white.opacity(0.8)).padding(.bottom, 12)
+                Text(L10n.text("Review the photo before sending it for estimates.")).font(NFont.body(12)).foregroundStyle(.white.opacity(0.8)).padding(.bottom, 12)
             }.foregroundStyle(.white)
         }.preferredColorScheme(.dark).statusBarHidden(true)
             .task { await camera.open(microphone: false) }
@@ -304,23 +304,23 @@ struct NutritionExerciseForm: View {
             NHeading(title: "Log exercise", subtitle: "Manual values or an editable AI estimate")
             NCard {
                 VStack(spacing: 5) {
-                    TextField("Activity name", text: $name).frame(minHeight: 44).accessibilityLabel("Activity name")
+                    TextField(L10n.text("Activity name"), text: $name).frame(minHeight: 44).accessibilityLabel(L10n.text("Activity name"))
                     NNumberField(title: "Duration (minutes)", value: $minutes)
                     NNumberField(title: "Calories burned (kcal)", value: $kcal)
                 }
             }
             NCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Estimate from a description").font(NFont.label(14))
-                    TextField("30 min jogging", text: $description, axis: .vertical).lineLimit(2...4).frame(minHeight: 44).accessibilityLabel("Exercise description")
-                    Text("Uses your latest recorded/profile weight: \(nText(model.calculation?.goals.weightKg, digits: 1)) kg. Set weight in Nutrition Settings first. The description and weight are sent only when you tap Estimate.").font(NFont.body(11)).foregroundStyle(NColor.muted)
-                    if busy { NLoadingCard(); ProgressView("Estimating…").tint(NColor.cyan) }
-                    Button("ESTIMATE CALORIES") { estimate() }.buttonStyle(NButton(secondary: true)).disabled(busy || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Text(L10n.text("Estimate from a description")).font(NFont.label(14))
+                    TextField(L10n.text("30 min jogging"), text: $description, axis: .vertical).lineLimit(2...4).frame(minHeight: 44).accessibilityLabel(L10n.text("Exercise description"))
+                    Text(L10n.text("Uses your latest recorded/profile weight: \(nText(model.calculation?.goals.weightKg, digits: 1)) kg. Set weight in Nutrition Settings first. The description and weight are sent only when you tap Estimate.")).font(NFont.body(11)).foregroundStyle(NColor.muted)
+                    if busy { NLoadingCard(); ProgressView(L10n.text("Estimating…")).tint(NColor.cyan) }
+                    Button(L10n.text("ESTIMATE CALORIES")) { estimate() }.buttonStyle(NButton(secondary: true)).disabled(busy || description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            if estimated { Text("AI estimate. Review and edit the calorie value before saving.").font(NFont.body(12)).foregroundStyle(NColor.yellow) }
+            if estimated { Text(L10n.text("AI estimate. Review and edit the calorie value before saving.")).font(NFont.body(12)).foregroundStyle(NColor.yellow) }
             if let error { NError(message: error) }
-            Button("SAVE EXERCISE") { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button(L10n.text("SAVE EXERCISE")) { save() }.buttonStyle(NButton()).disabled(busy || model.isSaving || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }.onDisappear { task?.cancel() }
     }
     private func estimate() {

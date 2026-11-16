@@ -7,15 +7,15 @@ struct CommunityView: View {
     let importData: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("Build Your Community").font(WFont.body(26).weight(.semibold))
-            Text("Better, together.").font(WFont.body(16)).foregroundStyle(WColor.muted)
+            Text(L10n.text("Build Your Community")).font(WFont.body(26).weight(.semibold))
+            Text(L10n.text("Better, together.")).font(WFont.body(16)).foregroundStyle(WColor.muted)
             WCard {
                 VStack(alignment: .leading, spacing: 18) {
                     Image(systemName: "person.2.circle").font(.system(size: 52, weight: .ultraLight)).foregroundStyle(WColor.blue)
-                    Text("YOUR TRAINING\nSTARTS HERE.").font(WFont.number(31, bold: true))
-                    Text("This local edition does not connect to WHOOP teams, followers or leaderboards. Your own activity log stays available below.")
+                    Text(L10n.text("YOUR TRAINING\nSTARTS HERE.")).font(WFont.number(31, bold: true))
+                    Text(L10n.text("This local edition does not connect to WHOOP teams, followers or leaderboards. Your own activity log stays available below."))
                         .font(WFont.body(16)).foregroundStyle(WColor.muted)
-                    Button("LOG AN ACTIVITY", action: openActivity).buttonStyle(WButton())
+                    Button(L10n.text("LOG AN ACTIVITY"), action: openActivity).buttonStyle(WButton())
                 }
             }
             SectionHeading(title: "Your recent sessions", subtitle: "Saved on this iPhone")
@@ -24,7 +24,7 @@ struct CommunityView: View {
             } else {
                 ForEach(Array(store.activities.sorted { $0.start > $1.start }.prefix(12))) { activity in ActivityRow(activity: activity) }
             }
-            Button("IMPORT YOUR DAY DATA", action: importData).buttonStyle(WButton(filled: false))
+            Button(L10n.text("IMPORT YOUR DAY DATA"), action: importData).buttonStyle(WButton(filled: false))
         }
     }
 }
@@ -37,14 +37,14 @@ struct ProfileView: View {
     @State private var personalizing = false
     var body: some View {
         VStack(spacing: 24) {
-            HStack { Text("YOUR PROFILE").font(WFont.number(35, bold: true)); Spacer() }
+            HStack { Text(L10n.text("YOUR PROFILE")).font(WFont.number(35, bold: true)); Spacer() }
             VStack(spacing: 13) {
                 Image(systemName: "person.crop.circle.fill").font(.system(size: 84, weight: .ultraLight)).foregroundStyle(WColor.elevated)
                     .overlay(Image(systemName: "person.crop.circle").font(.system(size: 84, weight: .ultraLight)).foregroundStyle(WColor.muted))
-                Text("YOUR PERSONAL RECORD").font(WFont.label(12)).tracking(1.2)
+                Text(L10n.text("YOUR PERSONAL RECORD")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.2)
                 SourceBadge(source: store.selectedDay.source, isEmpty: !selectedDayExists(in: store))
                 if !store.profile.displayName.isEmpty { Text(store.profile.displayName).font(WFont.number(25, bold: true)) }
-                Button("PERSONALIZE PROFILE & VIEW HIGHLIGHTS") { personalizing = true }.buttonStyle(WButton(filled: false))
+                Button(L10n.text("PERSONALIZE PROFILE & VIEW HIGHLIGHTS")) { personalizing = true }.buttonStyle(WButton(filled: false))
             }.padding(.vertical, 10)
             HStack(spacing: 12) {
                 MiniMetric(title: "DAYS", value: store.days.count.formatted(), unit: "saved", symbol: "calendar", color: WColor.blue)
@@ -59,7 +59,7 @@ struct ProfileView: View {
                     ProfileActionRow(title: "Export day data", subtitle: "Save a copy in Files", symbol: "square.and.arrow.up", action: exportData)
                 }
             }
-            Text("Your journal and activity log are stored on this iPhone. Day-data exports include measurements and supplied scores, not your journal notes.")
+            Text(L10n.text("Your journal and activity log are stored on this iPhone. Day-data exports include measurements and supplied scores, not your journal notes."))
                 .font(WFont.body(14)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
         }.fullScreenCover(isPresented: $personalizing) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
     }
@@ -75,8 +75,8 @@ private struct ProfileActionRow: View {
             HStack(spacing: 13) {
                 Image(systemName: symbol).foregroundStyle(WColor.muted).frame(width: 25)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title).font(WFont.body(16)).foregroundStyle(.white)
-                    Text(subtitle).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                    Text(L10n.text(title)).font(WFont.body(16)).foregroundStyle(.white)
+                    Text(L10n.text(subtitle)).font(WFont.body(13)).foregroundStyle(WColor.muted)
                 }
                 Spacer(); Image(systemName: "chevron.right").font(.system(size: 11)).foregroundStyle(WColor.muted)
             }.padding(.vertical, 16)
@@ -110,6 +110,7 @@ struct MenuView: View {
     @State private var referenceHome = false
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            LanguagePicker()
             SectionHeading(title: "Your WHOOP")
             WCard {
                 VStack(spacing: 0) {
@@ -165,12 +166,12 @@ struct MenuView: View {
             WCard {
                 MenuActionRow(title: "Delete local data", symbol: "trash", destructive: true, action: clearData)
             }
-            Text("\(store.days.count) saved days · \(store.activities.count) logged activities")
+            Text(L10n.text("\(store.days.count) saved days · \(store.activities.count) logged activities"))
                 .font(WFont.body(12)).foregroundStyle(WColor.muted).frame(maxWidth: .infinity).padding(.top, 6)
         }
-        .confirmationDialog("Replace local data with an example week?", isPresented: $confirmExamples, titleVisibility: .visible) {
-            Button("Replace with examples", role: .destructive) { showExamples() }
-        } message: { Text("This replaces imported days, journal entries and logged activities on this iPhone. Save a full backup first if you want to keep a copy, including journal entries and activities. Example scores are labelled throughout the app.") }
+        .confirmationDialog(L10n.text("Replace local data with an example week?"), isPresented: $confirmExamples, titleVisibility: .visible) {
+            Button(L10n.text("Replace with examples"), role: .destructive) { showExamples() }
+        } message: { Text(L10n.text("This replaces imported days, journal entries and logged activities on this iPhone. Save a full backup first if you want to keep a copy, including journal entries and activities. Example scores are labelled throughout the app.")) }
         .sheet(isPresented: $referenceHome) { PulseHomeView().presentationDragIndicator(.visible) }
     }
 }
@@ -184,7 +185,7 @@ private struct MenuActionRow: View {
         Button(action: action) {
             HStack(spacing: 13) {
                 Image(systemName: symbol).font(.system(size: 19, weight: .light)).frame(width: 26)
-                Text(title).font(WFont.body(16))
+                Text(L10n.text(title)).font(WFont.body(16))
                 Spacer(); Image(systemName: "chevron.right").font(.system(size: 11)).foregroundStyle(WColor.muted)
             }.foregroundStyle(destructive ? Color.red.opacity(0.9) : Color.white).padding(.vertical, 17)
         }.buttonStyle(.plain)
@@ -197,31 +198,31 @@ struct DataHelpView: View {
             VStack(alignment: .leading, spacing: 24) {
                 SectionHeading(title: "Import a WHOOP export ZIP")
                 WCard {
-                    Text("CHOOSE THE ORIGINAL ZIP").font(WFont.label(12)).tracking(0.8)
-                    Text("Select the ZIP downloaded from WHOOP, or its individual CSV files. Cycle, primary-sleep and workout records are read on this iPhone. You do not need to unzip it or configure a secure bridge.")
+                    Text(L10n.text("CHOOSE THE ORIGINAL ZIP")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                    Text(L10n.text("Select the ZIP downloaded from WHOOP, or its individual CSV files. Cycle, primary-sleep and workout records are read on this iPhone. You do not need to unzip it or configure a secure bridge."))
                         .font(WFont.body(15)).foregroundStyle(WColor.muted).padding(.top, 8)
-                    Text("Timestamps use the CSV timezone and are grouped by UTC day. Journal answers are not applied by this measurement import. Average and maximum heart rates are not converted into a continuous heart-rate trace.")
+                    Text(L10n.text("Timestamps use the CSV timezone and are grouped by UTC day. Journal answers are not applied by this measurement import. Average and maximum heart rates are not converted into a continuous heart-rate trace."))
                         .font(WFont.body(14)).foregroundStyle(WColor.muted).padding(.top, 8)
                 }
                 SectionHeading(title: "Import a day archive")
                 WCard {
-                    Text("JSON DAY DATA").font(WFont.label(12)).tracking(0.8)
-                    Text("Use a day-data export from this app as a template. Dates use ISO 8601. Supplied recovery, sleep and strain scores are shown as imported.")
+                    Text(L10n.text("JSON DAY DATA")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                    Text(L10n.text("Use a day-data export from this app as a template. Dates use ISO 8601. Supplied recovery, sleep and strain scores are shown as imported."))
                         .font(WFont.body(15)).foregroundStyle(WColor.muted).padding(.top, 8)
                 }
                 SectionHeading(title: "Import heart-rate samples")
                 WCard {
-                    Text("CSV HEART RATE").font(WFont.label(12)).tracking(0.8)
-                    Text("A CSV file needs timestamp and heart_rate columns. Use ISO 8601 timestamps with a timezone and heart rate in beats per minute.")
+                    Text(L10n.text("CSV HEART RATE")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                    Text(L10n.text("A CSV file needs timestamp and heart_rate columns. Use ISO 8601 timestamps with a timezone and heart rate in beats per minute."))
                         .font(WFont.body(15)).foregroundStyle(WColor.muted).padding(.top, 8)
                     Text("timestamp,heart_rate\n2026-11-08T08:00:00Z,62\n2026-11-08T08:00:01Z,63")
                         .font(.system(size: 12, design: .monospaced)).foregroundStyle(WColor.blue).textSelection(.enabled).padding(.top, 12)
-                    Text("Heart-rate-only files do not supply sleep, recovery or daily strain scores. They appear as missing values.")
+                    Text(L10n.text("Heart-rate-only files do not supply sleep, recovery or daily strain scores. They appear as missing values."))
                         .font(WFont.body(14)).foregroundStyle(WColor.muted).padding(.top, 12)
                 }
                 WCard {
-                    Label("UP TO 10 MB PER FILE", systemImage: "doc").font(WFont.label(11)).tracking(0.6)
-                    Text("Imports are checked before they are saved. Files that are too large or contain invalid values are rejected with an explanation.")
+                    Label(L10n.text("UP TO 10 MB PER FILE"), systemImage: "doc").font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.6)
+                    Text(L10n.text("Imports are checked before they are saved. Files that are too large or contain invalid values are rejected with an explanation."))
                         .font(WFont.body(14)).foregroundStyle(WColor.muted).padding(.top, 9)
                 }
             }
@@ -234,24 +235,24 @@ struct AboutView: View {
         SheetScaffold(title: "ABOUT THIS EDITION") {
             VStack(alignment: .leading, spacing: 24) {
                 WhoopWordmark().frame(width: 145, height: 28).padding(.vertical, 14)
-                Text("YOUR DATA.\nA CLOSER LOOK.").font(WFont.number(36, bold: true))
-                Text("A local iPhone reconstruction using WHOOP branding and recovered Android client findings. It is not the official WHOOP app and is not affiliated with WHOOP.")
+                Text(L10n.text("YOUR DATA.\nA CLOSER LOOK.")).font(WFont.number(36, bold: true))
+                Text(L10n.text("A local iPhone reconstruction using WHOOP branding and recovered Android client findings. It is not the official WHOOP app and is not affiliated with WHOOP."))
                     .font(WFont.body(16)).foregroundStyle(WColor.muted)
                 WCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("WHAT YOU CAN DO").font(WFont.label(12)).tracking(0.7)
-                        Text("Import measurements from Apple Health or files, inspect charts, keep a journal, record workouts, manage activities, save full backups and receive compatible Bluetooth heart-rate data.")
+                        Text(L10n.text("WHAT YOU CAN DO")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.7)
+                        Text(L10n.text("Import measurements from Apple Health or files, inspect charts, keep a journal, record workouts, manage activities, save full backups and receive compatible Bluetooth heart-rate data."))
                             .font(WFont.body(15)).foregroundStyle(WColor.muted)
                     }
                 }
                 WCard {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("WHAT STAYS SEPARATE").font(WFont.label(12)).tracking(0.7)
-                        Text("Account sync uses a separately configured OAuth bridge to import WHOOP-provided scores. This app does not independently calculate daily Recovery or sleep scores, trim strap history, or provide WHOOP teams and coaching services. The strain reference is a controlled example, not a replacement for your daily score.")
+                        Text(L10n.text("WHAT STAYS SEPARATE")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.7)
+                        Text(L10n.text("Account sync uses a separately configured OAuth bridge to import WHOOP-provided scores. This app does not independently calculate daily Recovery or sleep scores, trim strap history, or provide WHOOP teams and coaching services. The strain reference is a controlled example, not a replacement for your daily score."))
                             .font(WFont.body(15)).foregroundStyle(WColor.muted)
                     }
                 }
-                Text("No WHOOP account or password is required. Your locally saved data is not uploaded to WHOOP by this app.")
+                Text(L10n.text("No WHOOP account or password is required. Your locally saved data is not uploaded to WHOOP by this app."))
                     .font(WFont.body(14)).foregroundStyle(WColor.muted)
             }
         }
@@ -269,8 +270,8 @@ struct ReferenceStrainView: View {
     var body: some View {
         SheetScaffold(title: "STRAIN REFERENCE") {
             VStack(alignment: .leading, spacing: 24) {
-                Text("EXPLORE THE\nSTRAIN SCALE.").font(WFont.number(35, bold: true))
-                Text("A constant heart-rate example using a recovered local calculation. This does not replace your daily score.")
+                Text(L10n.text("EXPLORE THE\nSTRAIN SCALE.")).font(WFont.number(35, bold: true))
+                Text(L10n.text("A constant heart-rate example using a recovered local calculation. This does not replace your daily score."))
                     .font(WFont.body(16)).foregroundStyle(WColor.muted)
                 WCard {
                     VStack(spacing: 22) {
@@ -280,20 +281,20 @@ struct ReferenceStrainView: View {
                         ReferenceSlider(title: "Duration", value: $minutes, range: 1...180, unit: "MIN")
                     }
                 }
-                Button("CALCULATE EXAMPLE", action: calculate).buttonStyle(WButton())
-                if let error { Text(error).font(WFont.body(14)).foregroundStyle(WColor.yellow).accessibilityLabel("Calculation error, \(error)") }
+                Button(L10n.text("CALCULATE EXAMPLE"), action: calculate).buttonStyle(WButton())
+                if let error { Text(L10n.text(error)).font(WFont.body(14)).foregroundStyle(WColor.yellow).accessibilityLabel(L10n.text("Calculation error, \(error)")) }
                 if let result {
                     WCard {
                         VStack(spacing: 8) {
-                            Text("REFERENCE RESULT").font(WFont.label(11)).tracking(1.1).foregroundStyle(WColor.blue)
-                            Text(decimalText(result)).font(WFont.number(64, bold: true))
-                            Text("OUT OF 21").font(WFont.label(10)).tracking(1).foregroundStyle(WColor.muted)
-                            if let raw { Text("Raw contribution \(raw.formatted(.number.precision(.fractionLength(8))))").font(WFont.body(12)).foregroundStyle(WColor.muted).padding(.top, 7) }
-                            Text("Scenario only · not saved as your daily strain").font(WFont.body(13)).foregroundStyle(WColor.muted).padding(.top, 7)
+                            Text(L10n.text("REFERENCE RESULT")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1.1).foregroundStyle(WColor.blue)
+                            Text(L10n.text(decimalText(result))).font(WFont.number(64, bold: true))
+                            Text(L10n.text("OUT OF 21")).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 1).foregroundStyle(WColor.muted)
+                            if let raw { Text(L10n.text("Raw contribution \(raw.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(8))))")).font(WFont.body(12)).foregroundStyle(WColor.muted).padding(.top, 7) }
+                            Text(L10n.text("Scenario only · not saved as your daily strain")).font(WFont.body(13)).foregroundStyle(WColor.muted).padding(.top, 7)
                         }.frame(maxWidth: .infinity).padding(.vertical, 10)
                     }
                 }
-                Text("The scenario uses one constant sample per second and supplied resting and maximum heart rates. It does not estimate sleep, Recovery or strength-training strain.")
+                Text(L10n.text("The scenario uses one constant sample per second and supplied resting and maximum heart rates. It does not estimate sleep, Recovery or strength-training strain."))
                     .font(WFont.body(14)).foregroundStyle(WColor.muted)
             }
         }
@@ -322,12 +323,52 @@ private struct ReferenceSlider: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text(title).font(WFont.body(15))
+                Text(L10n.text(title)).font(WFont.body(15))
                 Spacer()
                 Text("\(Int(value))").font(WFont.number(24, bold: true))
-                Text(unit).font(WFont.label(9)).foregroundStyle(WColor.muted)
+                Text(L10n.text(unit)).font(WFont.label(9)).foregroundStyle(WColor.muted)
             }
-            Slider(value: $value, in: range, step: 1).tint(WColor.blue).accessibilityLabel(title)
+            Slider(value: $value, in: range, step: 1).tint(WColor.blue).accessibilityLabel(L10n.text(title))
+        }
+    }
+}
+
+
+/// The preference is shared by onboarding, all app screens and AI response language.
+struct LanguagePicker: View {
+    @AppStorage(AppLanguage.preferenceKey) private var choice = AppLanguage.system.rawValue
+    var compact = false
+    var body: some View {
+        Group {
+            if compact {
+                Menu {
+                    languageOptions
+                } label: {
+                    Image(systemName: "globe").font(.system(size: 22)).frame(width: 44, height: 44)
+                }.accessibilityLabel(L10n.text("Language"))
+            } else {
+                WCard {
+                    HStack {
+                        Image(systemName: "globe").foregroundStyle(WColor.muted)
+                        Picker(L10n.text("Language"), selection: selection) {
+                            Text(L10n.text("Device language")).tag(AppLanguage.system.rawValue)
+                            Text("English").tag(AppLanguage.english.rawValue)
+                            Text("العربية").tag(AppLanguage.arabic.rawValue)
+                        }.frame(minHeight: 44).tint(.white)
+                    }
+                }
+            }
+        }
+    }
+    private var selection: Binding<String> {
+        Binding(get: { choice }, set: { AppLanguage.choose(AppLanguage(rawValue: $0) ?? .system); choice = $0 })
+    }
+    @ViewBuilder private var languageOptions: some View {
+        ForEach(AppLanguage.allCases, id: \.rawValue) { language in
+            Button { selection.wrappedValue = language.rawValue } label: {
+                let title = language == .system ? L10n.text("Device language") : language == .arabic ? "العربية" : "English"
+                if choice == language.rawValue { Label(L10n.text(title), systemImage: "checkmark") } else { Text(L10n.text(title)) }
+            }
         }
     }
 }

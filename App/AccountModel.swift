@@ -14,6 +14,11 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
     @Published private(set) var status = "Add your configured HTTPS bridge to connect your account."
     @Published private(set) var error: String?
     @Published private(set) var displayName: String?
+    @Published var nutritionServiceURL: String
+    @Published private(set) var nutritionServiceConnected = false
+    @Published private(set) var isConnectingNutrition = false
+    private var nutritionBearer: String?
+    private var nutritionBase: URL?
     private var bearer: String?
     private var linkedBaseURL: URL?
     private var session: ASWebAuthenticationSession?
@@ -24,12 +29,16 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
     private let transport: URLSession
 
     override init() {
+        nutritionServiceURL = UserDefaults.standard.string(forKey: "whoop.nutrition.serviceURL") ?? ""
         bridgeURL = UserDefaults.standard.string(forKey: "whoop.account.bridgeURL") ?? ""
         let config = URLSessionConfiguration.ephemeral
         config.httpCookieStorage = nil; config.urlCache = nil
         config.timeoutIntervalForRequest = 45; config.timeoutIntervalForResource = 60
         transport = URLSession(configuration: config, delegate: AccountRedirectGuard(), delegateQueue: nil)
         super.init()
+        if let url = try? validatedOrigin(nutritionServiceURL), let token = try? AccountKeychain.read(for: url, namespace: .nutrition) {
+            nutritionBearer = token; nutritionBase = url; nutritionServiceConnected = true
+        }
         if let url = try? validatedBaseURL() {
             do {
                 bearer = try AccountKeychain.read(for: url)
@@ -214,8 +223,9 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         continuation?.resume(with: result)
     }
 
-    private func validatedBaseURL() throws -> URL {
-        guard let value = URLComponents(string: bridgeURL.trimmingCharacters(in: .whitespacesAndNewlines)),
+    private func validatedBaseURL() throws -> URL { try validatedOrigin(bridgeURL) }
+    private func validatedOrigin(_ address: String) throws -> URL {
+        guard let value = URLComponents(string: address.trimmingCharacters(in: .whitespacesAndNewlines)),
               value.scheme == "https", let host = value.host, !host.isEmpty,
               value.user == nil, value.password == nil, value.query == nil, value.fragment == nil,
               value.path.isEmpty || value.path == "/", value.port == nil || value.port == 443,
@@ -233,12 +243,45 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         catch { throw AccountProblem.invalidServer }
     }
 
+    func connectNutrition(accessCode: String) async throws {
+        guard !isConnectingNutrition else { throw AccountProblem.busy }
+        guard accessCode.utf8.count >= 32, accessCode.utf8.count <= 256,
+              accessCode.utf8.allSatisfy({ $0 >= 33 && $0 <= 126 }) else {
+            throw NutritionError.invalid("Enter the server access code from your hosting dashboard, not a Gemini API key.")
+        }
+        isConnectingNutrition = true
+        defer { isConnectingNutrition = false }
+        let base = try validatedOrigin(nutritionServiceURL)
+        let health: Health = try await request(base, path: "health", method: "GET")
+        guard health.service == "nutrition-ai", health.version == 1 else { throw AccountProblem.invalidServer }
+        guard health.configured else { throw NutritionError.invalid("Add the Gemini key in your server’s environment settings, then redeploy the service.") }
+        struct NutritionSession: Decodable { let connected: Bool; let configured: Bool }
+        let result: NutritionSession = try await request(base, path: "session", method: "GET", token: accessCode)
+        guard result.connected && result.configured else { throw AccountProblem.invalidServer }
+        try Task.checkCancellation()
+        try AccountKeychain.save(accessCode, for: base, namespace: .nutrition)
+        if let old = nutritionBase, old != base { try? AccountKeychain.delete(for: old, namespace: .nutrition) }
+        nutritionBearer = accessCode; nutritionBase = base; nutritionServiceConnected = true
+        nutritionServiceURL = base.absoluteString
+        UserDefaults.standard.set(nutritionServiceURL, forKey: "whoop.nutrition.serviceURL")
+    }
+
+    func disconnectNutrition() throws {
+        if let base = nutritionBase { try AccountKeychain.delete(for: base, namespace: .nutrition) }
+        nutritionBearer = nil; nutritionBase = nil; nutritionServiceConnected = false
+    }
+
     var nutritionConnectionIssue: String? {
+        if !nutritionServiceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            guard let base = try? validatedOrigin(nutritionServiceURL) else { return "Enter your nutrition service’s HTTPS origin with no path or query." }
+            guard nutritionServiceConnected, nutritionBearer != nil, nutritionBase == base else { return "Connect your nutrition service using its server access code." }
+            return nil
+        }
         guard !bridgeURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return "Connect your nutrition service to analyze photos. Camera capture and manual food logging work offline."
         }
         guard let base = try? validatedBaseURL() else { return "Check the HTTPS service address in account settings." }
-        guard bearer != nil, isLinked, linkedBaseURL == base else { return "Reconnect your account to use nutrition analysis." }
+        guard bearer != nil, isLinked, linkedBaseURL == base else { return "Connect a nutrition service or reconnect your WHOOP account bridge to use AI." }
         return nil
     }
 
@@ -246,10 +289,12 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         let allowed = ["analyze-meal", "parse-food", "estimate-exercise", "day-review"]
         guard allowed.contains(path) else { throw AccountProblem.invalidServer }
         if let issue = nutritionConnectionIssue { throw NutritionError.invalid(issue) }
-        let base = try validatedBaseURL()
-        guard let bearer else { throw AccountProblem.expired }
+        let standalone = !nutritionServiceURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let base = try standalone ? validatedOrigin(nutritionServiceURL) : validatedBaseURL()
+        guard let token = standalone ? nutritionBearer : bearer else { throw AccountProblem.expired }
         let data: Data
-        do { data = try await rawRequest(base, path: "api/nutrition/" + path, method: "POST", encodedBody: JSONEncoder().encode(input), token: bearer) }
+        let payload = NutritionLanguageRequest(body: input, language: AppLanguage.current.code)
+        do { data = try await rawRequest(base, path: "api/nutrition/" + path, method: "POST", encodedBody: JSONEncoder().encode(payload), token: token) }
         catch let error as URLError {
             if error.code == .cancelled { throw CancellationError() }
             throw NutritionError.invalid(error.code == .timedOut ? "Photo analysis took too long. Try again with a clearer, smaller meal photo." : "Couldn’t reach the nutrition service. Check your connection and service address, then retry. Your food drafts are still here.")
@@ -271,6 +316,11 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         guard let response = response as? HTTPURLResponse, response.url?.host == base.host,
               data.count <= 16 * 1_024 * 1_024 else { throw AccountProblem.invalidServer }
         if response.statusCode == 401 {
+            if let token, token == nutritionBearer, nutritionBase == base {
+                try AccountKeychain.delete(for: base, namespace: .nutrition)
+                nutritionBearer = nil; nutritionBase = nil; nutritionServiceConnected = false
+                throw NutritionError.invalid("Your nutrition access code was rejected. Connect again with the current server access code.")
+            }
             // A late cleanup response from an earlier attempt must not unlink a newer session.
             if let token, token == bearer, linkedBaseURL == base {
                 bearer = nil; linkedBaseURL = nil; isLinked = false; displayName = nil
@@ -285,6 +335,7 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
             switch code {
             case "ai_not_configured": message = "Nutrition AI is not configured. Add AI_API_KEY and AI_API_URL on your server. Manual logging still works."
             case "not_configured": message = "The account service is not configured. Check its server settings before connecting again."
+            case "ai_credentials_rejected": message = "Gemini rejected the server credentials. Replace AI_API_KEY in your hosting dashboard and redeploy."
             case "ai_unavailable": message = "The nutrition provider is unavailable. Check the server’s AI credentials and vision-capable model, or retry later."
             case "rate_limited": message = "AI requests are temporarily limited. Wait a moment and try again."
             case "request_too_large": message = "Choose a smaller meal photo or shorter description."
@@ -340,28 +391,29 @@ private extension Data {
 }
 
 private enum AccountKeychain {
-    static func query(_ url: URL) -> [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "whoop.local.account.bridge",
+    enum Namespace: String { case account = "whoop.local.account.bridge", nutrition = "whoop.local.nutrition.service" }
+    static func query(_ url: URL, namespace: Namespace) -> [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: namespace.rawValue,
          kSecAttrAccount as String: Data(SHA256.hash(data: Data(url.absoluteString.utf8))).base64URL,
          kSecAttrSynchronizable as String: false]
     }
-    static func read(for url: URL) throws -> String? {
-        var query = query(url); query[kSecReturnData as String] = true; query[kSecMatchLimit as String] = kSecMatchLimitOne
+    static func read(for url: URL, namespace: Namespace = .account) throws -> String? {
+        var query = query(url, namespace: namespace); query[kSecReturnData as String] = true; query[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
         let code = SecItemCopyMatching(query as CFDictionary, &result)
         if code == errSecItemNotFound { return nil }
         guard code == errSecSuccess, let data = result as? Data, let token = String(data: data, encoding: .utf8) else { throw AccountProblem.secureStorage }
         return token
     }
-    static func save(_ token: String, for url: URL) throws {
-        try delete(for: url)
-        var value = query(url)
+    static func save(_ token: String, for url: URL, namespace: Namespace = .account) throws {
+        try delete(for: url, namespace: namespace)
+        var value = query(url, namespace: namespace)
         value[kSecValueData as String] = Data(token.utf8)
         value[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         guard SecItemAdd(value as CFDictionary, nil) == errSecSuccess else { throw AccountProblem.secureStorage }
     }
-    static func delete(for url: URL) throws {
-        let result = SecItemDelete(query(url) as CFDictionary)
+    static func delete(for url: URL, namespace: Namespace = .account) throws {
+        let result = SecItemDelete(query(url, namespace: namespace) as CFDictionary)
         guard result == errSecSuccess || result == errSecItemNotFound else { throw AccountProblem.secureStorage }
     }
 }

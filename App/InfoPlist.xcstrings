@@ -1,0 +1,91 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSBluetoothAlwaysUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WHOOP can read a nearby heart-rate sensor when you choose to connect."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكن لـ WHOOP قراءة مستشعر نبض قريب عندما تختار الاتصال."
+          }
+        }
+      }
+    },
+    "NSHealthShareUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import heart rate, sleep, activity and breathing measurements from Apple Health into your local daily dashboard. You choose which measurements to share."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استيراد قياسات النبض والنوم والنشاط والتنفس من صحة آبل إلى لوحة بياناتك المحلية. تختار أنت القياسات التي تشاركها."
+          }
+        }
+      }
+    },
+    "NSCameraUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photograph a meal for nutrition estimates, or record your workout with live measurements, when you choose to open the camera."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تصوير وجبة لتقدير التغذية أو تسجيل تمرين مع قياساتك المباشرة عندما تختار فتح الكاميرا."
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include audio in your Live workout videos when you choose microphone recording."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تضمين الصوت في فيديوهات تمرينك المباشرة عندما تختار تسجيل الميكروفون."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save a photo overlay or workout video to your photo library when you tap Save."
+          }
+        },
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حفظ صورة بإحصاءاتك أو فيديو تمرين في مكتبة الصور عندما تضغط حفظ."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

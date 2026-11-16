@@ -37,34 +37,34 @@ struct RootView: View {
 
     var body: some View {
         dataInterface
-        .alert("Something needs attention", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
-            Button("OK", role: .cancel) { message = nil }
-        } message: { Text(message ?? "") }
-        .alert("Import complete", isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
-            Button("OK") { importReport = nil }
-        } message: { Text(importReport ?? "") }
-        .confirmationDialog("Delete all day data, profile preferences, journal entries, activities and nutrition records from this iPhone?", isPresented: $confirmClear, titleVisibility: .visible) {
-            Button("Delete local data", role: .destructive) {
+        .alert(L10n.text("Something needs attention"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+            Button(L10n.text("OK"), role: .cancel) { message = nil }
+        } message: { Text(L10n.text(message ?? "")) }
+        .alert(L10n.text("Import complete"), isPresented: Binding(get: { importReport != nil }, set: { if !$0 { importReport = nil } })) {
+            Button(L10n.text("OK")) { importReport = nil }
+        } message: { Text(L10n.text(importReport ?? "")) }
+        .confirmationDialog(L10n.text("Delete all day data, profile preferences, journal entries, activities and nutrition records from this iPhone?"), isPresented: $confirmClear, titleVisibility: .visible) {
+            Button(L10n.text("Delete local data"), role: .destructive) {
                 if recorder.isRecording { message = "Finish or discard your recording before deleting local data." }
                 else { do { try store.clearData() } catch { message = error.localizedDescription } }
             }
         }
-        .confirmationDialog("Replace local data with this complete backup?", isPresented: Binding(get: { pendingBackup != nil }, set: { if !$0 { pendingBackup = nil } }), titleVisibility: .visible) {
-            Button("Restore backup", role: .destructive) {
+        .confirmationDialog(L10n.text("Replace local data with this complete backup?"), isPresented: Binding(get: { pendingBackup != nil }, set: { if !$0 { pendingBackup = nil } }), titleVisibility: .visible) {
+            Button(L10n.text("Restore backup"), role: .destructive) {
                 if recorder.isRecording { message = "Finish or discard your recording before restoring a backup." }
                 else if let pendingBackup {
                     do { try store.restoreBackup(pendingBackup) } catch { message = error.localizedDescription }
                 }
                 pendingBackup = nil
             }
-        } message: { Text("This replaces saved day data, journal entries, activities and nutrition records. Save a full backup first if you want to keep the current data.") }
+        } message: { Text(L10n.text("This replaces saved day data, journal entries, activities and nutrition records. Save a full backup first if you want to keep the current data.")) }
         .task { recorder.bind(device); liveActivity.bind(recorder) }
         .onAppear {
             if !attemptedReconnect { attemptedReconnect = true; device.reconnectSavedDevice() }
         }
-        .alert("Your data needs attention", isPresented: Binding(get: { store.persistenceError != nil }, set: { if !$0 { store.persistenceError = nil } })) {
-            Button("OK") { store.persistenceError = nil }
-        } message: { Text(store.persistenceError ?? "") }
+        .alert(L10n.text("Your data needs attention"), isPresented: Binding(get: { store.persistenceError != nil }, set: { if !$0 { store.persistenceError = nil } })) {
+            Button(L10n.text("OK")) { store.persistenceError = nil }
+        } message: { Text(L10n.text(store.persistenceError ?? "")) }
     }
 
     private var dataInterface: some View {
@@ -83,9 +83,9 @@ struct RootView: View {
             if store.isImporting {
                 ZStack {
                     Color.black.opacity(0.55).ignoresSafeArea()
-                    ProgressView("Importing your data…").tint(.white)
+                    ProgressView(L10n.text("Importing your data…")).tint(.white)
                         .padding(28).background(WColor.elevated, in: RoundedRectangle(cornerRadius: 18))
-                }.accessibilityLabel("Importing data. Please wait.")
+                }.accessibilityLabel(L10n.text("Importing data. Please wait."))
             }
         }
         .fileExporter(isPresented: $exporting, document: exportDocument, contentType: .json, defaultFilename: exportName) { result in
@@ -123,9 +123,9 @@ struct RootView: View {
         }
         .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
         .fullScreenCover(isPresented: $showingLive) { ReferenceLiveView(reference: nil) }
-        .confirmationDialog("Start activity", isPresented: $showingStartOptions, titleVisibility: .visible) {
-            Button("Record workout without camera") { sheet = .workout }
-            Button("Record with Live camera") { showingLive = true }
+        .confirmationDialog(L10n.text("Start activity"), isPresented: $showingStartOptions, titleVisibility: .visible) {
+            Button(L10n.text("Record workout without camera")) { sheet = .workout }
+            Button(L10n.text("Record with Live camera")) { showingLive = true }
         }
 
     }
@@ -139,7 +139,7 @@ struct RootView: View {
             ScrollView {
                 VStack(spacing: 22) {
                     selectedScreen
-                }.padding(.horizontal, 15).padding(.top, 8).padding(.bottom, 100)
+                }.padding(.horizontal, ReferenceSize.pageInset).padding(.top, 8).padding(.bottom, 100)
                     .frame(maxWidth: 680).frame(maxWidth: .infinity)
                     .background(GeometryReader { proxy in Color.clear.preference(key: DashboardScrollOffset.self, value: proxy.frame(in: .named("dashboardScroll")).minY) })
             }.coordinateSpace(name: "dashboardScroll").scrollIndicators(.hidden)
@@ -195,15 +195,15 @@ struct RootView: View {
     private var header: some View {
         ZStack {
             if [.home, .sleep, .recovery, .strain].contains(store.tab) {
-                DaySelector(compact: true).frame(width: 132)
+                DaySelector(compact: true).frame(width: ReferenceSize.dayStripWidth)
             } else {
-                Text(store.tab.title.uppercased()).font(WFont.label(14)).tracking(1.5)
+                Text(L10n.text(store.tab.title.uppercased())).font(WFont.label(14)).tracking(AppLanguage.isArabic ? 0 : 1.5)
             }
             if store.tab == .menu {
                 HStack {
-                    Button { showingProfile = true } label: { Image(systemName: "gearshape").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel("Profile settings")
+                    Button { showingProfile = true } label: { Image(systemName: "gearshape").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel(L10n.text("Profile settings"))
                     Spacer()
-                    Link(destination: URL(string: "https://shop.whoop.com/")!) { Image(systemName: "cart").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel("Open the official WHOOP shop")
+                    Link(destination: URL(string: "https://shop.whoop.com/")!) { Image(systemName: "cart").font(.system(size: 25, weight: .light)).frame(width: 44, height: 44) }.accessibilityLabel(L10n.text("Open the official WHOOP shop"))
                 }
             } else if store.tab != .health && store.tab != .community {
             HStack(spacing: 0) {
@@ -213,10 +213,10 @@ struct RootView: View {
                             .frame(width: 30, height: 30).overlay(Text(store.profile.initials(fallback: "YOU")).font(WFont.body(12).weight(.bold)).foregroundStyle(.black))
                         HStack(spacing: 6) {
                             Text("🔥").font(.system(size: 15))
-                            Text(streak.formatted()).font(WFont.number(14, bold: true)).lineLimit(1).minimumScaleFactor(0.5)
+                            Text(L10n.text(streak.formatted())).font(WFont.number(14, bold: true)).lineLimit(1).minimumScaleFactor(0.5)
                         }.padding(.horizontal, 10).frame(height: 30).background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12)).padding(.leading, -4)
                     }.frame(minHeight: 44)
-                }.buttonStyle(.plain).frame(width: 92, alignment: .leading).accessibilityLabel("Profile, \(streak) day streak")
+                }.buttonStyle(.plain).frame(width: 92, alignment: .leading).accessibilityLabel(L10n.text("Profile, \(streak) day streak"))
                 Spacer(minLength: 145)
                 Button { sheet = recorder.isRecording ? .workout : .device } label: {
                     ZStack(alignment: .topTrailing) {
@@ -241,9 +241,9 @@ struct RootView: View {
                     } label: {
                         VStack(spacing: 4) {
                             WhoopNavigationIcon(tab: tab)
-                            Text(tab.title).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
+                            Text(L10n.text(tab.title)).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
                         }.foregroundStyle(selected ? Color.white : WColor.muted)
-                            .frame(maxWidth: .infinity, minHeight: 58)
+                            .frame(maxWidth: .infinity, minHeight: ReferenceSize.navigationHeight)
                     }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
@@ -252,7 +252,7 @@ struct RootView: View {
                     .frame(width: 23, height: 23).padding(15.5)
                     .overlay(Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1).padding(11))
             }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))
-                .accessibilityLabel("Open your day in review")
+                .accessibilityLabel(L10n.text("Open your day in review"))
         }.padding(.horizontal, 12).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)
     }
 
@@ -287,8 +287,8 @@ struct SheetScaffold<Content: View>: View {
         NavigationStack {
             ScrollView { content.padding(20).frame(maxWidth: 680).frame(maxWidth: .infinity) }
                 .scrollIndicators(.hidden).background(WColor.background)
-                .navigationTitle(title).navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() }.font(WFont.label(13)) } }
+                .navigationTitle(L10n.text(title)).navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(L10n.text("Done")) { dismiss() }.font(WFont.label(13)) } }
                 .toolbarBackground(WColor.background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.tint(.white)
     }
@@ -304,21 +304,21 @@ struct DaySelector: View {
                 HStack(spacing: 0) {
                     dayArrow(-1)
                     Button { pickingDate = true } label: {
-                        Text(dayTitle).font(WFont.label(11)).tracking(0.7).lineLimit(1).minimumScaleFactor(0.75).frame(maxWidth: .infinity, minHeight: 44)
+                        Text(L10n.text(dayTitle)).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.7).lineLimit(1).minimumScaleFactor(0.75).frame(maxWidth: .infinity, minHeight: 44)
                             .background { Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28) }
-                    }.accessibilityLabel("Choose date, \(dayTitle)")
+                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)"))
                     dayArrow(1)
-                }.background { AppGlassSurface(shape: Capsule(), interactive: true).frame(height: 28) }
+                }.background { AppGlassSurface(shape: Capsule(), interactive: true).frame(height: ReferenceSize.dayStripHeight) }
             } else {
                 HStack {
                     dayArrow(-1)
                     Spacer()
                     Button { pickingDate = true } label: {
                         VStack(spacing: 4) {
-                            Text(dayTitle).font(WFont.label(12)).tracking(1.2)
-                            Text(utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day())).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                            Text(L10n.text(dayTitle)).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.2)
+                            Text(L10n.text(utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day()))).font(WFont.body(13)).foregroundStyle(WColor.muted)
                         }.frame(minHeight: 44)
-                    }.accessibilityLabel("Choose date, \(dayTitle)")
+                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)"))
                     Spacer()
                     dayArrow(1)
                 }

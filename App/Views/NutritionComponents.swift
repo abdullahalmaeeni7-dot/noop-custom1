@@ -15,13 +15,13 @@ enum NColor {
     }
 }
 enum NFont {
-    static func body(_ size: CGFloat = 15) -> Font { .custom("Inter-Regular", size: size, relativeTo: .body) }
+    static func body(_ size: CGFloat = 15) -> Font { AppLanguage.isArabic ? .system(size: size) : .custom("Inter-Regular", size: size, relativeTo: .body) }
     static func number(_ size: CGFloat = 26) -> Font { body(size).weight(.bold) }
     static func label(_ size: CGFloat = 10) -> Font { body(size).weight(.semibold) }
 }
 func nText(_ value: Double?, digits: Int = 0) -> String {
     guard let value, value.isFinite else { return "—" }
-    return value.formatted(.number.precision(.fractionLength(digits)))
+    return value.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(digits)))
 }
 struct NCard<Content: View>: View {
     private let content: Content
@@ -29,15 +29,15 @@ struct NCard<Content: View>: View {
     var body: some View { WCard(padding: 16, surface: NColor.card, cornerRadius: 16) { content } }
 }
 struct NNote: View {
-    var body: some View { Text("Estimates may be inaccurate. Not medical advice.").font(NFont.body(11)).foregroundStyle(NColor.muted).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.vertical, 8) }
+    var body: some View { Text(L10n.text("Estimates may be inaccurate. Not medical advice.")).font(NFont.body(11)).foregroundStyle(NColor.muted).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.vertical, 8) }
 }
 struct NHeading: View {
     let title: String
     var subtitle: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(NFont.number(24))
-            if let subtitle { Text(subtitle).font(NFont.body(13)).foregroundStyle(NColor.muted) }
+            Text(L10n.text(title)).font(NFont.number(24))
+            if let subtitle { Text(L10n.text(subtitle)).font(NFont.body(13)).foregroundStyle(NColor.muted) }
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -58,22 +58,22 @@ struct NEmpty: View {
         NCard {
             VStack(spacing: 10) {
                 Image(systemName: symbol).font(.system(size: 26, weight: .light)).foregroundStyle(NColor.cyan)
-                Text(title).font(NFont.number(18))
-                Text(detail).font(NFont.body(13)).foregroundStyle(NColor.muted).multilineTextAlignment(.center)
+                Text(L10n.text(title)).font(NFont.number(18))
+                Text(L10n.text(detail)).font(NFont.body(13)).foregroundStyle(NColor.muted).multilineTextAlignment(.center)
             }.frame(maxWidth: .infinity).padding(.vertical, 18)
         }
     }
 }
 struct NError: View {
     let message: String
-    var body: some View { NCard { Label(message, systemImage: "exclamationmark.circle").font(NFont.body(13)).foregroundStyle(NColor.yellow).fixedSize(horizontal: false, vertical: true) }.accessibilityLabel("Nutrition error. " + message) }
+    var body: some View { NCard { Label(L10n.text(message), systemImage: "exclamationmark.circle").font(NFont.body(13)).foregroundStyle(NColor.yellow).fixedSize(horizontal: false, vertical: true) }.accessibilityLabel(L10n.text("Nutrition error. ") + message) }
 }
 struct NSkeleton: View {
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 14) { ForEach(0..<3) { _ in Circle().stroke(Color.white.opacity(0.10), lineWidth: 9).frame(height: 94) } }
             ForEach(0..<3) { _ in RoundedRectangle(cornerRadius: 16).fill(NColor.card).frame(height: 90) }
-        }.redacted(reason: .placeholder).accessibilityLabel("Loading nutrition data")
+        }.redacted(reason: .placeholder).accessibilityLabel(L10n.text("Loading nutrition data"))
     }
 }
 struct NLoadingCard: View {
@@ -84,7 +84,7 @@ struct NLoadingCard: View {
                 RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.05)).frame(height: 12)
                 RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.05)).frame(height: 12)
             }.padding(.vertical, 5)
-        }.redacted(reason: .placeholder).accessibilityLabel("Loading nutrition result")
+        }.redacted(reason: .placeholder).accessibilityLabel(L10n.text("Loading nutrition result"))
     }
 }
 struct NPage<Content: View>: View {
@@ -97,8 +97,8 @@ struct NPage<Content: View>: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) { content; NNote() }.padding(18).frame(maxWidth: 680).frame(maxWidth: .infinity)
             }.background(NColor.background).scrollIndicators(.hidden)
-                .navigationTitle(title).navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() }.font(NFont.label(12)).frame(minWidth: 44, minHeight: 44) } }
+                .navigationTitle(L10n.text(title)).navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(L10n.text("Done")) { dismiss() }.font(NFont.label(12)).frame(minWidth: 44, minHeight: 44) } }
                 .toolbarBackground(NColor.background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.font(NFont.body()).tint(NColor.cyan).preferredColorScheme(.dark)
     }
@@ -118,16 +118,16 @@ struct NDial: View {
                     Circle().stroke(Color.white.opacity(0.08), lineWidth: 9)
                     Circle().trim(from: 0, to: fill).stroke(tint, style: StrokeStyle(lineWidth: 9, lineCap: .round)).rotationEffect(.degrees(-90))
                     VStack(spacing: 3) {
-                        Text(nText(dial.value)).font(NFont.number(23)).minimumScaleFactor(0.45).lineLimit(1)
+                        Text(L10n.text(nText(dial.value))).font(NFont.number(23)).minimumScaleFactor(0.45).lineLimit(1)
                             .contentTransition(.numericText()).animation(reduceMotion ? nil : .easeInOut(duration: 0.45), value: dial.value)
-                        Text(unit).font(NFont.label(8)).foregroundStyle(NColor.muted)
+                        Text(L10n.text(unit)).font(NFont.label(8)).foregroundStyle(NColor.muted)
                     }.padding(10)
                 }.aspectRatio(1, contentMode: .fit)
-                Text(title.uppercased()).font(NFont.label(9)).tracking(0.7).foregroundStyle(NColor.muted).lineLimit(1).minimumScaleFactor(0.65)
-                Text(dial.status == "over" ? "OVER TARGET" : dial.status == "target" ? "ON TARGET" : dial.status == "close" ? "CLOSE" : "LOGGING")
-                    .font(NFont.label(7)).tracking(0.4).foregroundStyle(NColor.status(dial.status, fallback: NColor.muted))
+                Text(L10n.text(title.uppercased())).font(NFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.7).foregroundStyle(NColor.muted).lineLimit(1).minimumScaleFactor(0.65)
+                Text(L10n.text(dial.status == "over" ? "OVER TARGET" : dial.status == "target" ? "ON TARGET" : dial.status == "close" ? "CLOSE" : "LOGGING"))
+                    .font(NFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.4).foregroundStyle(NColor.status(dial.status, fallback: NColor.muted))
             }.frame(maxWidth: .infinity, minHeight: 130)
-        }.buttonStyle(.plain).accessibilityLabel("\(title), \(nText(dial.value)) \(unit), \(dial.status). Open breakdown.")
+        }.buttonStyle(.plain).accessibilityLabel(L10n.text("\(title), \(nText(dial.value)) \(unit), \(dial.status). Open breakdown."))
             .onAppear { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.8)) { fill = dial.fraction } }
             .onChange(of: dial.fraction) { _, value in withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.5)) { fill = value } }
     }
@@ -140,9 +140,9 @@ struct NStat: View {
     var body: some View {
         NCard {
             VStack(alignment: .leading, spacing: 9) {
-                Text(label.uppercased()).font(NFont.label(9)).tracking(0.8).foregroundStyle(NColor.muted)
-                Text(nText(value, digits: digits)).font(NFont.number(25)).minimumScaleFactor(0.6).lineLimit(1)
-                Text(unit).font(NFont.body(11)).foregroundStyle(NColor.muted)
+                Text(L10n.text(label.uppercased())).font(NFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(NColor.muted)
+                Text(L10n.text(nText(value, digits: digits))).font(NFont.number(25)).minimumScaleFactor(0.6).lineLimit(1)
+                Text(L10n.text(unit)).font(NFont.body(11)).foregroundStyle(NColor.muted)
             }.frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -154,9 +154,9 @@ struct NMacroBar: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(title).font(NFont.label(12))
+                Text(L10n.text(title)).font(NFont.label(12))
                 Spacer()
-                Text("\(nText(dial.value)) / \(nText(dial.target)) g").font(NFont.body(12)).foregroundStyle(NColor.muted)
+                Text(L10n.text("\(nText(dial.value)) / \(nText(dial.target)) g")).font(NFont.body(12)).foregroundStyle(NColor.muted)
             }
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -164,7 +164,7 @@ struct NMacroBar: View {
                     Capsule().fill(color).frame(width: geometry.size.width * dial.fraction)
                 }
             }.frame(height: 6)
-        }.accessibilityElement(children: .ignore).accessibilityLabel("\(title), \(nText(dial.value)) of \(nText(dial.target)) grams")
+        }.accessibilityElement(children: .ignore).accessibilityLabel(L10n.text("\(title), \(nText(dial.value)) of \(nText(dial.target)) grams"))
     }
 }
 enum NutritionChartKind: Equatable { case calories, deficit, protein }
@@ -193,7 +193,7 @@ struct NDayChart: View {
                 }.frame(height: 190)
                     .chartXAxis { AxisMarks(values: .automatic(desiredCount: 5)) { _ in AxisValueLabel(format: utcDateFormat(.dateTime.month(.abbreviated).day())).foregroundStyle(NColor.muted) } }
                     .chartYAxis { AxisMarks(position: .trailing) { _ in AxisGridLine().foregroundStyle(Color.white.opacity(0.06)); AxisValueLabel().foregroundStyle(NColor.muted) } }
-                    .accessibilityElement(children: .ignore).accessibilityLabel("\(label) across \(points.count) days. Missing dates have no bar.")
+                    .accessibilityElement(children: .ignore).accessibilityLabel(L10n.text("\(label) across \(points.count) days. Missing dates have no bar."))
             }
         }
     }
@@ -203,10 +203,10 @@ struct NNumberField: View {
     @Binding var value: Double
     var body: some View {
         HStack {
-            Text(title).font(NFont.body(13))
+            Text(L10n.text(title)).font(NFont.body(13))
             Spacer()
-            TextField(title, value: $value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing)
-                .font(NFont.body(15)).frame(maxWidth: 120, minHeight: 44).accessibilityLabel(title)
+            TextField(L10n.text(title), value: $value, format: .number).keyboardType(.decimalPad).multilineTextAlignment(.trailing)
+                .font(NFont.body(15)).frame(maxWidth: 120, minHeight: 44).accessibilityLabel(L10n.text(title))
         }
     }
 }

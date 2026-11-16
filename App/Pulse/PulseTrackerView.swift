@@ -1,4 +1,5 @@
 import SwiftUI
+import WHOOPCore
 import UIKit
 
 /// Reuses the existing CoreBluetooth adapter. This panel never reads mock measurements.
@@ -12,48 +13,48 @@ struct PulseTrackerView: View {
                     HStack(spacing: 13) {
                         Image(systemName: "sensor.tag.radiowaves.forward").font(.system(size: 36, weight: .light)).foregroundStyle(PulseColor.load)
                         VStack(alignment: .leading, spacing: 5) {
-                            Text(tracker.connectedName ?? "Connect your tracker").font(PulseFont.body(23).weight(.semibold))
-                            Text(tracker.connectedName == nil ? "Bluetooth connection" : "Bluetooth link connected").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                            Text(L10n.text(tracker.connectedName ?? "Connect your tracker")).font(PulseFont.body(23).weight(.semibold))
+                            Text(L10n.text(tracker.connectedName == nil ? "Bluetooth connection" : "Bluetooth link connected")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                         }
                     }
                     PulseCard {
-                        Text(tracker.status).font(PulseFont.body(14)).fixedSize(horizontal: false, vertical: true).accessibilityLabel("Tracker status: " + tracker.status)
+                        Text(L10n.text(tracker.status)).font(PulseFont.body(14)).fixedSize(horizontal: false, vertical: true).accessibilityLabel(L10n.text("Tracker status: ") + tracker.status)
                     }
                     if tracker.connectedName != nil {
                         TimelineView(.periodic(from: .now, by: 1)) { timeline in
                             PulseCard {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("LIVE HEART RATE").font(PulseFont.label()).tracking(0.8)
+                                    Text(L10n.text("LIVE HEART RATE")).font(PulseFont.label()).tracking(AppLanguage.isArabic ? 0 : 0.8)
                                     if let bpm = tracker.heartRate, let date = tracker.heartRateReceivedAt,
                                        (0...10).contains(timeline.date.timeIntervalSince(date)) {
                                         HStack(alignment: .firstTextBaseline, spacing: 5) {
-                                            Text(bpm.formatted(.number.precision(.fractionLength(0)))).font(PulseFont.number(44)).monospacedDigit()
-                                            Text("BPM").font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
-                                        }.accessibilityElement(children: .combine).accessibilityLabel("Live heart rate, \(Int(bpm)) beats per minute")
-                                        Text("Received from your connected tracker").font(PulseFont.body(11)).foregroundStyle(PulseColor.mint)
+                                            Text(L10n.text(bpm.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(0))))).font(PulseFont.number(44)).monospacedDigit()
+                                            Text(L10n.text("BPM")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
+                                        }.accessibilityElement(children: .combine).accessibilityLabel(L10n.text("Live heart rate, \(Int(bpm)) beats per minute"))
+                                        Text(L10n.text("Received from your connected tracker")).font(PulseFont.body(11)).foregroundStyle(PulseColor.mint)
                                     } else {
-                                        Text("Waiting for a fresh heart-rate sample").font(PulseFont.body(17).weight(.semibold))
-                                        Text("A Bluetooth link alone does not confirm a live data stream.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                                        Text(L10n.text("Waiting for a fresh heart-rate sample")).font(PulseFont.body(17).weight(.semibold))
+                                        Text(L10n.text("A Bluetooth link alone does not confirm a live data stream.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                                     }
                                 }.frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                         if tracker.canStartCustomStream || tracker.startingCustomStream {
-                            Button(tracker.startingCustomStream ? "STARTING HEART RATE…" : "START DEVICE HEART RATE") { tracker.startCustomStream() }
+                            Button(L10n.text(tracker.startingCustomStream ? "STARTING HEART RATE…" : "START DEVICE HEART RATE")) { tracker.startCustomStream() }
                                 .buttonStyle(PulseTrackerButton()).disabled(tracker.startingCustomStream)
-                            Text("Experimental WHOOP connection request. Requires a matching device acknowledgement before requesting live heart rate; actual model and firmware compatibility remain unverified.")
+                            Text(L10n.text("Experimental WHOOP connection request. Requires a matching device acknowledgement before requesting live heart rate; actual model and firmware compatibility remain unverified."))
                                 .font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                         }
-                        Button("DISCONNECT") { tracker.disconnect() }.buttonStyle(PulseTrackerButton(secondary: true))
+                        Button(L10n.text("DISCONNECT")) { tracker.disconnect() }.buttonStyle(PulseTrackerButton(secondary: true))
                     } else {
-                        Button(tracker.isScanning ? "STOP SEARCHING" : "SEARCH FOR DEVICES") {
+                        Button(L10n.text(tracker.isScanning ? "STOP SEARCHING" : "SEARCH FOR DEVICES")) {
                             if tracker.isScanning { tracker.stop() } else { tracker.scan() }
                         }.buttonStyle(PulseTrackerButton()).disabled(tracker.isConnecting)
                         if tracker.isScanning {
-                            ProgressView("Searching nearby Bluetooth trackers…").font(PulseFont.body(12)).tint(PulseColor.load).frame(minHeight: 44)
+                            ProgressView(L10n.text("Searching nearby Bluetooth trackers…")).font(PulseFont.body(12)).tint(PulseColor.load).frame(minHeight: 44)
                         }
                         if !tracker.devices.isEmpty {
-                            Text("NEARBY DEVICES").font(PulseFont.label()).tracking(0.8)
+                            Text(L10n.text("NEARBY DEVICES")).font(PulseFont.label()).tracking(AppLanguage.isArabic ? 0 : 0.8)
                             ForEach(tracker.devices) { item in
                                 Button { tracker.connect(item) } label: {
                                     PulseCard {
@@ -61,37 +62,37 @@ struct PulseTrackerView: View {
                                             Image(systemName: "sensor.tag.radiowaves.forward").foregroundStyle(PulseColor.sleep)
                                             VStack(alignment: .leading, spacing: 4) {
                                                 Text(item.name).font(PulseFont.body(15).weight(.semibold))
-                                                Text("\(item.rssi) dBm").font(PulseFont.body(11)).foregroundStyle(PulseColor.muted)
+                                                Text(L10n.text("\(item.rssi) dBm")).font(PulseFont.body(11)).foregroundStyle(PulseColor.muted)
                                             }
                                             Spacer()
                                             Image(systemName: "chevron.right").font(.system(size: 11))
                                         }.frame(minHeight: 44)
                                     }
-                                }.buttonStyle(.plain).disabled(tracker.isConnecting).accessibilityLabel("Connect to \(item.name), signal \(item.rssi) dBm")
+                                }.buttonStyle(.plain).disabled(tracker.isConnecting).accessibilityLabel(L10n.text("Connect to \(item.name), signal \(item.rssi) dBm"))
                             }
                         } else if !tracker.isScanning {
                             PulseCard {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Text("Ready when your tracker is").font(PulseFont.body(17).weight(.semibold))
-                                    Text("Keep it nearby and enable heart-rate broadcasting if your device provides it. Bluetooth access is requested when you search.").font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                                    Text(L10n.text("Ready when your tracker is")).font(PulseFont.body(17).weight(.semibold))
+                                    Text(L10n.text("Keep it nearby and enable heart-rate broadcasting if your device provides it. Bluetooth access is requested when you search.")).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
                                 }
                             }
                         }
                     }
                     PulseCard {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("WHAT THIS CONNECTION CAN DO").font(PulseFont.label()).tracking(0.6)
-                            Text("Listen for standard Bluetooth heart-rate broadcasts, or try the selected WHOOP service families already implemented. Individual WHOOP 4.0, 5.0 and MG compatibility has not been verified on physical devices.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-                            Text("Home scores come from your saved or imported measurements. This Bluetooth connection does not sync device history or calculate measured Recovery, Sleep Performance, daily Strain, ECG or blood pressure.").font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                            Text(L10n.text("WHAT THIS CONNECTION CAN DO")).font(PulseFont.label()).tracking(AppLanguage.isArabic ? 0 : 0.6)
+                            Text(L10n.text("Listen for standard Bluetooth heart-rate broadcasts, or try the selected WHOOP service families already implemented. Individual WHOOP 4.0, 5.0 and MG compatibility has not been verified on physical devices.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                            Text(L10n.text("Home scores come from your saved or imported measurements. This Bluetooth connection does not sync device history or calculate measured Recovery, Sleep Performance, daily Strain, ECG or blood pressure.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                         }
                     }
-                    Button("OPEN BLUETOOTH PERMISSIONS") {
+                    Button(L10n.text("OPEN BLUETOOTH PERMISSIONS")) {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }.buttonStyle(PulseTrackerButton(secondary: true))
                 }.padding(16).frame(maxWidth: 580).frame(maxWidth: .infinity)
             }.scrollIndicators(.hidden).background(PulseColor.background)
-                .navigationTitle("DEVICE SETTINGS").navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() }.frame(minWidth: 44, minHeight: 44) } }
+                .navigationTitle(L10n.text("DEVICE SETTINGS")).navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(L10n.text("Done")) { dismiss() }.frame(minWidth: 44, minHeight: 44) } }
                 .toolbarBackground(PulseColor.background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.font(PulseFont.body()).foregroundStyle(PulseColor.text).tint(PulseColor.sleep).preferredColorScheme(.dark)
             .onDisappear { if tracker.isScanning { tracker.stop() } }
@@ -100,7 +101,7 @@ struct PulseTrackerView: View {
 private struct PulseTrackerButton: ButtonStyle {
     var secondary = false
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(PulseFont.label(11)).tracking(0.6).frame(maxWidth: .infinity, minHeight: 46)
+        configuration.label.font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.6).frame(maxWidth: .infinity, minHeight: 46)
             .foregroundStyle(PulseColor.text)
             .background(AppGlassSurface(shape: Capsule(), tint: secondary ? .white.opacity(0.03) : PulseColor.sleep.opacity(0.22), solid: PulseColor.card, interactive: true))
             .opacity(configuration.isPressed ? 0.7 : 1)

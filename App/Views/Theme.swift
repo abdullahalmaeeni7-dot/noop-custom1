@@ -17,11 +17,11 @@ enum WColor {
 }
 
 enum WFont {
-    static func body(_ size: CGFloat = 16) -> Font { .custom("ProximaNova-Regular", size: size, relativeTo: .body) }
+    static func body(_ size: CGFloat = 16) -> Font { AppLanguage.isArabic ? .system(size: size) : .custom("ProximaNova-Regular", size: size, relativeTo: .body) }
     static func number(_ size: CGFloat, bold: Bool = false) -> Font {
         .custom(bold ? "DINPro-Bold" : "DINPro-Medium", size: size, relativeTo: .title)
     }
-    static func label(_ size: CGFloat = 12) -> Font { .custom("DINPro-Bold", size: size, relativeTo: .caption).weight(.bold) }
+    static func label(_ size: CGFloat = 12) -> Font { AppLanguage.isArabic ? .system(size: size, weight: .bold) : .custom("DINPro-Bold", size: size, relativeTo: .caption).weight(.bold) }
 }
 
 /// SwiftUI material equivalent for the installed desktop glass skill's visual rules.
@@ -59,7 +59,7 @@ struct WCard<Content: View>: View {
     private let padding: CGFloat
     private let surface: Color?
     private let radius: CGFloat
-    init(padding: CGFloat = 14, surface: Color? = nil, cornerRadius: CGFloat = 13, @ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = 14, surface: Color? = nil, cornerRadius: CGFloat = ReferenceSize.cardRadius, @ViewBuilder content: () -> Content) {
         self.padding = padding; self.surface = surface; self.radius = cornerRadius; self.content = content()
     }
     var body: some View {
@@ -73,8 +73,8 @@ struct SectionHeading: View {
     var subtitle: String? = nil
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(title.uppercased()).font(WFont.label(14)).tracking(1.1).foregroundStyle(.white)
-            if let subtitle { Text(subtitle).font(WFont.body(14)).foregroundStyle(WColor.muted) }
+            Text(L10n.text(title.uppercased())).font(WFont.label(14)).tracking(AppLanguage.isArabic ? 0 : 1.1).foregroundStyle(.white)
+            if let subtitle { Text(L10n.text(subtitle)).font(WFont.body(14)).foregroundStyle(WColor.muted) }
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -86,8 +86,8 @@ struct SourceBadge: View {
     private var symbol: String { isEmpty ? "calendar.badge.exclamationmark" : (source == .example ? "sparkles" : "arrow.down.doc") }
     private var color: Color { isEmpty ? WColor.muted : (source == .example ? WColor.yellow : WColor.blue) }
     var body: some View {
-        Label(label, systemImage: symbol)
-            .font(WFont.label(10)).tracking(0.8).foregroundStyle(color)
+        Label(L10n.text(label), systemImage: symbol)
+            .font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.8).foregroundStyle(color)
             .padding(.horizontal, 9).padding(.vertical, 6)
             .background(color.opacity(0.09), in: Capsule())
             .accessibilityLabel(isEmpty ? "No saved measurements for this day" : (source == .example ? "Example data, not your measurements" : "Imported measurements"))
@@ -102,8 +102,8 @@ struct EmptyCard: View {
         WCard {
             VStack(spacing: 12) {
                 Image(systemName: symbol).font(.system(size: 28, weight: .light)).foregroundStyle(WColor.muted)
-                Text(title).font(WFont.number(22, bold: true)).foregroundStyle(.white)
-                Text(detail).font(WFont.body(15)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
+                Text(L10n.text(title)).font(WFont.number(22, bold: true)).foregroundStyle(.white)
+                Text(L10n.text(detail)).font(WFont.body(15)).foregroundStyle(WColor.muted).multilineTextAlignment(.center)
             }.frame(maxWidth: .infinity).padding(.vertical, 18)
         }
     }
@@ -112,7 +112,7 @@ struct EmptyCard: View {
 struct WButton: ButtonStyle {
     var filled = true
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.font(WFont.label(13)).tracking(0.9)
+        configuration.label.font(WFont.label(13)).tracking(AppLanguage.isArabic ? 0 : 0.9)
             .frame(maxWidth: .infinity).padding(.vertical, 16)
             .foregroundStyle(Color.white)
             .background(AppGlassSurface(shape: Capsule(), tint: filled ? WColor.sleep.opacity(0.25) : .white.opacity(0.03), solid: WColor.elevated, interactive: true))
@@ -122,12 +122,12 @@ struct WButton: ButtonStyle {
 
 func durationText(_ minutes: Int) -> String {
     let value = max(0, minutes)
-    return "\(value / 60)h \(value % 60)m"
+    return AppLanguage.isArabic ? "\(value / 60) س \(value % 60) د" : "\(value / 60)h \(value % 60)m"
 }
 
 func decimalText(_ value: Double?, places: Int = 1) -> String {
     guard let value, value.isFinite else { return "—" }
-    return value.formatted(.number.precision(.fractionLength(places)))
+    return value.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(places)))
 }
 
 enum ScoreMetric: String, CaseIterable, Identifiable {
@@ -183,13 +183,13 @@ struct ScoreRing: View {
                 if large { WhoopWordmark().frame(width: 94, height: 17).opacity(0.46).padding(.bottom, 2) }
                 if large {
                     HStack(alignment: .firstTextBaseline, spacing: 1) {
-                        Text(number).font(WFont.number(74, bold: true))
+                        Text(L10n.text(number)).font(WFont.number(74, bold: true))
                         if metric != .strain && metric.value(day) != nil { Text("%").font(WFont.number(37, bold: true)) }
                     }.foregroundStyle(.white).minimumScaleFactor(0.55).lineLimit(1)
-                    Text(metric == .sleep ? "SLEEP\nPERFORMANCE" : metric == .strain ? "DAY STRAIN" : "RECOVERY")
-                        .font(WFont.label(12)).tracking(1.2).multilineTextAlignment(.center)
+                    Text(L10n.text(metric == .sleep ? "SLEEP\nPERFORMANCE" : metric == .strain ? "DAY STRAIN" : "RECOVERY"))
+                        .font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.2).multilineTextAlignment(.center)
                 } else {
-                    Text(metric.value(day) == nil ? "NO DATA" : metric.text(day)).font(WFont.number(metric.value(day) == nil ? 12 : 25, bold: true))
+                    Text(L10n.text(metric.value(day) == nil ? "NO DATA" : metric.text(day))).font(WFont.number(metric.value(day) == nil ? 12 : 25, bold: true))
                         .foregroundStyle(.white).minimumScaleFactor(0.6).lineLimit(1)
                 }
             }.padding(10)
@@ -219,6 +219,7 @@ struct WhoopBackground: View {
 
 func utcDateFormat(_ style: Date.FormatStyle) -> Date.FormatStyle {
     var format = style
+    format.locale = AppLanguage.current.locale
     format.calendar = DayCalendar.utc
     format.timeZone = TimeZone(secondsFromGMT: 0)!
     return format
