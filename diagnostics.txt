@@ -1,0 +1,18 @@
+    /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app/Info.plist --temp-dir-path /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Intermediates.noindex/WHOOP.build/Release-iphonesimulator/WHOOP.build/ssu --bundle-id local.whoop.reconstruction --product-path /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app --extracted-metadata-path /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app/Metadata.appintents --metadata-file-list /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Intermediates.noindex/WHOOP.build/Release-iphonesimulator/WHOOP.build/WHOOP.DependencyMetadataFileList --archive-ssu-assets
+2026-11-16 07:30:46.786 appintentsnltrainingprocessor[19238:54747] Parsing options for appintentsnltrainingprocessor
+2026-11-16 07:30:46.789 appintentsnltrainingprocessor[19238:54747] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app (in target 'WHOOP' from project 'WHOOP')
+    cd /Users/runner/work/noop-custom1/noop-custom1
+    builtin-RegisterExecutionPolicyException /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
+
+Validate /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app (in target 'WHOOP' from project 'WHOOP')
+    cd /Users/runner/work/noop-custom1/noop-custom1
+    builtin-validationUtility /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app (in target 'WHOOP' from project 'WHOOP')
+    cd /Users/runner/work/noop-custom1/noop-custom1
+    /usr/bin/touch -c /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
+
+** BUILD SUCCEEDED **
+
