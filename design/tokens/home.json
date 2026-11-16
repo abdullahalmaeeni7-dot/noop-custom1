@@ -115,7 +115,7 @@
     "coachDiameter": 58,
     "tabBarBottomInset": 26,
     "initialContentTopInset": 30,
-    "cardAlpha": 0.92,
+    "cardAlpha": 1.0,
     "dashboardRowHeight": 56,
     "weeklyChartCardHeight": 279,
     "dashboardHeadingHeight": 34,
@@ -159,5 +159,5 @@
   "membershipExpiryBanner": false,
   "functional_layout_revision": 10,
   "functional_layout_note": "Reference corrections: four tabs (Home, Health, Community, More); Nutrition remains functional under More. Standard cards use opaque #2B3135 with no glass stroke. System glass is confined to floating navigation/control surfaces. No membership expiry banner. Unavailable provider measurements are never fabricated.",
-  "sizing_implementation": "Shared ReferenceSize values in App/Pulse/PulseComponents.swift; real Home uses the same ring geometry and day-strip width as the screenshot preview. RTL mirrors layout without changing base point sizes. Dynamic Type and the requested extra Nutrition tab remain supported. The floating bar uses the actual UIWindow bottom inset and its 3-point internal padding to place the visible shape 26 points above the screen edge on phones with or without a Home indicator."
+  "sizing_implementation": "Shared ReferenceSize values in App/Pulse/PulseComponents.swift; real Home uses the same ring geometry and day-strip width as the screenshot preview. RTL mirrors layout without changing base point sizes. Dynamic Type and Nutrition under More remain supported. The floating bar uses the actual UIWindow bottom inset and its 3-point internal padding to place the visible shape 26 points above the screen edge on phones with or without a Home indicator."
 }

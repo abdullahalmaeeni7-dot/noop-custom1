@@ -563,8 +563,8 @@
     },
     {
       "path": "Docs/INSTALL-IPHONE.md",
-      "bytes": 5830,
-      "sha256": "828ef9ade1cfae3935a347ba226007d1f3ede92e80b80d551cba9645f1421cf6"
+      "bytes": 6785,
+      "sha256": "e15398cd332eb5fd077bd410645868e9c2ca30571509fbf40d77d9f875a2e5c4"
     },
     {
       "path": "Docs/LAYOUT-AND-MEAL-CAMERA.md",
@@ -708,8 +708,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11885,
-      "sha256": "fe9de87a4e260fd3ae79cf115f3993c435a189babfad505e5d3e983fe69ecce7"
+      "bytes": 11933,
+      "sha256": "35ea8a567ca2bed42832790823de25144a83616a4a1766863202d1bba109a968"
     },
     {
       "path": "STATUS.md",
@@ -913,8 +913,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 12540,
-      "sha256": "fa588a4ce4902cd8dab4b7f6fd838e631bf278b93ef4992213a58550a7cc6649"
+      "bytes": 13399,
+      "sha256": "632264ce21aa096d2e45f1bae68ca527a51decb11b6b094a3b1c17c6dfa8cf8e"
     },
     {
       "path": "Validation/app-syntax.log",
@@ -1397,6 +1397,61 @@
       "sha256": "42a1ecab035aa663a05eaa24add7f514e4c2d4ccca15b767a91c553661149d5e"
     },
     {
+      "path": "design/home/native-review-06/01-first-launch-ar.png",
+      "bytes": 1005136,
+      "sha256": "ce787ab8a4fac169e459e5907faf3f53775c23bd9635c2d78b96e2b5705025f3"
+    },
+    {
+      "path": "design/home/native-review-06/01-first-launch-en.png",
+      "bytes": 985881,
+      "sha256": "59f75af9a0302a32578d07afa681a0eb2519acb90912aa6c652d6df088592786"
+    },
+    {
+      "path": "design/home/native-review-06/02-home-ar.png",
+      "bytes": 726839,
+      "sha256": "99b150c50a8eac11172fab0e48e229986ed5809eb9ce1684b9d4573340b9261f"
+    },
+    {
+      "path": "design/home/native-review-06/02-home-en.png",
+      "bytes": 740682,
+      "sha256": "497c7248af264d2a8ef9ec92bd8acf8905e5410876d7e30c7a6df0bed80c5d42"
+    },
+    {
+      "path": "design/home/native-review-06/REVIEW.md",
+      "bytes": 4282,
+      "sha256": "89d3cfd0655bcd8c71fe54f900d7309b4afae259437f70ed2b29c6ca5c6964cb"
+    },
+    {
+      "path": "design/home/native-review-06/before-after.jpg",
+      "bytes": 142774,
+      "sha256": "dc894e38d485f48084790a90671b69e395912c3f0083e7f5124f2cf87a50a877"
+    },
+    {
+      "path": "design/home/native-review-06/comparison.jpg",
+      "bytes": 132812,
+      "sha256": "44d5c8c1903ac2da4e336dfb86a8f9adb8261b01dc87f1e1aab9f34fffe25173"
+    },
+    {
+      "path": "design/home/native-review-06/diagnostics.txt",
+      "bytes": 2394,
+      "sha256": "deaaf56c95d3d5482966c4c1bb6881ed1ba7ce5852da96105f2cee0f1dafb29c"
+    },
+    {
+      "path": "design/home/native-review-06/ring-sampling.json",
+      "bytes": 516,
+      "sha256": "605046c98332d55ff7d8d247fde267f949d0c9a221bb29c1045dba218782a478"
+    },
+    {
+      "path": "design/home/native-review-06/run.json",
+      "bytes": 236,
+      "sha256": "4e857c24b1d65a872ea2c712316e6d6f4ac936464f53ab1c07db87a75874227f"
+    },
+    {
+      "path": "design/home/native-review-06/runtimes.json",
+      "bytes": 127609,
+      "sha256": "6860d6802fdb83623c3743a1f88888d5c2dbeb3b1448c693c3b48f154b6b68fa"
+    },
+    {
       "path": "design/home/pulse-icon.svg",
       "bytes": 423,
       "sha256": "dbebe83f03ad37a213d921dff19e6a2d0aa33437929a249e24d0356ddcfda1b1"
@@ -1633,8 +1688,8 @@
     },
     {
       "path": "design/reviews/2026-11-16-reference-audit.md",
-      "bytes": 6124,
-      "sha256": "ce8e22dbe4fef354f44ea587d105f99fabbcbc2c3e73cb5214308592b5d43bf4"
+      "bytes": 6817,
+      "sha256": "a88c5b3e1a8d4c8e1661735edb3a6aface941917bf65ff05834754cc38e07000"
     },
     {
       "path": "design/tokens/README.md",
@@ -1643,8 +1698,8 @@
     },
     {
       "path": "design/tokens/home.json",
-      "bytes": 5336,
-      "sha256": "636d745a78f16541f44abc2eea2f7d4949b537c1b83a3f3552dd3e031ac0184d"
+      "bytes": 5322,
+      "sha256": "8bb66f4830abb0d9c09449d60b055983f1ff0d7455c567eeb7c1dc8baaa1503e"
     },
     {
       "path": "design/tokens/live.json",

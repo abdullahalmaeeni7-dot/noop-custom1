@@ -19,7 +19,7 @@ This is an existing SwiftUI iOS project, using its own reusable views, Swift Cha
 
 | Reference | Current route | Remaining differences or service gaps |
 | --- | --- | --- |
-| Home, all scroll positions | Home | Shared corrections ready for native review. Sleep overview uses recorded totals; an actual tracker alarm schedule and recommended bedtime are not supplied. Stress is unavailable rather than manufactured. Discover links differ from commerce promotions. |
+| Home, all scroll positions | Home | Shared corrections captured and reviewed in English/Arabic on an iPhone 15 Pro simulator; see the final native review below. Sleep overview uses recorded totals; an actual tracker alarm schedule and recommended bedtime are not supplied. Stress is unavailable rather than manufactured. Discover links differ from commerce promotions. |
 | Health | Health | Orb, pace card, monitor and stress card exist. Advanced Labs and original upgrade cards are incomplete. Proprietary aging/pace scores are not implemented; the configurable age remains identified as a profile setting. |
 | Health Monitor | Health → Health Monitor | HR, respiratory rate, RHR and HRV can use recorded values. SpO₂ and skin-temperature source support is incomplete. No personal medical range assessment is inferred. |
 | Stress Monitor | Health → Stress Monitor | Gauge structure exists. A proprietary stress time series is unavailable; recorded HR is labeled as HR. |
@@ -45,3 +45,7 @@ Home is the first review screen, following the requested one-screen-at-a-time pr
 Run `43928690328` produced actual English and Arabic frames at source `f5c6b53`. The opaque card surfaces, four-item bar and flatter date strip render correctly. The Arabic insight title lacked a translation; this is corrected. The five-second capture delay caught the ring animations part-way through filling, especially in Arabic. The capture helper now waits for startup and compares successive PNG pixel payloads before accepting a settled frame; a failure to settle is reported for manual review. The floating navigation gets a darker backing surface to reduce the visible text bleed from the card beneath it. No claim of pixel equality with the original attachments is made.
 
 Home/date navigation uses semantic forward/backward chevrons so directional controls follow Arabic layout. Physical ring paths and numbers remain left-to-right, as before.
+
+## Final native evidence
+
+Source `b28fd8c` passed the [device workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660) and [native capture workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305671). The [Home review](../home/native-review-06/REVIEW.md) contains original English/Arabic PNGs, project before/after sheets, corrected differences, remaining visible differences and the verified direct IPA. Full ring fill, translated Arabic insight and four-tab navigation were inspected in these captures. Exact reference parity is still unverified.

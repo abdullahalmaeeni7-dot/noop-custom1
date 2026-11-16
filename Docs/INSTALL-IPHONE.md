@@ -2,14 +2,20 @@
 
 This source project is an independent WHOOP-branded reconstruction. Building an IPA does not make its behavior identical to the official app. The supplied Android APK cannot be converted into an iPhone IPA: Android DEX/native libraries and iOS application binaries use different platforms.
 
-## Windows: use Codemagic
+## Windows: download the built IPA
+
+Download the [current unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/b28fd8cc7eb09537c11543f42085a5f14266aceb/WHOOP-unsigned.ipa). This is the IPA itself; no artifact ZIP extraction is needed. It was built from `b28fd8c` by the [successful Mac workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660). Its published SHA-256 is `e24d670a2ab090fd25706a8b9a5e77b0ec0e8c2d4ca484ac9a6a8c3a063c7854`.
+
+Install it with Sideloadly using the steps below. Keep the same signing account and app identifier when updating an existing installation to retain its data. Codemagic is optional.
+
+## Optional: build with Codemagic
 
 Use the separate `WHOOP-Codemagic.zip` build upload and follow [the Windows/Codemagic guide](../README-CODEMAGIC.md). Its flat layout places `codemagic.yaml` at the repository root, so the project can be added to Codemagic and built on a cloud Mac. No local Mac is required. A successful build exposes `WHOOP-unsigned.ipa` in its artifacts; it still needs compatible signing before installation. No Codemagic build has been dispatched or passed here.
 
 ## Easiest path on your Mac
 
 1. Extract `WHOOP-iOS-source.zip` into a short local folder, such as Downloads.
-2. Install/open full **Xcode 16 or newer**, finish its first-launch setup, and install its iOS platform support. Command Line Tools alone are insufficient. In Xcode Settings → Locations, select that Xcode installation for Command Line Tools if needed.
+2. Install/open full **Xcode 26 or newer**, finish its first-launch setup, and install its iOS platform support. Command Line Tools alone are insufficient. In Xcode Settings → Locations, select that Xcode installation for Command Line Tools if needed.
 3. Double-click **Build IPA.command** in the extracted `WHOOP-iOS` folder. If macOS asks which app to use, open Terminal and run the command below from that folder. Normal macOS approval may be required for a downloaded script; do not disable system security.
 4. A successful build reveals **build/WHOOP-unsigned.ipa** in Finder. An error stops packaging and retains the Xcode log under `build/device-build.*/xcodebuild.log`; the `.xcresult` can be opened in Xcode.
 
@@ -17,11 +23,11 @@ Use the separate `WHOOP-Codemagic.zip` build upload and follow [the Windows/Code
 bash Scripts/package-ipa-on-mac.sh
 ```
 
-The script builds a Release **arm64 iPhoneOS** product, packages its actual `.app` under `Payload/`, checks its Mach-O platform and computes a SHA-256 digest. It rejects simulator products. This environment has Linux, no Xcode and no Mac executor, so the Apple build has not been run or passed here. A script that stops on a real compiler error has not produced a usable IPA.
+The script builds a Release **arm64 iPhoneOS** product, packages its actual `.app` under `Payload/`, checks its Mach-O platform and computes a SHA-256 digest. It rejects simulator products. The current source passed Apple SDK compilation and device-package validation on GitHub’s Mac runner. Signing and installation on a physical iPhone remain separate checks.
 
 ## Install the unsigned IPA using Sideloadly
 
-1. Install Sideloadly from [its official site](https://sideloadly.io/) on your Mac, connect your iPhone and accept the computer-trust prompt.
+1. Install Sideloadly from [its official site](https://sideloadly.io/) on Windows or your Mac, connect your iPhone and accept the computer-trust prompt.
 2. Select the connected iPhone and drag `WHOOP-unsigned.ipa` into Sideloadly.
 3. Sign in through Sideloadly and start signing/installing. Enter Apple credentials only into the trusted signing tool or Xcode, never this chat or the project source. Keep the app name WHOOP; use a separate app identifier if the signing tool requires one.
 4. Follow the iPhone's developer trust and Developer Mode prompts when applicable. Signing/profile validity and renewal depend on your Apple account and the generated profile.
@@ -42,11 +48,11 @@ Replace the example team and bundle identifiers with your actual values. The scr
 
 ## Alternative: GitHub's Mac runner
 
-The source includes `.github/workflows/ios-ipa.yml`, a manual workflow. Place the extracted project contents at a GitHub repository root, including the hidden `.github` directory. Alternatively, the project can be under `WHOOP-iOS/`, but copy its workflow into the repository-root `.github/workflows/` folder so GitHub discovers it.
+The source includes `.github/workflows/ios-ipa.yml`, an automatic and manually dispatchable workflow. Place the extracted project contents at a GitHub repository root, including the hidden `.github` directory. Alternatively, the project can be under `WHOOP-iOS/`, but copy its workflow into the repository-root `.github/workflows/` folder so GitHub discovers it.
 
-In that repository open **Actions → Build iPhone IPA → Run workflow**. The workflow uses `macos-15`, tests the core and validator, builds for iPhoneOS and uploads `WHOOP-unsigned-iphone-ipa` only after a successful build. Download/extract that artifact and sign the IPA using the steps above. GitHub may charge for private-repository runner use according to your account plan. No Apple signing secrets are needed for this unsigned build.
+In that repository open **Actions → Build iPhone IPA → Run workflow**. The workflow uses `macos-15-intel`, tests the core and validator, builds for iPhoneOS and uploads `WHOOP-unsigned-iphone-ipa` only after a successful build. It also publishes a direct IPA file on the source-specific `device-download/<commit>` branch. Download that file, or download/extract the artifact, and sign the IPA using the steps above. GitHub may charge for private-repository runner use according to your account plan. No Apple signing secrets are needed for this unsigned build.
 
-The workflow has been prepared but not dispatched: this task has no usable GitHub login or connected Mac. No repository was changed remotely and no cloud-environment configuration was published.
+The source-specific direct link at the top of this guide has been downloaded and checked against its published checksum. The Mach-O validator confirms an arm64 iOS device app with the embedded WorkoutLive extension; it does not establish physical installation or hardware behavior.
 
 ## What an IPA does not complete
 

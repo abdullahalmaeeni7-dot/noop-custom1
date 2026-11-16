@@ -1,0 +1,20 @@
+{
+  "method": "Tint coverage sampled at 360 angles along r=112 px. Rounded stroke caps add coverage beyond the score fraction. Diagnostic for settled frames, not a reference pixel diff.",
+  "expected_score_fractions": {
+    "sleep": 0.33,
+    "recovery": 0.38,
+    "strain": 0.7523809523809524
+  },
+  "observed_tint_coverage": {
+    "en": {
+      "sleep": 0.3528,
+      "recovery": 0.4028,
+      "strain": 0.7806
+    },
+    "ar": {
+      "sleep": 0.3528,
+      "recovery": 0.4028,
+      "strain": 0.7778
+    }
+  }
+}
