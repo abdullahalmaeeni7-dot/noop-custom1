@@ -15,4 +15,3 @@ Touch /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/P
     /usr/bin/touch -c /Users/runner/work/noop-custom1/noop-custom1/build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
 
 ** BUILD SUCCEEDED **
-

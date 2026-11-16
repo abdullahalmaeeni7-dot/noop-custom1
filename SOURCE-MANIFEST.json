@@ -1333,8 +1333,8 @@
     },
     {
       "path": "design/home/native-review-04/diagnostics.txt",
-      "bytes": 2394,
-      "sha256": "96521c088cba441f6b053e76495b2ad63c6d0c63af157237e238c2ae66eab6f3"
+      "bytes": 2393,
+      "sha256": "79e92c90e6ed1c5d721eb6712091dce607578ed5121fa6ccfc5a465e7e91aefc"
     },
     {
       "path": "design/home/native-review-04/run.json",
@@ -1378,8 +1378,8 @@
     },
     {
       "path": "design/home/native-review-05/diagnostics.txt",
-      "bytes": 2394,
-      "sha256": "276eb468ef75b4bf26eca9b1dc41005faa1c792824e4f76c02b6f905576c1f82"
+      "bytes": 2393,
+      "sha256": "27b019521273645404482de44392bf9778a68102d83d240a5904581c85155979"
     },
     {
       "path": "design/home/native-review-05/run.json",
