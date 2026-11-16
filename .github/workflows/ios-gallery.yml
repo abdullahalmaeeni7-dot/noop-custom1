@@ -1,4 +1,4 @@
-name: Capture every iPhone screen
+name: Capture every iPhone screen (macOS 26)
 on:
   workflow_dispatch:
   push:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   gallery:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 40
     permissions:
       contents: write
