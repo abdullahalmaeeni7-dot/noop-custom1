@@ -282,7 +282,10 @@ struct RootView: View {
                             .frame(maxWidth: .infinity, minHeight: ReferenceSize.navigationHeight)
                     }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
                 }
-            }.padding(.horizontal, 9).background(AppGlassSurface(shape: Capsule(), interactive: true))
+            }.padding(.horizontal, 9).background {
+                AppGlassSurface(shape: Capsule(), solid: PulseColor.top, interactive: true)
+                    .background(Capsule().fill(PulseColor.top.opacity(0.88)))
+            }
             Button { sheet = .review } label: {
                 ZStack {
                     Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.1).frame(width: 29, height: 29)

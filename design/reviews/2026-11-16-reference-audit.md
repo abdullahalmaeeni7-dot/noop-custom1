@@ -39,3 +39,7 @@ This is an existing SwiftUI iOS project, using its own reusable views, Swift Cha
 The original attachments are visible in the conversation but their image files are absent from the workspace's `/reference` folder. Existing tokens therefore explicitly describe estimated colors and point geometry; they are not claimed to be image-sampled or pixel exact. This revision generates actual native Home/first-launch frames in English and Arabic using an isolated simulator. A before/after layout comparison can be made from those files. Official animation timing, missing artwork, private service behavior and pixel equality remain unverified.
 
 Home is the first review screen, following the requested one-screen-at-a-time process. This audit is a record of remaining work, not a claim that the whole app is already an exact WHOOP replacement.
+
+## First native review findings
+
+Run `43928690328` produced actual English and Arabic frames at source `f5c6b53`. The opaque card surfaces, four-item bar and flatter date strip render correctly. The Arabic insight title lacked a translation; this is corrected. The five-second capture delay caught the ring animations part-way through filling, especially in Arabic. The capture helper now waits for startup and compares successive PNG pixel payloads before accepting a settled frame; a failure to settle is reported for manual review. The floating navigation gets a darker backing surface to reduce the visible text bleed from the card beneath it. No claim of pixel equality with the original attachments is made.

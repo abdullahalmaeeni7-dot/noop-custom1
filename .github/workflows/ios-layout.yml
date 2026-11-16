@@ -116,8 +116,7 @@ jobs:
               plistlib.dump({'whoop.setup.completed.v1':True,'whoop.language.v1':os.environ['REVIEW_LANGUAGE'],'AppleLanguages':[os.environ['REVIEW_LANGUAGE']]},output)
           PYTHON
           xcrun simctl launch "$SIM_DEVICE" local.whoop.reconstruction
-          sleep 5
-          xcrun simctl io "$SIM_DEVICE" screenshot "build/visual-review/02-home-$REVIEW_LANGUAGE.png"
+          python3 Scripts/capture-stable-simulator.py "$SIM_DEVICE" "build/visual-review/02-home-$REVIEW_LANGUAGE.png"
           xcrun simctl terminate "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app

@@ -58,8 +58,8 @@
     },
     {
       "path": ".github/workflows/ios-layout.yml",
-      "bytes": 11041,
-      "sha256": "f270ad294d66acf9bc0ff3e0dad7b3a9cdcdf50f6ca78f2f5e85f563e74e3853"
+      "bytes": 11040,
+      "sha256": "55640acb225b2ed6870f29773724838b1f460df3baea1360dcaeb4bee9a1da6d"
     },
     {
       "path": ".gitignore",
@@ -293,8 +293,8 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 22643,
-      "sha256": "2a2c39259efb4cd98998fae9dff41077f861c0f73b847b4b5425a387723e44a5"
+      "bytes": 22775,
+      "sha256": "4a3045438e0d324ad5fdb5094e790e26f2be7df222c8b96c593c93f9b29258cd"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
@@ -403,8 +403,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 111980,
-      "sha256": "c2fa438fd4a84f33b4ffc074069c7ede34d4348936dc11b56181c6495cfd9b7f"
+      "bytes": 112023,
+      "sha256": "e531acd4d278d621a13caedfc16accc62b9e1a56cf7e0132ac7876bc55142db8"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -725,6 +725,11 @@
       "path": "Scripts/build-on-mac.sh",
       "bytes": 681,
       "sha256": "23038249c6de9f5b8cd1852f2b3771dc09042dede9778e18ab094bb9ac43c2c0"
+    },
+    {
+      "path": "Scripts/capture-stable-simulator.py",
+      "bytes": 1997,
+      "sha256": "fae4bb60db56c516a79926a7b6e8806809afb1d7fefcf9fc2c2efbf3c304c25d"
     },
     {
       "path": "Scripts/export-signed-ipa-on-mac.sh",
@@ -1628,8 +1633,8 @@
     },
     {
       "path": "design/reviews/2026-11-16-reference-audit.md",
-      "bytes": 5236,
-      "sha256": "759eaf4c2389145fa37b500fbd91d1d8c4cb125ae95740471e5c7a60c9086ffb"
+      "bytes": 5951,
+      "sha256": "6e33297fa9437750ff8027c37c6f1c1a660eff95d84e26baea9d7589dfaed53e"
     },
     {
       "path": "design/tokens/README.md",
