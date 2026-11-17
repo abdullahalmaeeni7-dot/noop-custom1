@@ -1,5 +1,5 @@
 {
-  "scope": "Reference Home/shared styling, Arabic/RTL, saved-data import/export and private nutrition service",
+  "scope": "Automatic tracker recording, local daily Strain, preserved WHOOP imports, Arabic/RTL and existing app features",
   "checked_at": "2026-11-17",
   "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
@@ -136,19 +136,19 @@
   "unsigned_ipa_produced": true,
   "previous_native_device_build": {
     "provider": "GitHub Actions",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125",
-    "source_commit": "de922d8bccf856c7cd86bab93f2be2b04d20fd76",
+    "source_commit": "b28fd8cc7eb09537c11543f42085a5f14266aceb",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660",
     "result": "success",
     "runner": "macos-15-intel",
-    "duration": "7m 5s",
+    "portable_test_step": "passed",
     "device_build": "passed",
     "device_package_validation": "passed",
     "architecture": "arm64",
     "platform": "iOS device",
-    "artifact_name": "WHOOP-unsigned-iphone-ipa",
-    "artifact_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43760297125/artifacts/14180410638",
-    "artifact_size": "3.93 MB",
-    "artifact_archive_sha256": "92edecbea9b6cb1d4e5955f2a8561024d7ab28fe5c5acb2bdb04d7f26d51175f",
+    "download_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/b28fd8cc7eb09537c11543f42085a5f14266aceb/WHOOP-unsigned.ipa",
+    "ipa_bytes": 4377027,
+    "ipa_sha256": "e24d670a2ab090fd25706a8b9a5e77b0ec0e8c2d4ca484ac9a6a8c3a063c7854",
+    "download_checksum_verified": true,
     "signed": false,
     "physical_device_test": false
   },
@@ -272,19 +272,19 @@
   },
   "native_device_build": {
     "provider": "GitHub Actions",
-    "source_commit": "b28fd8cc7eb09537c11543f42085a5f14266aceb",
-    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660",
-    "result": "success",
-    "runner": "macos-15-intel",
-    "portable_test_step": "passed",
+    "source_commit": "3040dc793499251b2f9f29facfc14bc588bfc5af",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44151970688",
     "device_build": "passed",
+    "portable_test_step": "passed",
     "device_package_validation": "passed",
     "architecture": "arm64",
     "platform": "iOS device",
-    "download_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/b28fd8cc7eb09537c11543f42085a5f14266aceb/WHOOP-unsigned.ipa",
-    "ipa_bytes": 4377027,
-    "ipa_sha256": "e24d670a2ab090fd25706a8b9a5e77b0ec0e8c2d4ca484ac9a6a8c3a063c7854",
+    "runner": "macos-15-intel",
+    "download_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/3040dc793499251b2f9f29facfc14bc588bfc5af/WHOOP-unsigned.ipa",
+    "ipa_bytes": 4462884,
+    "ipa_sha256": "e4d281770fabd6ef8ed8020d697fbcbd832740b69ac47734c144e9a33f44c3c4",
     "download_checksum_verified": true,
+    "automatic_recorder_binary_markers_present": true,
     "signed": false,
     "physical_device_test": false
   },
@@ -322,7 +322,9 @@
     "bluetooth_state_restoration": true,
     "bounded_reconnect_attempt": true,
     "physical_device_test": false,
-    "apple_sdk_build": "pending",
-    "log": "Validation/automatic-tracker-core-tests.log"
+    "apple_sdk_build": "passed",
+    "log": "Validation/automatic-tracker-core-tests.log",
+    "device_build_run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44151970688",
+    "package_download_verified": true
   }
 }

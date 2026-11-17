@@ -569,7 +569,7 @@
     {
       "path": "Docs/INSTALL-IPHONE.md",
       "bytes": 6785,
-      "sha256": "e15398cd332eb5fd077bd410645868e9c2ca30571509fbf40d77d9f875a2e5c4"
+      "sha256": "2f72a1fc04b51a67c8d24f8fa20e3764ede4712c4d771a4d64f98c7f1299cabe"
     },
     {
       "path": "Docs/LAYOUT-AND-MEAL-CAMERA.md",
@@ -638,8 +638,8 @@
     },
     {
       "path": "Docs/ReleaseNotes/2026-11-17-automatic-tracking.md",
-      "bytes": 3342,
-      "sha256": "2feaab90c41cd573f05f004bc6d53934d7827d68af884099e59bb32e050311e8"
+      "bytes": 3986,
+      "sha256": "e291b5a794dc8c9316c6e3b4dec19619d46a349c59438d433ad7630cb1ddc606"
     },
     {
       "path": "Docs/ThirdParty/ZIPFoundation-LICENSE.txt",
@@ -718,8 +718,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12279,
-      "sha256": "2ae6a180356253405587058c27d2b23212df9e822ec690579c73efba59e064e2"
+      "bytes": 12373,
+      "sha256": "ef94bdcb5d6a92941e8f11914de667b4f85a1b3f8e8017483daf3a686883e11d"
     },
     {
       "path": "STATUS.md",
@@ -928,8 +928,8 @@
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 14977,
-      "sha256": "5e095bb940d045d9ee7fc887afc4c96f6baad0c50347266f378dfe88a2e544b5"
+      "bytes": 15190,
+      "sha256": "f5f860e17f2f19db4617694c8bbcc4ba0ad58b25124fbc857135a230b9eefd86"
     },
     {
       "path": "Validation/app-syntax.log",

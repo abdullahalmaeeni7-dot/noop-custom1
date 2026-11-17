@@ -4,7 +4,7 @@ This source project is an independent WHOOP-branded reconstruction. Building an 
 
 ## Windows: download the built IPA
 
-Download the [current unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/b28fd8cc7eb09537c11543f42085a5f14266aceb/WHOOP-unsigned.ipa). This is the IPA itself; no artifact ZIP extraction is needed. It was built from `b28fd8c` by the [successful Mac workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660). Its published SHA-256 is `e24d670a2ab090fd25706a8b9a5e77b0ec0e8c2d4ca484ac9a6a8c3a063c7854`.
+Download the [current unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/3040dc793499251b2f9f29facfc14bc588bfc5af/WHOOP-unsigned.ipa). This is the IPA itself; no artifact ZIP extraction is needed. It was built from `3040dc7` by the [successful Mac workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44151970688). Its published SHA-256 is `e4d281770fabd6ef8ed8020d697fbcbd832740b69ac47734c144e9a33f44c3c4`.
 
 Install it with Sideloadly using the steps below. Keep the same signing account and app identifier when updating an existing installation to retain its data. Codemagic is optional.
 
