@@ -122,7 +122,10 @@ struct PulseTrackerView: View {
                     Text(L10n.text("Automatic recording could not be saved.") + " " + error).font(PulseFont.body(13)).foregroundStyle(.orange)
                     Button(L10n.text("RETRY SAVE")) { dailyTracker.flush() }.frame(minHeight: 44)
                 }
-                Stepper(value: $localResting, in: 30...110) { Text(L10n.text("Resting HR") + ": " + Int(localResting).formatted()) }
+                Button(L10n.text("VIEW TODAY’S TRACKING")) {
+                store.selectedDate = DayCalendar.start(of: Date()); store.tab = .home; dismiss()
+            }.frame(minHeight: 44)
+            Stepper(value: $localResting, in: 30...110) { Text(L10n.text("Resting HR") + ": " + Int(localResting).formatted()) }
                 Stepper(value: $localMaximum, in: 120...230) { Text(L10n.text("Maximum HR") + ": " + Int(localMaximum).formatted()) }
                 Text(L10n.text("Set your known heart-rate limits. Defaults are 55 and 190 BPM; they are assumptions, not measured baselines. Changes apply to new readings.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
             }

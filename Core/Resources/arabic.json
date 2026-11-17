@@ -1074,5 +1074,6 @@
   "Restored tracker connection. Waiting for fresh heart rate…": "استُعيد اتصال الجهاز. بانتظار قراءة قلب جديدة…",
   "Restoring tracker connection…": "جارٍ استعادة اتصال الجهاز…",
   "Connection lost. Trying to reconnect…": "فُقد الاتصال. نحاول الاتصال مجددًا…",
-  "Only received heart-rate intervals contribute to the local estimate. Disconnected time and intervals still waiting for smoothing are excluded. Official WHOOP scores take priority when imported.": "تساهم فترات نبض القلب المستلمة فقط في التقدير المحلي. يُستبعد وقت الانقطاع والفترات التي لم تُستكمل معالجتها بعد. تُعطى الأولوية لدرجات WHOOP الرسمية عند استيرادها."
+  "Only received heart-rate intervals contribute to the local estimate. Disconnected time and intervals still waiting for smoothing are excluded. Official WHOOP scores take priority when imported.": "تساهم فترات نبض القلب المستلمة فقط في التقدير المحلي. يُستبعد وقت الانقطاع والفترات التي لم تُستكمل معالجتها بعد. تُعطى الأولوية لدرجات WHOOP الرسمية عند استيرادها.",
+  "VIEW TODAY’S TRACKING": "عرض تتبع اليوم"
 }

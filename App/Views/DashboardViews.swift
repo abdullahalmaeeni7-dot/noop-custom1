@@ -25,6 +25,9 @@ struct HomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
             overview.padding(.top, 22).padding(.bottom, 12)
+            if tracker.connectedName != nil && !DayCalendar.utc.isDateInToday(day.date) {
+                Button(L10n.text("VIEW TODAY’S TRACKING")) { store.selectedDate = DayCalendar.start(of: Date()) }.buttonStyle(WButton(filled: false))
+            }
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
             if day.strainIsLocalEstimate {

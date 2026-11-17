@@ -388,7 +388,8 @@ final class AppStore: ObservableObject {
         guard storageWritable, !isLoadingSavedData else { throw ImportProblem.protectedFile }
         let state = LocalBackup(selectedDate: selectedDate, days: days, journal: journal, activities: activities, whoopAccountUserID: whoopAccountUserID, nutrition: nutrition, profile: profile)
         let data = try LocalBackupCodec.encode(state)
-        try data.write(to: storageURL, options: [.atomic, .completeFileProtection])
+        // Retain encryption while allowing BLE-delivered readings to save after lock.
+        try data.write(to: storageURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         var protectedURL = storageURL
         var values = URLResourceValues()
         values.isExcludedFromBackup = true
