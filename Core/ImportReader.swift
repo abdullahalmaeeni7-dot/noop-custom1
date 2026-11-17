@@ -397,13 +397,14 @@ public enum ImportReader {
     }
 
     static func validateCycleRecords(_ day: DailySnapshot) throws {
+        try day.trackerRecording?.validated(on: day.date)
         if let cycles = day.cycleRecords {
             guard cycles.count <= maximumRows, Set(cycles.map(\.id)).count == cycles.count else { throw ImportError.invalid("Cycle records have duplicate identities or exceed the record limit.") }
             for cycle in cycles {
                 guard !cycle.id.isEmpty, cycle.id.count <= 200, cycle.start.timeIntervalSince1970.isFinite,
                       (0...4_102_444_800).contains(cycle.start.timeIntervalSince1970),
                       DayCalendar.start(of: cycle.start) == day.date, cycle.measurements.date == day.date,
-                      cycle.measurements.cycleRecords == nil, cycle.measurements.heartRates.isEmpty else {
+                      cycle.measurements.cycleRecords == nil, cycle.measurements.trackerRecording == nil, cycle.measurements.heartRates.isEmpty else {
                     throw ImportError.invalid("Original cycle measurements must belong to their dashboard date and cannot contain nested cycles.")
                 }
                 try validate(cycle.measurements)

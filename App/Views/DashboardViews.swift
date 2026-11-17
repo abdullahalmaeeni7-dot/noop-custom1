@@ -27,6 +27,16 @@ struct HomeView: View {
             overview.padding(.top, 22).padding(.bottom, 12)
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
+            if day.strainIsLocalEstimate {
+                Text(L10n.text("LOCAL STRAIN ESTIMATE · RECEIVED HEART RATE ONLY")).font(WFont.label(9)).foregroundStyle(WColor.blue)
+            }
+            if day.trackerRecording != nil && day.recovery == nil {
+                WCard {
+                    Text(L10n.text("Recovery needs overnight data")).font(WFont.body(15).weight(.semibold))
+                    Text(L10n.text("Heart-rate broadcasting does not supply WHOOP Recovery or Sleep scores. Sync your WHOOP account or import its data to add them.")).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                    Button(L10n.text("WHOOP ACCOUNT"), action: openAccount).buttonStyle(WButton(filled: false))
+                }
+            }
             HStack(spacing: 11) {
                 monitor("HEALTH MONITOR", detail: "View your measurements", symbol: "heart.text.square", tint: WColor.sleep, action: openHealth)
                 monitor("STRESS MONITOR", detail: "About stress data", symbol: "waveform.path", tint: PulseColor.mint, action: openStress)
@@ -154,7 +164,7 @@ struct HomeView: View {
         WCard(padding: 18) {
             VStack(alignment: .leading, spacing: 14) {
                 Text(L10n.text("Your day starts here")).font(WFont.number(23, bold: true))
-                Text(L10n.text("Connect your tracker to see live heart rate and record workouts. Import saved measurements to add sleep, Recovery and daily Strain to your overview."))
+                Text(L10n.text("Connect your tracker to automatically save received heart rate and estimate Strain. Import WHOOP data to add official Recovery, Sleep and Strain scores."))
                     .font(WFont.body(15)).foregroundStyle(WColor.muted)
                 Button(L10n.text(tracker.connectedName == nil ? "CONNECT MY TRACKER" : "VIEW MY TRACKER"), action: openDevice).buttonStyle(WButton())
                 HStack(spacing: 12) {
@@ -206,7 +216,7 @@ struct HomeView: View {
     }
 
     private var dailyHighlight: some View {
-        Button { openMetric(.recovery) } label: {
+        Button { openMetric(day.strainIsLocalEstimate ? .strain : .recovery) } label: {
             WCard(padding: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 7) {
@@ -226,10 +236,11 @@ struct HomeView: View {
     }
 
     private var highlightTitle: String {
-        guard let strain = day.strain else { return "Your Day In Review" }
+        guard let strain = day.displayedStrain else { return "Your Day In Review" }
         return strain >= 14 ? "Pushing Limits" : strain >= 10 ? "Building Momentum" : "Finding Your Balance"
     }
     private var highlightText: String {
+        if day.strainIsLocalEstimate { return "Your connected heart-rate readings are being saved automatically. The local Strain estimate covers received readings only." }
         if let strain = day.strain {
             if strain >= 14 { return "You worked hard today. Your recorded Strain is \(decimalText(strain)). Explore your activities and Recovery to plan what comes next." }
             if strain >= 10 { return "You built up a solid day of activity. Review your Strain and Recovery together as you plan your next session." }

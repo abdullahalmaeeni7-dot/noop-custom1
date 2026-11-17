@@ -9,6 +9,8 @@ struct WHOOPApp: App {
     @StateObject private var store = AppStore()
     @StateObject private var account = AccountModel()
     @StateObject private var recorder = WorkoutRecorder()
+    @StateObject private var dailyTracker = DailyTrackerRecorder()
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var liveActivity = LiveActivityDriver()
     @StateObject private var health = HealthDataModel()
     @StateObject private var nutrition = NutritionViewModel()
@@ -16,9 +18,10 @@ struct WHOOPApp: App {
     var body: some Scene {
         WindowGroup {
             AppLaunchView().environmentObject(tracker).environmentObject(store).environmentObject(account)
-                .environmentObject(recorder).environmentObject(liveActivity)
+                .environmentObject(recorder).environmentObject(dailyTracker).environmentObject(liveActivity)
                 .environmentObject(health).environmentObject(nutrition)
-                .task { recorder.bind(tracker); liveActivity.bind(recorder) }
+                .task { recorder.bind(tracker); dailyTracker.bind(tracker, to: store); liveActivity.bind(recorder) }
+                .onChange(of: scenePhase) { _, phase in if phase != .active { dailyTracker.flush() } }
                 .environment(\.locale, AppLanguage.current.locale)
                 .environment(\.layoutDirection, AppLanguage.isArabic ? .rightToLeft : .leftToRight)
                 .id(languageChoice)

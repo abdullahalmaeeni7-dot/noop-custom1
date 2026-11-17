@@ -18,7 +18,7 @@ public enum CameraOverlayData {
     public static func metrics(mode: CameraOverlayMode, day: DailySnapshot,
                                liveHeartRate: Double?, sampleDate: Date?, now: Date = Date(),
                                elapsedSeconds: Int = 0) -> [CameraOverlayMetric] {
-        let strain = metric(day.strain, label: "DAY STRAIN", maximum: 21, tone: .cyan, digits: 1)
+        let strain = metric(day.displayedStrain, label: day.strainIsLocalEstimate ? "LOCAL STRAIN EST." : "DAY STRAIN", maximum: 21, tone: .cyan, digits: 1)
         let recoveryValue = day.recovery.flatMap { (0...100).contains($0) ? Double($0) : nil }
         let recovery = metric(recoveryValue, label: "RECOVERY", maximum: 100,
                               tone: (recoveryValue ?? 0) <= 33 ? .red : (recoveryValue ?? 0) <= 66 ? .yellow : .green,

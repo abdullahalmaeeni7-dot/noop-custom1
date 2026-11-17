@@ -29,8 +29,8 @@ final class WorkoutRecorder: ObservableObject {
 
     func bind(_ device: DeviceModel) {
         guard subscription == nil else { return }
-        subscription = device.$heartRate.compactMap { $0 }.sink { [weak self] bpm in
-            Task { @MainActor in self?.receive(bpm, at: Date()) }
+        subscription = device.heartRateSamples.sink { [weak self] sample in
+            Task { @MainActor in self?.receive(sample.bpm, at: sample.timestamp) }
         }
         clock = Timer.publish(every: 1, on: .main, in: .common).autoconnect().sink { [weak self] _ in
             Task { @MainActor in self?.tick() }
@@ -100,5 +100,58 @@ final class WorkoutRecorder: ObservableObject {
         heartRateIsFresh = !isPaused && (lastSampleDate.map { (0...10).contains(Date().timeIntervalSince($0)) } ?? false)
         if elapsedSeconds >= 21_600 { status = "Recording limit reached. Save this session before starting another." }
         else if !isPaused, !heartRateIsFresh, lastSampleDate != nil { status = "Waiting for fresh heart rate. Missing readings are not filled in." }
+    }
+}
+
+
+/// Automatic tracking is separate from manually named workouts. Only delivered BLE
+/// readings count; there is no strap-history backfill or synthesized overnight score.
+@MainActor
+final class DailyTrackerRecorder: ObservableObject {
+    nonisolated static let restingKey = "whoop.tracking.resting.v1"
+    nonisolated static let maximumKey = "whoop.tracking.maximum.v1"
+    @Published private(set) var error: String?
+    private var accumulator = DailyTrackerAccumulator()
+    private var subscription: AnyCancellable?
+    private var clock: AnyCancellable?
+    private weak var store: AppStore?
+    private var generation: UUID?
+    private var lastSavedAt = Date.distantPast
+
+    func bind(_ device: DeviceModel, to store: AppStore) {
+        guard subscription == nil else { return }
+        self.store = store; generation = store.trackerDataGeneration
+        subscription = device.heartRateSamples.sink { [weak self] sample in
+            Task { @MainActor in self?.receive(sample) }
+        }
+        clock = Timer.publish(every: 15, on: .main, in: .common).autoconnect().sink { [weak self] _ in
+            Task { @MainActor in self?.flush() }
+        }
+    }
+    private func synchronizeGeneration() {
+        if generation != store?.trackerDataGeneration {
+            accumulator.reset(); error = nil; generation = store?.trackerDataGeneration
+        }
+    }
+    private func receive(_ sample: HeartRateSample) {
+        synchronizeGeneration()
+        guard let store, !store.isLoadingSavedData, error == nil else { return }
+        let savedResting = UserDefaults.standard.double(forKey: Self.restingKey)
+        let savedMaximum = UserDefaults.standard.double(forKey: Self.maximumKey)
+        let resting = (30...110).contains(savedResting) ? savedResting : 55
+        let maximum = (120...230).contains(savedMaximum) ? savedMaximum : 190
+        do {
+            try accumulator.append(sample, resting: resting, maximum: maximum)
+            // Also flush from incoming events when a foreground timer is suspended.
+            if sample.timestamp.timeIntervalSince(lastSavedAt) >= 15 { flush() }
+        } catch { /* Invalid or out-of-order readings never contribute to the estimate. */ }
+    }
+    func flush() {
+        synchronizeGeneration()
+        guard let store, !store.isLoadingSavedData, !accumulator.pending.isEmpty else { return }
+        do {
+            try store.saveTrackerReadings(accumulator.pending)
+            accumulator.acknowledgeSaved(); lastSavedAt = Date(); error = nil
+        } catch { self.error = error.localizedDescription }
     }
 }

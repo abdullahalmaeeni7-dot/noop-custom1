@@ -15,6 +15,7 @@ struct NearbyDevice: Identifiable {
 final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralManagerDelegate, @preconcurrency CBPeripheralDelegate {
     @Published private(set) var devices: [NearbyDevice] = []
     @Published private(set) var status = "Find a nearby sensor to see live heart rate."
+    let heartRateSamples = PassthroughSubject<HeartRateSample, Never>()
     @Published private(set) var heartRate: Double?
     @Published private(set) var heartRateReceivedAt: Date?
     @Published private(set) var isScanning = false
@@ -31,12 +32,13 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     private var requestTimeoutToken = UUID()
     private var heartRateToken = UUID()
     private var customDecoders: [CBUUID: WhoopFrameDecoder] = [:]
-    private lazy var central = CBCentralManager(delegate: self, queue: .main)
+    private lazy var central = CBCentralManager(delegate: self, queue: .main, options: [CBCentralManagerOptionRestoreIdentifierKey: "local.whoop.tracker.central"])
     private var discovered: [UUID: CBPeripheral] = [:]
     private var active: CBPeripheral?
     var isConnecting: Bool { active != nil && connectedName == nil }
     private var broadScan = false
     private var attemptedAutomaticStream = false
+    private var attemptedReconnectAfterLoss = false
     private var pendingScan = false
     private var pendingReconnectID: UUID?
     private var scanToken = UUID()
@@ -69,6 +71,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
 
     func scan() {
         guard !isConnecting else { return }
+        attemptedReconnectAfterLoss = false
         pendingReconnectID = nil
         pendingScan = true
         switch central.state {
@@ -133,6 +136,19 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         status = "Disconnected."
     }
 
+    func centralManager(_ central: CBCentralManager, willRestoreState state: [String: Any]) {
+        guard let peripherals = state[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
+              let saved = UserDefaults.standard.string(forKey: "whoop.tracker.identifier"),
+              let peripheral = peripherals.first(where: { $0.identifier.uuidString == saved }) else { return }
+        discovered[peripheral.identifier] = peripheral; active = peripheral
+        peripheral.delegate = self
+        if peripheral.state == .connected {
+            connectedName = peripheral.name ?? "Sensor"
+            peripheral.discoverServices(scanServices)
+            status = "Restored tracker connection. Waiting for fresh heart rate…"
+        } else { status = "Restoring tracker connection…" }
+    }
+
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
@@ -181,6 +197,15 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         guard active?.identifier == peripheral.identifier else { return }
         active = nil; connectedName = nil; heartRate = nil; heartRateReceivedAt = nil; resetCustomState()
         status = error == nil ? "Disconnected." : "Connection lost. Scan again to reconnect."
+        guard !attemptedReconnectAfterLoss, central.state == .poweredOn else { return }
+        attemptedReconnectAfterLoss = true
+        let token = UUID(); connectionToken = token
+        status = "Connection lost. Trying to reconnect…"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+            guard let self, self.connectionToken == token, self.active == nil,
+                  !self.isScanning, !self.pendingScan, self.central.state == .poweredOn else { return }
+            self.connect(NearbyDevice(id: peripheral.identifier, name: peripheral.name ?? "Sensor", rssi: 0))
+        }
     }
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard active?.identifier == peripheral.identifier else { return }
@@ -288,8 +313,11 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     }
 
     private func publishHeartRate(_ bpm: Double) {
+        let received = Date()
+        attemptedReconnectAfterLoss = false
         heartRate = bpm
-        heartRateReceivedAt = Date()
+        heartRateReceivedAt = received
+        heartRateSamples.send(HeartRateSample(timestamp: received, bpm: bpm))
         let token = UUID(); heartRateToken = token
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self, self.heartRateToken == token, self.active != nil else { return }

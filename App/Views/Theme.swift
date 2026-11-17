@@ -144,7 +144,7 @@ enum ScoreMetric: String, CaseIterable, Identifiable {
         switch self {
         case .sleep: return day.sleepPerformance.map(Double.init)
         case .recovery: return day.recovery.map(Double.init)
-        case .strain: return day.strain
+        case .strain: return day.displayedStrain
         }
     }
     func text(_ day: DailySnapshot) -> String {
@@ -158,7 +158,7 @@ enum ScoreMetric: String, CaseIterable, Identifiable {
         switch self {
         case .sleep: return "Sleep performance compares sleep achieved with sleep needed. This view displays the score supplied in your day data."
         case .recovery: return "Recovery brings your readiness into focus. This view displays the supplied score alongside resting heart rate and heart rate variability."
-        case .strain: return "Strain is shown on a 0–21 scale. A recorded day score is distinct from the reference calculation available for imported heart-rate data."
+        case .strain: return "Strain is shown on a 0–21 scale. An imported WHOOP score takes priority. Otherwise, the local estimate counts received heart-rate intervals only and may differ from WHOOP."
         }
     }
 }

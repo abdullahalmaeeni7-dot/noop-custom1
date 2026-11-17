@@ -31,8 +31,15 @@ struct MetricDetailView: View {
                     ScoreRing(metric: metric, day: day, large: true,
                               comparisonFraction: previous.flatMap { metric.value($0) == nil ? nil : metric.fraction($0) })
                         .padding(.top, 13).padding(.bottom, 5)
-                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : "IMPORTED MEASUREMENTS"))
+                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : metric == .strain && day.strainIsLocalEstimate ? "LOCAL STRAIN ESTIMATE" : "SAVED MEASUREMENTS"))
                         .font(WFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.9).foregroundStyle(WColor.muted)
+                    if metric == .strain, let recording = day.trackerRecording {
+                        WCard {
+                            Text(L10n.text("Received readings") + ": " + recording.sampleCount.formatted()).font(WFont.body(14))
+                            Text(L10n.text("Counted minutes") + ": " + (recording.observedSeconds / 60).formatted(.number.precision(.fractionLength(1)))).font(WFont.body(14))
+                            Text(L10n.text("Only received heart-rate intervals contribute to the local estimate. Disconnected time and intervals still waiting for smoothing are excluded. Official WHOOP scores take priority when imported.")).font(WFont.body(12)).foregroundStyle(WColor.muted)
+                        }
+                    }
                     WCard(padding: 16) { statistics }
                         .overlay(alignment: .top) {
                             StatisticsPointer().fill(WColor.card).frame(width: 18, height: 9).offset(y: -8)
@@ -126,6 +133,7 @@ struct MetricDetailView: View {
         }
     }
     private var insight: String {
+        if metric == .strain, day.strainIsLocalEstimate { return "This local Strain estimate uses received heart-rate intervals and your configured heart-rate limits. It is not an official WHOOP score and does not cover gaps in recording." }
         guard metric.value(day) != nil else { return "Your score will appear here when it is included in your recorded data. Heart-rate samples alone do not supply this score." }
         if metric == .strain, let strain = day.strain {
             if strain >= 14 && strain < 18 { return "Strain between 14 and 17.9 is considered strenuous, meaning your cardiovascular system has been working hard." }

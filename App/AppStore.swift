@@ -25,6 +25,7 @@ enum AppTab: String, CaseIterable, Identifiable {
 @MainActor
 final class AppStore: ObservableObject {
     @Published var tab: AppTab = .home
+    private(set) var trackerDataGeneration = UUID()
     @Published var selectedDate: Date
     @Published private(set) var days: [DailySnapshot] {
         didSet { dayIndex = days.enumerated().reduce(into: [:]) { $0[DayCalendar.start(of: $1.element.date)] = $1.offset } }
@@ -160,6 +161,7 @@ final class AppStore: ObservableObject {
             var merged = days.filter { $0.source == .imported }.reduce(into: [Date: DailySnapshot]()) { $0[Self.utc.startOfDay(for: $1.date)] = $1 }
             for day in imported.days {
                 var day = day
+                if day.trackerRecording == nil { day.trackerRecording = merged[day.date]?.trackerRecording }
                 if let existing = merged[day.date],
                    URL(fileURLWithPath: url.lastPathComponent).pathExtension.lowercased() != "json" {
                     if day.heartRates.isEmpty { day.heartRates = existing.heartRates }
@@ -231,6 +233,7 @@ final class AppStore: ObservableObject {
                 // it does not provide, while allowing pending scores to clear stale ones.
                 day.steps = previous.steps
                 day.heartRates = previous.heartRates
+                day.trackerRecording = previous.trackerRecording
             }
             merged[day.date] = day
         }
@@ -294,6 +297,7 @@ final class AppStore: ObservableObject {
         nutrition = backup.nutrition ?? NutritionData()
         profile = restoredProfile
         do { try writeState() } catch { restoreState(before); throw error }
+        trackerDataGeneration = UUID()
     }
     func deleteActivity(_ id: UUID) {
         activities.removeAll { $0.id == id }; persist()
@@ -331,6 +335,19 @@ final class AppStore: ObservableObject {
             } else { try writeState() }
         } catch { restoreState(before); throw error }
     }
+    /// One atomic save for automatically received tracker data; provider scores are untouched.
+    func saveTrackerReadings(_ batches: [DailyTrackerBatch]) throws {
+        guard !batches.isEmpty else { return }
+        let before = stateSnapshot()
+        var merged = days.filter { $0.source != .example }.reduce(into: [Date: DailySnapshot]()) { $0[$1.date] = $1 }
+        for batch in batches {
+            let day = merged[batch.date] ?? .empty(on: batch.date)
+            merged[batch.date] = try day.applyingTrackerBatch(batch)
+        }
+        days = merged.values.sorted { $0.date < $1.date }
+        do { try writeState() } catch { restoreState(before); throw error }
+    }
+
     private func stateSnapshot() -> SavedState {
         SavedState(version: 1, days: days, activities: activities, journal: journal, selectedDate: selectedDate, whoopAccountUserID: whoopAccountUserID, nutrition: nutrition, profile: profile)
     }
@@ -353,7 +370,7 @@ final class AppStore: ObservableObject {
         let previous = SavedState(version: 1, days: days, activities: activities, journal: journal, selectedDate: selectedDate, whoopAccountUserID: whoopAccountUserID, nutrition: nutrition, profile: profile)
         days = []; activities = []; journal = []; whoopAccountUserID = nil; nutrition = NutritionData(); profile = ProfilePersonalization()
         selectedDate = Self.utc.startOfDay(for: Date())
-        do { try writeState() }
+        do { try writeState(); trackerDataGeneration = UUID() }
         catch {
             days = previous.days; activities = previous.activities; journal = previous.journal
             selectedDate = previous.selectedDate

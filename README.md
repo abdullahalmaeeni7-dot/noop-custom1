@@ -1,3 +1,5 @@
+Latest tracker change: [automatic recording and local daily Strain](Docs/ReleaseNotes/2026-11-17-automatic-tracking.md). The source now saves incoming BLE readings without starting a workout. An updated iPhone build is being validated; the existing download below is from the earlier Home revision. Recovery still requires supported WHOOP data.
+
 Current iPhone build: [download the unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/b28fd8cc7eb09537c11543f42085a5f14266aceb/WHOOP-unsigned.ipa), built from `b28fd8c` with the iOS device SDK. Sign the IPA with Sideloadly; this is an unsigned arm64 iPhone package (4.38 MB). The Mac workflow passed its portable tests, Apple SDK build and package validation. The downloaded IPA matches its published SHA-256.
 
 Reference-screen status: [screen-by-screen audit and shared visual corrections](design/reviews/2026-11-16-reference-audit.md).

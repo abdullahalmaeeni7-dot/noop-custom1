@@ -21,6 +21,7 @@ public struct LiveStrainEngine: Sendable {
     public let restingHeartRate: Double
     public let maximumHeartRate: Double
     public private(set) var rawStrain = 0.0
+    public private(set) var observedSeconds = 0.0
     public private(set) var scaledScore = 0.0
     public private(set) var sampleCount = 0
     /// Number of smoothed points whose following observed interval has been counted once.
@@ -60,6 +61,7 @@ public struct LiveStrainEngine: Sendable {
         extended.append(point)
         var newSmoothed: LiveStrainPoint?
         var contribution = 0.0
+        var intervalSeconds = 0.0
         if nextSmoothingIndex < sampleCount + 1 - 30 {
             let lower = max(0, nextSmoothingIndex - 30) - bufferStartIndex
             let upper = nextSmoothingIndex + 30 - bufferStartIndex // Exclusive, as shipped.
@@ -68,6 +70,7 @@ public struct LiveStrainEngine: Sendable {
             let smoothed = LiveStrainPoint(milliseconds: center.milliseconds, bpm: rate)
             if let pending {
                 let seconds = min(Double(smoothed.milliseconds - pending.milliseconds) / 1000, 3)
+                intervalSeconds = seconds
                 let reserve = try StrainCalculator.reserve(
                     heartRate: pending.bpm, restingHeartRate: restingHeartRate,
                     maximumHeartRate: max(maximumHeartRate, pending.bpm))
@@ -86,6 +89,7 @@ public struct LiveStrainEngine: Sendable {
             pending = newSmoothed
             nextSmoothingIndex += 1
         }
+        observedSeconds += intervalSeconds
         rawStrain = updatedRaw
         scaledScore = updatedScore
 

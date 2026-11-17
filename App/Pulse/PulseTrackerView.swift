@@ -5,6 +5,10 @@ import UIKit
 /// Reuses the existing CoreBluetooth adapter. This panel never reads mock measurements.
 struct PulseTrackerView: View {
     @EnvironmentObject private var tracker: DeviceModel
+    @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var dailyTracker: DailyTrackerRecorder
+    @AppStorage(DailyTrackerRecorder.restingKey) private var localResting = 55.0
+    @AppStorage(DailyTrackerRecorder.maximumKey) private var localMaximum = 190.0
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         NavigationStack {
@@ -82,13 +86,15 @@ struct PulseTrackerView: View {
                             }
                         }
                     }
+                    automaticTrackingCard
                     PulseCard {
                         VStack(alignment: .leading, spacing: 10) {
                             Text(L10n.text("WHAT THIS CONNECTION CAN DO")).font(PulseFont.label()).tracking(AppLanguage.isArabic ? 0 : 0.6)
                             Text(L10n.text("Listen for standard Bluetooth heart-rate broadcasts, or try the selected WHOOP service families already implemented. Individual WHOOP 4.0, 5.0 and MG compatibility has not been verified on physical devices.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-                            Text(L10n.text("Home scores come from your saved or imported measurements. This Bluetooth connection does not sync device history or calculate measured Recovery, Sleep Performance, daily Strain, ECG or blood pressure.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                            Text(L10n.text("Received heart rate is saved automatically, with a local Strain estimate when enough readings arrive. WHOOP scores take priority when imported. This connection does not sync strap history or provide official Recovery, Sleep, ECG or blood pressure.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                         }
                     }
+                    Text(L10n.text("Only received intervals count. Saved charts retain one actual reading per minute. Bluetooth background delivery depends on iOS; force-quitting the app or losing connection leaves gaps. There is no automatic history backfill.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
                     Button(L10n.text("OPEN BLUETOOTH PERMISSIONS")) {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }.buttonStyle(PulseTrackerButton(secondary: true))
@@ -100,6 +106,29 @@ struct PulseTrackerView: View {
         }.font(PulseFont.body()).foregroundStyle(PulseColor.text).tint(PulseColor.sleep).preferredColorScheme(.dark)
             .onDisappear { if tracker.isScanning { tracker.stop() } }
     }
+    private var automaticTrackingCard: some View {
+        PulseCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.text("AUTOMATIC DAILY TRACKING")).font(PulseFont.label())
+                if let recording = store.days.first(where: { $0.date == DayCalendar.start(of: Date()) })?.trackerRecording {
+                    Text(L10n.text("Received readings") + ": " + recording.sampleCount.formatted()).font(PulseFont.body(15))
+                    Text(L10n.text("Counted minutes") + ": " + (recording.observedSeconds / 60).formatted(.number.precision(.fractionLength(1)))).font(PulseFont.body(13))
+                    Text(L10n.text("LOCAL STRAIN ESTIMATE") + ": " + decimalText(recording.strainEstimate)).font(PulseFont.body(15))
+                    Text(L10n.text("Last saved") + ": " + recording.lastSampleAt.formatted(date: .omitted, time: .standard)).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+                } else {
+                    Text(L10n.text("Automatic recording starts with the first received heart-rate reading. The local estimate needs at least 32 fresh readings.")).font(PulseFont.body(13))
+                }
+                if let error = dailyTracker.error {
+                    Text(L10n.text("Automatic recording could not be saved.") + " " + error).font(PulseFont.body(13)).foregroundStyle(.orange)
+                    Button(L10n.text("RETRY SAVE")) { dailyTracker.flush() }.frame(minHeight: 44)
+                }
+                Stepper(value: $localResting, in: 30...110) { Text(L10n.text("Resting HR") + ": " + Int(localResting).formatted()) }
+                Stepper(value: $localMaximum, in: 120...230) { Text(L10n.text("Maximum HR") + ": " + Int(localMaximum).formatted()) }
+                Text(L10n.text("Set your known heart-rate limits. Defaults are 55 and 190 BPM; they are assumptions, not measured baselines. Changes apply to new readings.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
+            }
+        }
+    }
+
 }
 private struct PulseTrackerButton: ButtonStyle {
     var secondary = false
