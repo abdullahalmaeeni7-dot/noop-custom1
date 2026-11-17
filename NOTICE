@@ -38,3 +38,13 @@ re-implements those facts as original code — it does not copy their source.
 
 See ATTRIBUTION.md for fuller credit and DISCLAIMER.md for the interoperability and
 fair-use rationale.
+
+OpenStrap protocol (MIT snapshot)
+--------------------------------
+Protocol reference and captured test fixtures from OpenStrap/protocol at
+3ecf17e89ae2750ee0a64155266b41a9a3aa9091 (last MIT-licensed snapshot).
+Copyright (c) 2026 OpenStrap. MIT License.
+https://github.com/OpenStrap/protocol/tree/3ecf17e89ae2750ee0a64155266b41a9a3aa9091
+The complete license is retained in Docs/ThirdParty/OpenStrap-protocol-MIT-LICENSE.txt.
+Later AGPL versions are not incorporated. The Swift transfer/state/storage code is
+independently written; captured test records are attributed to this snapshot.

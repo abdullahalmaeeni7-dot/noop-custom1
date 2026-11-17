@@ -192,7 +192,7 @@ final class AppStore: ObservableObject {
     }
 
     /// Merge measurements without replacing supplied WHOOP day scores with local estimates.
-    func mergeMeasurements(_ incoming: [DailySnapshot]) throws {
+    func mergeMeasurements(_ incoming: [DailySnapshot], selectLatest: Bool = true) throws {
         let before = stateSnapshot()
         var merged = days.filter { $0.source != .example }
         for incomingDay in incoming {
@@ -214,7 +214,7 @@ final class AppStore: ObservableObject {
             } else { merged.append(day) }
         }
         days = merged.sorted { $0.date < $1.date }
-        if let latest = incoming.map(\.date).max() { selectedDate = Self.utc.startOfDay(for: latest) }
+        if selectLatest, let latest = incoming.map(\.date).max() { selectedDate = Self.utc.startOfDay(for: latest) }
         do { try writeState() } catch { restoreState(before); throw error }
     }
 

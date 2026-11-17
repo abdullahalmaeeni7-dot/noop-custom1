@@ -20,7 +20,7 @@ struct WHOOPApp: App {
             AppLaunchView().environmentObject(tracker).environmentObject(store).environmentObject(account)
                 .environmentObject(recorder).environmentObject(dailyTracker).environmentObject(liveActivity)
                 .environmentObject(health).environmentObject(nutrition)
-                .task { recorder.bind(tracker); dailyTracker.bind(tracker, to: store); liveActivity.bind(recorder) }
+                .task { recorder.bind(tracker); dailyTracker.bind(tracker, to: store); tracker.bindHistory(to: store); liveActivity.bind(recorder) }
                 .onChange(of: scenePhase) { _, phase in if phase != .active { dailyTracker.flush() } }
                 .environment(\.locale, AppLanguage.current.locale)
                 .environment(\.layoutDirection, AppLanguage.isArabic ? .rightToLeft : .leftToRight)

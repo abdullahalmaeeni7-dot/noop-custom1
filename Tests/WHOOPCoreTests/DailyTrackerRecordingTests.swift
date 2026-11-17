@@ -104,7 +104,9 @@ final class DailyTrackerRecordingTests: XCTestCase {
         for i in 60..<120 { try stream.append(sample(Double(i)), resting: 65, maximum: 200) }
         var saved = try DailySnapshot.empty(on: day).applyingTrackerBatch(XCTUnwrap(stream.pending.first))
         XCTAssertEqual(saved.trackerRecording?.observedSeconds, 58)
-        let local = CameraOverlayData.metrics(mode: .strain, day: saved, liveHeartRate: nil, sampleDate: nil)
+        let hidden = CameraOverlayData.metrics(mode: .strain, day: saved, liveHeartRate: nil, sampleDate: nil)
+        XCTAssertEqual(hidden.first?.available, false)
+        let local = CameraOverlayData.metrics(mode: .strain, day: saved, liveHeartRate: nil, sampleDate: nil, allowLocalEstimates: true)
         XCTAssertEqual(local.first?.label, "LOCAL STRAIN EST.")
         XCTAssertEqual(local.first?.available, true)
         saved.strain = 9.8

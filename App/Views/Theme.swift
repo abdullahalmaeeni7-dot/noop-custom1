@@ -130,6 +130,11 @@ func decimalText(_ value: Double?, places: Int = 1) -> String {
     return value.formatted(.number.locale(AppLanguage.current.locale).precision(.fractionLength(places)))
 }
 
+enum WhoopScoreDisplay {
+    static let estimatePreferenceKey = "whoop.showLocalStrainEstimates.v1"
+    static var allowsLocalEstimates: Bool { UserDefaults.standard.bool(forKey: estimatePreferenceKey) }
+}
+
 enum ScoreMetric: String, CaseIterable, Identifiable {
     case sleep, recovery, strain
     var id: String { rawValue }
@@ -144,7 +149,7 @@ enum ScoreMetric: String, CaseIterable, Identifiable {
         switch self {
         case .sleep: return day.sleepPerformance.map(Double.init)
         case .recovery: return day.recovery.map(Double.init)
-        case .strain: return day.displayedStrain
+        case .strain: return day.strain ?? (WhoopScoreDisplay.allowsLocalEstimates ? day.trackerRecording?.strainEstimate : nil)
         }
     }
     func text(_ day: DailySnapshot) -> String {

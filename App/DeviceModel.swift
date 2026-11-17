@@ -9,8 +9,8 @@ struct NearbyDevice: Identifiable {
     let rssi: Int
 }
 
-/// Main-queue Bluetooth client. Only the opt-in verified Hello/HR request pair is encoded.
-/// No firmware operations, history commands or private-server calls are implemented.
+/// Main-queue Bluetooth client. Typed Hello/HR and user-initiated history reads.
+/// A complete batch is durably archived before its receipt is acknowledged.
 @MainActor
 final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralManagerDelegate, @preconcurrency CBPeripheralDelegate {
     @Published private(set) var devices: [NearbyDevice] = []
@@ -25,6 +25,24 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     @Published private(set) var lastHistoryRecord: WhoopHistoryRecord?
     @Published private(set) var canStartCustomStream = false
     @Published private(set) var startingCustomStream = false
+    @Published private(set) var canDownloadHistory = false
+    @Published private(set) var isDownloadingHistory = false
+    @Published private(set) var historyStatus = "Download stored records from your tracker."
+    @Published private(set) var savedDeviceHistory = DeviceHistoryArchiveSummary()
+    @Published private(set) var historyPreviewError: String?
+    @Published private(set) var historyExportURL: URL?
+    @Published private(set) var isExportingHistory = false
+    private var historyTransfer: WhoopHistoryTransfer?
+    private weak var historyAppStore: AppStore?
+    private var historyStoreGeneration: UUID?
+    private var historyOperation = UUID()
+    private var historyTimeout = UUID()
+    private var lastHistoryActivity = Date()
+    private var receivedFrameTotal = 0
+    private var receivedHistoryTotal = 0
+    private var lastStatsPublished = Date.distantPast
+    private var latestHistoryRecord: WhoopHistoryRecord?
+    private let historyArchive = DeviceHistoryArchiveStore(directory: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("whoop-device-history", isDirectory: true))
     private var customSession: WhoopLiveSession?
     private var customCommandCharacteristic: CBCharacteristic?
     private var requiredNotifications: Set<CBUUID> = []
@@ -293,13 +311,17 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             guard error == nil, let data = characteristic.value else { return }
             let frames = decoder.append(data)
             customDecoders[characteristic.uuid] = decoder
-            validFrames += frames.count
+            receivedFrameTotal += frames.count
             for frame in frames {
                 if let history = WhoopHistoryRecord(frame: frame) {
-                    historicalFrames += 1; lastHistoryRecord = history
+                    receivedHistoryTotal += 1; latestHistoryRecord = history
                 }
+                handleHistoryFrame(frame)
                 handleCustomFrame(frame)
                 if let bpm = frame.realtimeHeartRate { publishHeartRate(bpm); status = "Receiving WHOOP live heart rate." }
+            }
+            if Date().timeIntervalSince(lastStatsPublished) >= 0.5 {
+                validFrames = receivedFrameTotal; historicalFrames = receivedHistoryTotal; lastHistoryRecord = latestHistoryRecord; lastStatsPublished = Date()
             }
             return
         }
@@ -384,20 +406,125 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         }
     }
     private func updateCustomAvailability() {
+        canDownloadHistory = !isDownloadingHistory && historyAppStore != nil && customSession?.state == .streaming &&
+            customCommandCharacteristic?.properties.contains(.write) == true && requiredNotifications.isSubset(of: readyNotifications)
         startingCustomStream = customSession?.isWaiting ?? false
         canStartCustomStream = connectedName != nil && customCommandCharacteristic != nil &&
             requiredNotifications.count == 3 && requiredNotifications.isSubset(of: readyNotifications) &&
             (customSession?.canBegin ?? false)
     }
     private func resetCustomState() {
+        historyOperation = UUID(); historyTimeout = UUID()
+        receivedFrameTotal = 0; receivedHistoryTotal = 0; latestHistoryRecord = nil; lastStatsPublished = .distantPast
+        if isDownloadingHistory { historyStatus = "History download interrupted. Saved batches remain available; unsaved batches were not acknowledged." }
+        isDownloadingHistory = false; canDownloadHistory = false; historyTransfer = nil
         customDecoders = [:]; customSession = nil; customCommandCharacteristic = nil; heartRateToken = UUID()
         requiredNotifications = []; readyNotifications = []; requestTimeoutToken = UUID()
         attemptedAutomaticStream = false
         startingCustomStream = false; canStartCustomStream = false
     }
+    func bindHistory(to store: AppStore) {
+        historyAppStore = store; updateCustomAvailability(); refreshHistorySummary()
+    }
+    func refreshHistorySummary() {
+        Task {
+            do { savedDeviceHistory = try await historyArchive.summary() }
+            catch { historyStatus = error.localizedDescription }
+        }
+    }
+    func downloadDeviceHistory() {
+        guard canDownloadHistory, let generation = customSession?.generation else { return }
+        historyOperation = UUID(); historyExportURL = nil; historyPreviewError = nil
+        historyStoreGeneration = historyAppStore?.trackerDataGeneration
+        var transfer = WhoopHistoryTransfer(generation: generation)
+        do {
+            let request = try transfer.begin(); historyTransfer = transfer
+            isDownloadingHistory = true; updateCustomAvailability()
+            historyStatus = "Requesting stored tracker records…"
+            try writeHistoryRequest(request); scheduleHistoryTimeout()
+        } catch { failHistory(error) }
+    }
+    func stopHistoryDownload() {
+        // Disconnect halts the transfer without confirming any unsaved batch.
+        disconnect(); historyStatus = "History download stopped. Saved batches are kept."
+    }
+    private func writeHistoryRequest(_ data: Data) throws {
+        guard let active, let characteristic = customCommandCharacteristic,
+              characteristic.properties.contains(.write), active.state == .connected else { throw WhoopHistoryTransferError.notReady }
+        active.writeValue(data, for: characteristic, type: .withResponse)
+    }
+    private func handleHistoryFrame(_ frame: WhoopFrame) {
+        guard isDownloadingHistory, var transfer = historyTransfer else { return }
+        do {
+            let batch = try transfer.receive(frame); historyTransfer = transfer
+            if transfer.state == .completed {
+                isDownloadingHistory = false; historyTimeout = UUID(); updateCustomAvailability()
+                historyStatus = historyPreviewError == nil ? "Tracker history download complete. Raw records are saved on this iPhone." : "Raw tracker history is saved. The chart preview needs attention."
+            } else if let batch, let identifier = active?.identifier {
+                historyStatus = "Saving a complete tracker batch before acknowledgement…"
+                let operation = historyOperation
+                Task {
+                    do {
+                        let saved = try await historyArchive.save(batch, deviceIdentifier: identifier)
+                        self.savedDeviceHistory = saved.summary
+                        guard self.historyOperation == operation, self.active?.identifier == identifier,
+                              self.isDownloadingHistory, var pending = self.historyTransfer,
+                              let store = self.historyAppStore else { return }
+                        guard store.trackerDataGeneration == self.historyStoreGeneration else {
+                            self.failHistory(WhoopHistoryTransferError.notReady); return
+                        }
+                        do { try store.mergeMeasurements(saved.days, selectLatest: false) }
+                        catch { self.historyPreviewError = error.localizedDescription }
+                        // The complete lossless raw batch is durable even if the bounded
+                        // dashboard preview cannot be indexed. Never lose the raw transfer.
+
+                        let acknowledgement = try pending.confirmDurablySaved(saved.receipt)
+                        self.historyTransfer = pending
+                        try self.writeHistoryRequest(acknowledgement)
+                        self.historyStatus = "Batch saved. Waiting for the next tracker batch…"
+                        self.scheduleHistoryTimeout()
+                    } catch {
+                        guard self.historyOperation == operation else { return }
+                        self.failHistory(error)
+                    }
+                }
+            } else if transfer.state == .receiving && (WhoopHistoryTransfer.isHistoryPacket(frame.packetTypeCode) || frame.packetType == .metadata) {
+                lastHistoryActivity = Date()
+            }
+        } catch { failHistory(error) }
+    }
+    private func scheduleHistoryTimeout() {
+        let token = UUID(); historyTimeout = token; lastHistoryActivity = Date()
+        monitorHistory(token)
+    }
+    private func monitorHistory(_ token: UUID) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+            guard let self, self.historyTimeout == token, self.isDownloadingHistory else { return }
+            if self.historyTransfer?.state == .receiving && Date().timeIntervalSince(self.lastHistoryActivity) >= 30 {
+                self.failHistory(WhoopHistoryTransferError.expired)
+            } else { self.monitorHistory(token) }
+        }
+    }
+    private func failHistory(_ error: Error) {
+        historyTransfer?.fail(); isDownloadingHistory = false; historyTimeout = UUID()
+        historyStatus = error.localizedDescription; updateCustomAvailability()
+    }
+    func exportDeviceHistory() {
+        guard !isExportingHistory else { return }
+        isExportingHistory = true; historyExportURL = nil
+        Task {
+            defer { isExportingHistory = false }
+            do {
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("WHOOP-device-history-" + UUID().uuidString + ".zip")
+                historyExportURL = try await historyArchive.export(to: url)
+            } catch { historyStatus = error.localizedDescription }
+        }
+    }
+
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         guard active?.identifier == peripheral.identifier,
               characteristic.uuid == customCommandCharacteristic?.uuid, let error else { return }
+        if isDownloadingHistory { failHistory(error) }
         requestTimeoutToken = UUID(); customSession?.transportFailed(); updateCustomAvailability()
         status = "The device request could not be written: \(error.localizedDescription)"
     }

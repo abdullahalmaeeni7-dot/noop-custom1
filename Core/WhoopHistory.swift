@@ -1,8 +1,8 @@
 import Foundation
 
 /// Passive, lossless view of an integrity-checked historical packet (type 0x2f).
-/// Only the common header and revision-specific metrics flag are mapped here.
-/// The physiological body remains opaque until its schema is independently recovered.
+/// Common headers are retained for selected revisions. Known physiological fields
+/// are exposed separately by WhoopHistoricalMeasurement; all bytes remain intact.
 public struct WhoopHistoryRecord: Equatable, Sendable {
     public let generation: WhoopGeneration
     public let rawFrame: Data
@@ -13,8 +13,9 @@ public struct WhoopHistoryRecord: Equatable, Sendable {
     public let timestampComponent16: UInt16?
     public let metricsFlag: UInt8?
 
-    /// No historical heart-rate offset has been established by the inspected decoder.
-    public var heartRate: UInt8? { nil }
+    /// Known gen4 R12/R24 and gen5 R18 only; unknown bodies remain opaque.
+    public var measurement: WhoopHistoricalMeasurement? { WhoopHistoricalMeasurement(record: self) }
+    public var heartRate: UInt8? { measurement?.heartRate.map { UInt8($0) } }
     public var deviceTime: WhoopDeviceTime? {
         guard let seconds = timestampComponent32, let ticks = timestampComponent16 else { return nil }
         return WhoopDeviceTime(seconds: seconds, ticks: ticks)

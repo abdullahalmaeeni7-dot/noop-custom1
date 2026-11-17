@@ -39,3 +39,5 @@ A success acknowledgement does not verify Hello identity/signature metadata or c
 No physical strap commands were executed during development. `WhoopCommandTests`, `WhoopFrameTests` and `WhoopLiveSessionTests` validate synthetic golden bytes, decoding, reply correlation and state transitions. They cannot establish radio interoperability, firmware compatibility or end-to-end device success.
 
 The full evidence is in the accompanying analysis bundle: `phase5/HELLO-STREAM.md`, `HELLO-EVIDENCE-INDEX.json`, `PROTOCOL-OUTGOING.md` and `PROTOCOL-EVIDENCE-INDEX.json`. The exact selected frame and field identities are summarized in [WHOOP-PROTOCOL.md](WHOOP-PROTOCOL.md).
+
+The separate [history-transfer path](DEVICE-HISTORY-TRANSFER.md) adds typed 0x16 read and 0x17 receipt commands after the live handshake. It archives complete batches before acknowledging them and does not add arbitrary, clock, erase or firmware writes.

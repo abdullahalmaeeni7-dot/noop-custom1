@@ -8,6 +8,7 @@ import WHOOPCore
 /// Full-screen camera composition measured from the supplied Live reference.
 struct ReferenceLiveView: View {
     let reference: PulseHomeDay?
+    @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var device: DeviceModel
     @EnvironmentObject private var recorder: WorkoutRecorder
@@ -188,7 +189,7 @@ struct ReferenceLiveView: View {
         let hr = photoData == nil ? (useRecorder ? recorder.latestHeartRate : device.heartRate) : nil
         let received = photoData == nil ? (useRecorder ? recorder.latestSampleDate : device.heartRateReceivedAt) : nil
         let elapsed = clipStarted.map { max(0, Int(Date().timeIntervalSince($0))) } ?? recorder.elapsedSeconds
-        let metrics = CameraOverlayData.metrics(mode: mode, day: day, liveHeartRate: hr, sampleDate: received, now: now, elapsedSeconds: elapsed)
+        let metrics = CameraOverlayData.metrics(mode: mode, day: day, liveHeartRate: hr, sampleDate: received, now: now, elapsedSeconds: elapsed, allowLocalEstimates: showLocalEstimates)
         let exists = store.days.contains { DayCalendar.utc.isDate($0.date, inSameDayAs: day.date) }
         let label = day.source == .example ? "EXAMPLE" : exists ? "RECORDED DAY" : "NO SAVED DATA"
         return LiveOverlaySnapshot(title: "WHOOP Live", source: label,

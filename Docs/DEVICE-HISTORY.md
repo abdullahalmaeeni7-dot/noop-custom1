@@ -1,3 +1,5 @@
+Current extension: [direct stored-record transfer and supported physiological fields](DEVICE-HISTORY-TRANSFER.md). The historical findings below describe the earlier static-only pass; known-layout HR/R-R projections and user-initiated transfer have since been added.
+
 # Passive historical packets
 
 `WhoopHistoryRecord.init?(frame:)` accepts CRC-validated historical frames (outer type `0x2f`) produced by `WhoopFrameDecoder`. It preserves the complete frame, payload and raw revision. It does not start transfers or acknowledge, trim or erase strap memory.

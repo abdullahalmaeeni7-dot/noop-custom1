@@ -1,9 +1,11 @@
 import Foundation
 
-/// Only the recovered Hello and reversible realtime-HR subscription requests.
+/// Typed Hello/HR and read-history requests only. No erase, clock or firmware writes.
 public enum WhoopCommand: Equatable, Sendable {
     case hello
     case realtimeHeartRate(Bool)
+    case downloadHistory
+    case acknowledgeHistory(Data)
 }
 
 public enum WhoopCommands {
@@ -17,15 +19,20 @@ public enum WhoopCommands {
             payload = generation == .gen4 ? [0x23, sequence, 0x23, 0] : [0x23, sequence, 0x91, 1]
         case .realtimeHeartRate(let enabled):
             payload = [0x23, sequence, 0x03, enabled ? 1 : 0]
+        case .downloadHistory:
+            payload = [0x23, sequence, 0x16, 0]
+        case .acknowledgeHistory(let token):
+            guard token.count == 8 else { throw WhoopHistoryTransferError.invalidMarker }
+            payload = [0x23, sequence, 0x17, 1] + Array(token)
         }
         // Every supported request is already aligned. No general padding path is
         // inferred from the source builder's suspicious unaligned self-copy branch.
         var bytes: [UInt8]
         if generation == .gen4 {
-            bytes = [0xaa, 8, 0]
+            bytes = [0xaa, UInt8(payload.count + 4), 0]
             bytes.append(WhoopCRC.crc8(bytes[1..<3]))
         } else {
-            bytes = [0xaa, 1, 8, 0, 0, 1]
+            bytes = [0xaa, 1, UInt8(payload.count + 4), 0, 0, 1]
             let crc = WhoopCRC.crc16(bytes)
             bytes += [UInt8(truncatingIfNeeded: crc), UInt8(truncatingIfNeeded: crc >> 8)]
         }

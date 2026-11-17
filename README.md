@@ -1,3 +1,5 @@
+New source revision: [direct tracker-history download](Docs/DEVICE-HISTORY-TRANSFER.md) reads and preserves stored packet batches, projects supported real HR/R-R fields, and makes local Strain estimates opt-in. Its updated iPhone build is pending; the download below is the previous automatic-recording build.
+
 Latest tracker change: [automatic recording and local daily Strain](Docs/ReleaseNotes/2026-11-17-automatic-tracking.md). Incoming BLE readings now save without starting a workout. The updated iPhone build passed Apple SDK compilation and device packaging; its direct download is below. Official Recovery still requires supported WHOOP data.
 
 Current iPhone build: [download the unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/3040dc793499251b2f9f29facfc14bc588bfc5af/WHOOP-unsigned.ipa), built from `3040dc7` with the iOS device SDK (4.46 MB). Sign it with Sideloadly using the same account/app identifier as your existing installation to retain data. All 176 Swift tests and the Mac workflow’s package checks passed. The downloaded IPA matches its published SHA-256 and includes the automatic recorder.

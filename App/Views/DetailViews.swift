@@ -4,6 +4,7 @@ import WHOOPCore
 
 struct MetricDetailView: View {
     @EnvironmentObject private var store: AppStore
+    @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
     @Environment(\.dismiss) private var dismiss
     let metric: ScoreMetric
     var embedded = false
@@ -31,7 +32,7 @@ struct MetricDetailView: View {
                     ScoreRing(metric: metric, day: day, large: true,
                               comparisonFraction: previous.flatMap { metric.value($0) == nil ? nil : metric.fraction($0) })
                         .padding(.top, 13).padding(.bottom, 5)
-                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : metric == .strain && day.strainIsLocalEstimate ? "LOCAL STRAIN ESTIMATE" : "SAVED MEASUREMENTS"))
+                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : metric == .strain && showLocalEstimates && day.strainIsLocalEstimate ? "LOCAL STRAIN ESTIMATE" : "SAVED MEASUREMENTS"))
                         .font(WFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.9).foregroundStyle(WColor.muted)
                     if metric == .strain, let recording = day.trackerRecording {
                         WCard {
@@ -133,7 +134,7 @@ struct MetricDetailView: View {
         }
     }
     private var insight: String {
-        if metric == .strain, day.strainIsLocalEstimate { return "This local Strain estimate uses received heart-rate intervals and your configured heart-rate limits. It is not an official WHOOP score and does not cover gaps in recording." }
+        if metric == .strain, showLocalEstimates, day.strainIsLocalEstimate { return "This local Strain estimate uses received heart-rate intervals and your configured heart-rate limits. It is not an official WHOOP score and does not cover gaps in recording." }
         guard metric.value(day) != nil else { return "Your score will appear here when it is included in your recorded data. Heart-rate samples alone do not supply this score." }
         if metric == .strain, let strain = day.strain {
             if strain >= 14 && strain < 18 { return "Strain between 14 and 17.9 is considered strenuous, meaning your cardiovascular system has been working hard." }

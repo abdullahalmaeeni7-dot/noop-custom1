@@ -3,7 +3,7 @@
   "checked_at": "2026-11-17",
   "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
   "portable_core": {
-    "tests_passed": 176,
+    "tests_passed": 183,
     "new_profile_tests": 13,
     "failures": 0,
     "new_zip_tests": 14
@@ -58,6 +58,10 @@
     "automatic-tracker-core-tests.log": {
       "path": "Validation/automatic-tracker-core-tests.log",
       "sha256": "a36d417844c055029489ebe94bd5cdd7b0a39aacd5f7da9e69e39a1028b2eeca"
+    },
+    "device-history-transfer-tests.log": {
+      "path": "Validation/device-history-transfer-tests.log",
+      "sha256": "986de3b4c2524fb6bf953ae50bf54f546ae478a613a9b59aea79e866fa6225fc"
     }
   },
   "changed_source_sha256": {
@@ -294,7 +298,7 @@
       "ar"
     ],
     "saved_preference": "whoop.language.v1",
-    "catalog_entries": 1077,
+    "catalog_entries": 1116,
     "rtl": true,
     "tests_passed": 5,
     "sdk_typecheck": "passed in final arm64 iOS device build",
@@ -326,5 +330,20 @@
     "log": "Validation/automatic-tracker-core-tests.log",
     "device_build_run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44151970688",
     "package_download_verified": true
+  },
+  "tracker_history_transfer": {
+    "status": "implemented; physical device test pending",
+    "reference_pin": "3ecf17e89ae2750ee0a64155266b41a9a3aa9091",
+    "source_license": "MIT snapshot, included notice",
+    "captured_reference_records": 3,
+    "new_transfer_tests": 7,
+    "user_band_capture": false,
+    "raw_archive": "complete CRC-checked packet batches; synchronized before saved receipt and ACK",
+    "dashboard_preview": "one actual HR record per minute; provider scores preserved",
+    "decoded_fields": "gen4 R12/R24 and gen5 R18 HR and R-R only; all other bytes preserved raw",
+    "export": "lossless raw ZIP plus decoded HR/R-R CSV",
+    "local_score_display_default": false,
+    "physical_device_test": false,
+    "apple_sdk_build": "pending"
   }
 }

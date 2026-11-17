@@ -1,0 +1,62 @@
+{
+  "source": "https://github.com/OpenStrap/protocol/tree/3ecf17e89ae2750ee0a64155266b41a9a3aa9091",
+  "license": "MIT; see Docs/ThirdParty/OpenStrap-protocol-MIT-LICENSE.txt",
+  "provenance": "Captured payloads/one complete gen5 frame from the pinned upstream corpus. Gen4 headers and all metadata/commands are independently generated using Python zlib and bitwise CRC references. Not this user's band traffic.",
+  "records": [
+    {
+      "name": "captured_gen4_1",
+      "generation": "gen4",
+      "frameHex": "aa6400a12f1805f13ced01c261d2698848805454016202d802f5010000000000609f0fff80de233d3dda19be5c87a9be7b14803f0020dc463dda19be5c87a9be7b14803f16028402bc0286025e01000b010c020c0000000000370001510c0000000000001c7bdfff",
+      "expectedHR": 98,
+      "expectedRR": [
+        728,
+        501
+      ],
+      "expectedUnixSeconds": 1775395266
+    },
+    {
+      "name": "captured_gen4_2",
+      "generation": "gen4",
+      "frameHex": "aa6400a12f1805f23ced01c361d26990438054540161010f040000000000000061dd06f12044363d00c029be8ff29cbeecbd803f00c0974600c029be8ff29cbeecbd803f16028402a50285025e01000b010c020c0100000000010001510c000000000000881ae3cb",
+      "expectedHR": 97,
+      "expectedRR": [
+        1039
+      ],
+      "expectedUnixSeconds": 1775395267
+    },
+    {
+      "name": "captured_gen5_v18",
+      "generation": "maverick",
+      "frameHex": "aa01740001003fb12f1280733d8401b69f266a66460066025a0265020000000000007b0a8d656463ff0012163cf6a439bf2924fd3ed763fe3e3200aa000000000000000000f7000901f10b0007010c020c00000000000000000000000000000000000000000000000100656f1e1e0000009d61a7c00000003e862817",
+      "expectedHR": 102,
+      "expectedRR": [
+        602,
+        613
+      ],
+      "expectedUnixSeconds": 1780916150
+    }
+  ],
+  "synthetic": {
+    "gen4_end_0": "aa1c00ab310102b69f266a0000000000000102030405060708000000324c2f3c",
+    "gen4_end_1": "aa1c00ab310102b69f266a0000010000000102030405060708000000da97d485",
+    "gen4_end_2": "aa1c00ab310102b69f266a0000020000000102030405060708000000a3fda994",
+    "gen4_complete": "aa0800a8310103002c793c43",
+    "gen4_start": "aa0800a831010100ae1b0a71",
+    "gen4_short_end": "aa0800a8310102006d48275a",
+    "gen4_request": "aa0800a8238016009b716e6e",
+    "gen4_ack": "aa10005723811701010203040506070846fcf42a",
+    "gen4_unknown_record": "aa0800a82f6300000d158493",
+    "gen4_side_record": "aa0800a835010000b8bd73e7",
+    "maverick_end_0": "aa011c000001e381310102b69f266a0000000000000102030405060708000000324c2f3c",
+    "maverick_end_1": "aa011c000001e381310102b69f266a0000010000000102030405060708000000da97d485",
+    "maverick_end_2": "aa011c000001e381310102b69f266a0000020000000102030405060708000000a3fda994",
+    "maverick_complete": "aa0108000001e671310103002c793c43",
+    "maverick_start": "aa0108000001e67131010100ae1b0a71",
+    "maverick_short_end": "aa0108000001e671310102006d48275a",
+    "maverick_request": "aa0108000001e671238016009b716e6e",
+    "maverick_ack": "aa0110000001e0d123811701010203040506070846fcf42a",
+    "maverick_unknown_record": "aa0108000001e6712f6300000d158493",
+    "maverick_side_record": "aa0108000001e67135010000b8bd73e7",
+    "gen5_future_envelope": "aa0274000001bbe12f1280733d8401b69f266a66460066025a0265020000000000007b0a8d656463ff0012163cf6a439bf2924fd3ed763fe3e3200aa000000000000000000f7000901f10b0007010c020c00000000000000000000000000000000000000000000000100656f1e1e0000009d61a7c00000003e862817"
+  }
+}
