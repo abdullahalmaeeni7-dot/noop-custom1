@@ -53,3 +53,7 @@ Source `b28fd8c` passed the [device workflow](https://github.com/abdullahalmaeen
 ## Automatic tracking follow-up — 17 November
 
 The [tracking revision](../../Docs/ReleaseNotes/2026-11-17-automatic-tracking.md) fixes the live-BPM-only path: received readings now save automatically and can supply an explicitly labeled local Strain estimate. Device Settings shows counts and coverage, with editable local HR limits. WHOOP Recovery and Sleep still require supported provider data; this does not complete the proprietary algorithms or strap-history synchronization. Physical background delivery remains unverified.
+
+## Direct device data — 17 November
+
+The [stored-history transfer](../../Docs/DEVICE-HISTORY-TRANSFER.md) adds a real device-read request, preserved raw batches, supported HR/R-R projection, synchronized storage before acknowledgement, and CSV/ZIP exports. Home/Live local estimates are opt-in. The Apple device build passed; actual transfers on the user’s band remain unverified. Finished WHOOP scores still require supported provider data.

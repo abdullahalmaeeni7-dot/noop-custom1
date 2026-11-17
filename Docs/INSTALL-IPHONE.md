@@ -4,9 +4,9 @@ This source project is an independent WHOOP-branded reconstruction. Building an 
 
 ## Windows: download the built IPA
 
-Download the [current unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/3040dc793499251b2f9f29facfc14bc588bfc5af/WHOOP-unsigned.ipa). This is the IPA itself; no artifact ZIP extraction is needed. It was built from `3040dc7` by the [successful Mac workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44151970688). Its published SHA-256 is `e4d281770fabd6ef8ed8020d697fbcbd832740b69ac47734c144e9a33f44c3c4`.
+Download the [current unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/4cb954cf57f60fb5148a38ebf862698bd81a8474/WHOOP-unsigned.ipa). This is the IPA itself; no artifact ZIP extraction is needed. It was built from `4cb954c` by the [successful Mac workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44183160951). Its published SHA-256 is `1307d9b170cc855e8de7be2def6b8e8c47590988034131be8d5dec957ea88c1a`.
 
-Install it with Sideloadly using the steps below. Keep the same signing account and app identifier when updating an existing installation to retain its data. Codemagic is optional.
+Install it with Sideloadly using the steps below. Keep the same signing account and app identifier when updating an existing installation to retain its data. Codemagic is optional. Keep a separate raw-history ZIP backup before deleting or reinstalling the app; acknowledged batches may have been released by the band.
 
 ## Optional: build with Codemagic
 
