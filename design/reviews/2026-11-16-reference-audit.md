@@ -49,3 +49,7 @@ Home/date navigation uses semantic forward/backward chevrons so directional cont
 ## Final native evidence
 
 Source `b28fd8c` passed the [device workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305660) and [native capture workflow](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/43935305671). The [Home review](../home/native-review-06/REVIEW.md) contains original English/Arabic PNGs, project before/after sheets, corrected differences, remaining visible differences and the verified direct IPA. Full ring fill, translated Arabic insight and four-tab navigation were inspected in these captures. Exact reference parity is still unverified.
+
+## Automatic tracking follow-up — 17 November
+
+The [tracking revision](../../Docs/ReleaseNotes/2026-11-17-automatic-tracking.md) fixes the live-BPM-only path: received readings now save automatically and can supply an explicitly labeled local Strain estimate. Device Settings shows counts and coverage, with editable local HR limits. WHOOP Recovery and Sleep still require supported provider data; this does not complete the proprietary algorithms or strap-history synchronization. Physical background delivery remains unverified.
