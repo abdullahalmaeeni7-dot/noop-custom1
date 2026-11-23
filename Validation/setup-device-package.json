@@ -1,0 +1,10 @@
+{
+  "source": "aefbbaf7d21f05f6247c854d68c2ffe6e399408b",
+  "workflow": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45193379535",
+  "device_build": "passed",
+  "bytes": 4603025,
+  "sha256": "0185a67ef57d50edf124c5feb89a598d5a3f9c731433ae1dde8eafc66b4ac94c",
+  "main_binary_markers": "new flow text, resume key, live check and connection-evidence type verified",
+  "system_launch_wordmark": "verified",
+  "physical_device_signing": "not tested"
+}

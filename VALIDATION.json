@@ -1,9 +1,9 @@
 {
-  "scope": "Direct tracker-history transfer, lossless synchronized archive, measured HR/R-R projection, genuine-score defaults, existing app features",
-  "checked_at": "2026-11-17",
-  "entry": "Setup or More \u2192 Import WHOOP ZIP / day data; Live; shared glass UI",
+  "scope": "Sequential first launch, shared tracker pairing/sync/export, fresh-data verification and shared animated score rings; existing tracker archive, import/export and app features preserved",
+  "checked_at": "2026-11-23",
+  "entry": "First launch \u2192 Get Started \u2192 Profile \u2192 Tracker \u2192 Sync/import/export \u2192 Home; More \u2192 Welcome & tracker setup to reopen",
   "portable_core": {
-    "tests_passed": 183,
+    "tests_passed": 186,
     "new_profile_tests": 13,
     "failures": 0,
     "new_zip_tests": 14
@@ -353,5 +353,54 @@
     "apple_sdk_build": "passed",
     "source_commit": "4cb954cf57f60fb5148a38ebf862698bd81a8474",
     "device_build_run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/44183160951"
+  },
+  "setup_tracker_revision": {
+    "source": "aefbbaf7d21f05f6247c854d68c2ffe6e399408b",
+    "portable_core_tests": 186,
+    "new_connection_evidence_tests": 3,
+    "packaging_tests": 13,
+    "swift_syntax": "passed",
+    "project_structure": "passed",
+    "device_build": "passed",
+    "simulator_ui_tests": {
+      "passed": 2,
+      "failures": 0,
+      "duration_seconds": 77.835,
+      "scenarios": [
+        "single Get Started entry",
+        "personalize before pairing",
+        "resume pairing after app relaunch",
+        "search without pretending a simulator has a sensor",
+        "import and export access in the same setup",
+        "personal Home without sample scores",
+        "simple Device Status with Advanced diagnostics",
+        "Arabic single-entry welcome"
+      ],
+      "limits": "No physical band connection or live data transfer; export UI opened and enabled, actual Files save not exercised by this UI suite."
+    },
+    "physical_tracker_verified": false,
+    "official_animation_timing_verified": false,
+    "reference_pixel_equality_verified": false,
+    "device_workflow": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45193379535",
+    "device_package": {
+      "source": "aefbbaf7d21f05f6247c854d68c2ffe6e399408b",
+      "workflow": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45193379535",
+      "device_build": "passed",
+      "bytes": 4603025,
+      "sha256": "0185a67ef57d50edf124c5feb89a598d5a3f9c731433ae1dde8eafc66b4ac94c",
+      "main_binary_markers": "new flow text, resume key, live check and connection-evidence type verified",
+      "system_launch_wordmark": "verified",
+      "physical_device_signing": "not tested"
+    },
+    "ipa_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/aefbbaf7d21f05f6247c854d68c2ffe6e399408b/WHOOP-unsigned.ipa",
+    "native_review": {
+      "workflow": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45193379479",
+      "capture_outcome": "success",
+      "screenshots": 11,
+      "review": "design/home/native-review-07/REVIEW.md",
+      "device": "iPhone 15 Pro",
+      "home_fixture": "isolated simulator only; 33 / 38 / 15.8 not seeded in production",
+      "official_reference_pixel_diff": "unavailable; original attachment bytes absent"
+    }
   }
 }
