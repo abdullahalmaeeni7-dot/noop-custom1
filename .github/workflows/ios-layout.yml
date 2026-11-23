@@ -7,6 +7,7 @@ on:
     paths:
       - 'App/**'
       - 'Core/**'
+      - 'UITests/**'
       - 'Configuration/**'
       - 'LiveActivityWidget/**'
       - 'WHOOP.xcodeproj/**'
@@ -130,10 +131,38 @@ jobs:
               plistlib.dump({'whoop.language.v1':os.environ['REVIEW_LANGUAGE'],'AppleLanguages':[os.environ['REVIEW_LANGUAGE']]},output)
           PYTHON
           xcrun simctl launch "$SIM_DEVICE" local.whoop.reconstruction
-          sleep 4
-          xcrun simctl io "$SIM_DEVICE" screenshot "build/visual-review/01-first-launch-$REVIEW_LANGUAGE.png"
+          python3 Scripts/capture-stable-simulator.py "$SIM_DEVICE" "build/visual-review/01-first-launch-$REVIEW_LANGUAGE.png"
           xcrun simctl terminate "$SIM_DEVICE" local.whoop.reconstruction
           done
+          xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
+          if ! xcodebuild test -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -destination "platform=iOS Simulator,id=$SIM_DEVICE" -derivedDataPath build/SimulatorReview -resultBundlePath build/visual-review/setup-flow.xcresult -parallel-testing-enabled NO -only-testing:WHOOPUITests CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO > build/visual-review/setup-flow.log 2>&1; then
+            tail -60 build/visual-review/setup-flow.log
+            echo '::error::Native setup interaction tests failed; see setup-flow.log and the result bundle.'
+            exit 1
+          fi
+          xcrun xcresulttool export attachments --path build/visual-review/setup-flow.xcresult --output-path build/visual-review/setup-attachments
+          python3 - <<'PYTHON'
+          import json, shutil
+          from pathlib import Path
+          root = Path('build/visual-review')
+          folder = root/'setup-attachments'
+          manifest = folder/'manifest.json'
+          if manifest.exists():
+              shutil.copy2(manifest, root/'setup-attachments.json')
+              def entries(value):
+                  if isinstance(value, dict):
+                      filename = value.get('exportedFileName')
+                      name = value.get('suggestedHumanReadableName', '')
+                      if filename and str(filename).endswith('.png'):
+                          source = folder/filename
+                          label = next((f'{i:02}' for i in range(1, 8) if f'{i:02}-' in name), None)
+                          if label and source.is_file():
+                              shutil.copy2(source, root/f'flow-{label}.png')
+                      for item in value.values(): entries(item)
+                  elif isinstance(value, list):
+                      for item in value: entries(item)
+              entries(json.loads(manifest.read_text()))
+          PYTHON
           python3 - <<'PYTHON'
           import json, os
           from pathlib import Path
@@ -155,6 +184,8 @@ jobs:
           root = Path('build/visual-review')
           log = root/'simulator-build.log'
           lines = log.read_text(errors='replace').splitlines() if log.exists() else []
+          flow_log = root/'setup-flow.log'
+          if flow_log.exists(): lines += flow_log.read_text(errors='replace').splitlines()
           errors = [line for line in lines if 'error:' in line or 'Undefined symbols' in line]
           root.joinpath('diagnostics.txt').write_text('\n'.join((errors or lines[-18:])[:24])[:20000] + '\n')
           root.joinpath('run.json').write_text(json.dumps({'source':os.environ['GITHUB_SHA'],'run':os.environ['GITHUB_RUN_ID'],'capture_outcome':os.environ['CAPTURE_OUTCOME'],'images':[p.name for p in root.glob('*.png')]},indent=2))
@@ -162,7 +193,7 @@ jobs:
           PYTHON
           EVIDENCE_DIR=$(mktemp -d)
           cp build/visual-review/README.md build/visual-review/run.json build/visual-review/diagnostics.txt "$EVIDENCE_DIR/"
-          for EVIDENCE_FILE in build/visual-review/*.png build/visual-review/runtimes.json; do
+          for EVIDENCE_FILE in build/visual-review/*.png build/visual-review/runtimes.json build/visual-review/setup-attachments.json; do
             if [[ -f "$EVIDENCE_FILE" ]]; then cp "$EVIDENCE_FILE" "$EVIDENCE_DIR/"; fi
           done
           REVIEW_WORKTREE=$(mktemp -d)

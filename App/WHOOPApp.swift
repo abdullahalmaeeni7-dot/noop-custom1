@@ -36,10 +36,11 @@ struct AppLaunchView: View {
     @EnvironmentObject private var store: AppStore
     var body: some View {
         if store.isLoadingSavedData {
-            VStack(spacing: 24) {
+            ZStack {
+                PulseColor.background.ignoresSafeArea()
                 WhoopWordmark().frame(width: 150, height: 30)
-                ProgressView().tint(.white).accessibilityLabel(L10n.text("Loading saved data"))
-            }.frame(maxWidth: .infinity, maxHeight: .infinity).background(PulseColor.background)
+                VStack { Spacer(); ProgressView().tint(.white).padding(.bottom, 48) }
+            }.accessibilityLabel(L10n.text("Loading saved data"))
         } else if completed { RootView() }
         else { FirstRunView { completed = true } }
     }
@@ -66,13 +67,13 @@ private enum SetupStep: Int, CaseIterable {
         case .welcome: return "Your day.\nYour potential."
         case .profile: return "Make it yours."
         case .tracker: return "Meet your tracker."
-        case .data: return "Bring your day to life."
+        case .data: return "Sync your data."
         }
     }
 }
 
 private enum SetupSheet: String, Identifiable {
-    case health, account
+    case health, account, export
     var id: String { rawValue }
 }
 
@@ -80,6 +81,7 @@ private struct FirstRunView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var tracker: DeviceModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage("whoop.setup.step.v2") private var savedStep = 0
     @State private var step = SetupStep.welcome
     @State private var draft = ProfilePersonalization()
     @State private var initialized = false
@@ -105,9 +107,15 @@ private struct FirstRunView: View {
         }.foregroundStyle(PulseColor.text).font(PulseFont.body(16))
             .background(LinearGradient(colors: [PulseColor.top, PulseColor.background], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
             .preferredColorScheme(.dark)
-            .onAppear { if !initialized { draft = store.profile; initialized = true } }
+            .onAppear {
+                if !initialized {
+                    draft = store.profile
+                    step = SetupStep(rawValue: savedStep) ?? .welcome
+                    initialized = true
+                }
+            }
             .sheet(item: $sheet) { route in
-                switch route { case .health: HealthImportView(); case .account: AccountView() }
+                switch route { case .health: HealthImportView(); case .account: AccountView(); case .export: MeasurementExportView() }
             }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.zip, .json, .commaSeparatedText]) { result in
                 Task { @MainActor in
@@ -123,15 +131,9 @@ private struct FirstRunView: View {
         GeometryReader { geometry in
             VStack(spacing: 18) {
                 Spacer(minLength: 12)
-                ZStack {
-                    Ellipse().fill(PulseColor.load.opacity(0.10)).blur(radius: 45).frame(width: 250, height: 300)
-                    RoundedRectangle(cornerRadius: 80).stroke(Color(white: 0.13), lineWidth: 57).frame(width: 130, height: 240)
-                    RoundedRectangle(cornerRadius: 80).stroke(Color(white: 0.24), style: StrokeStyle(lineWidth: 50, dash: [1, 3])).frame(width: 130, height: 240)
-                    RoundedRectangle(cornerRadius: 24).fill(LinearGradient(colors: [Color(white: 0.29), Color(white: 0.06)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 158, height: 88).overlay(RoundedRectangle(cornerRadius: 24).stroke(.white.opacity(0.14), lineWidth: 1))
-                        .overlay(WhoopWordmark().frame(width: 88, height: 18).opacity(0.7)).offset(y: -64)
-                }.rotationEffect(.degrees(-24)).scaleEffect(min(1, geometry.size.height / 420))
-                    .frame(height: max(170, min(300, geometry.size.height * 0.58))).accessibilityHidden(true)
+                TrackerBandArtwork()
+                    .frame(height: max(170, min(300, geometry.size.height * 0.58)))
+                    .accessibilityHidden(true)
                 Spacer(minLength: 8)
                 Text(L10n.text("WELCOME TO WHOOP")).font(PulseFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 2).foregroundStyle(PulseColor.muted)
                 Text(L10n.text("Unlock your potential.")).font(AppLanguage.isArabic ? .system(size: 36, weight: .bold) : PulseFont.number(38))
@@ -142,10 +144,11 @@ private struct FirstRunView: View {
         }
     }
     private var welcomeActions: some View {
-        VStack(spacing: 10) {
-            Button(L10n.text("SET UP MY TRACKER")) { changeStep(2) }.buttonStyle(WButton()).accessibilityIdentifier("setupTrackerFirst")
-            Button(L10n.text("I HAVE WHOOP DATA")) { changeStep(3) }.buttonStyle(WButton(filled: false)).accessibilityIdentifier("setupImportFirst")
-            Button(L10n.text("PERSONALIZE FIRST")) { changeStep(1) }.font(PulseFont.label(11)).frame(minHeight: 44)
+        VStack(spacing: 12) {
+            Text(L10n.text("Pair your tracker. Sync your data. Make every day count."))
+                .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted).multilineTextAlignment(.center)
+            Button(L10n.text("GET STARTED")) { changeStep(1) }
+                .buttonStyle(WButton()).accessibilityIdentifier("setupGetStarted")
         }.padding(.horizontal, 24).padding(.bottom, 16).frame(maxWidth: 560).frame(maxWidth: .infinity)
     }
 
@@ -176,47 +179,19 @@ private struct FirstRunView: View {
             }
             Text(L10n.text("Your name and age are stored on this iPhone. Recovery and sleep scores come from measurements you import; setup does not create scores.")).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
         case .tracker:
-            Text(L10n.text("Wear your sensor and keep it close to your iPhone. If it has a heart-rate broadcast setting, turn that on.")).foregroundStyle(PulseColor.muted)
-            PulseCard {
-                Label(L10n.text(tracker.connectedName ?? "Ready to connect"), systemImage: tracker.connectedName == nil ? "sensor.tag.radiowaves.forward" : "checkmark.circle.fill")
-                    .font(PulseFont.body(21).weight(.semibold)).foregroundStyle(tracker.connectedName == nil ? PulseColor.text : PulseColor.mint)
-                Text(L10n.text(tracker.status)).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted).accessibilityIdentifier("setupTrackerStatus")
-                if tracker.isScanning || tracker.isConnecting { ProgressView().tint(PulseColor.load).frame(minHeight: 44).accessibilityLabel(tracker.isScanning ? "Searching for trackers" : "Connecting to tracker") }
-                if tracker.connectedName == nil {
-                    Button(L10n.text(tracker.isScanning ? "STOP SEARCHING" : "SEARCH FOR MY TRACKER")) {
-                        if tracker.isScanning { tracker.stop() } else { tracker.scan() }
-                    }.buttonStyle(WButton(filled: false)).disabled(tracker.isConnecting).accessibilityIdentifier("setupSearchTracker")
-                }
-                if tracker.isConnecting {
-                    Button(L10n.text("CANCEL CONNECTION")) { tracker.disconnect() }.buttonStyle(WButton(filled: false))
-                }
-                if tracker.canStartCustomStream || tracker.startingCustomStream {
-                    Button(L10n.text(tracker.startingCustomStream ? "STARTING HEART RATE…" : "ENABLE LIVE HEART RATE")) { tracker.startCustomStream() }
-                        .buttonStyle(WButton(filled: false)).disabled(tracker.startingCustomStream)
-                }
-            }
-            if tracker.connectedName == nil {
-                ForEach(tracker.devices) { device in
-                    Button { tracker.connect(device) } label: {
-                        PulseCard {
-                            HStack(spacing: 12) {
-                                Image(systemName: "sensor.tag.radiowaves.forward").foregroundStyle(PulseColor.load)
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(device.name).font(PulseFont.body(17).weight(.semibold))
-                                    Text(L10n.text("Signal \(device.rssi) dBm")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-                                }
-                                Spacer(); Image(systemName: "chevron.right")
-                            }.frame(minHeight: 44)
-                        }
-                    }.buttonStyle(.plain).disabled(tracker.isConnecting).accessibilityLabel(L10n.text("Connect to \(device.name)"))
-                }
-            }
-            Text(L10n.text("You can connect later from Home. Bluetooth heart rate does not provide a full sleep or Recovery history; those can be imported in the next step.")).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
+            TrackerConnectionPanel()
         case .data:
-            Text(L10n.text("Choose where your measurements come from, or start fresh and add them later.")).foregroundStyle(PulseColor.muted)
-            dataSource("Apple Health", symbol: "heart.fill", detail: "Choose which measurements to import.") { sheet = .health }
-            dataSource("WHOOP account", symbol: "person.crop.circle", detail: "Connect through your configured secure bridge.") { sheet = .account }
+            Text(L10n.text("Your tracker stays connected while you sync, import and export."))
+                .foregroundStyle(PulseColor.muted)
+            TrackerSyncPanel()
+            Text(L10n.text("ADD YOUR WHOOP SCORES")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
+            Text(L10n.text("Official Recovery, Sleep and Strain come from your WHOOP account or export file."))
+                .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
             dataSource("Import your WHOOP ZIP", symbol: "square.and.arrow.down", detail: "Choose the downloaded ZIP, CSV or app JSON export.") { importing = true }
+            dataSource("WHOOP account", symbol: "person.crop.circle", detail: "Connect through your configured secure bridge.") { sheet = .account }
+            dataSource("Apple Health", symbol: "heart.fill", detail: "Choose which measurements to import.") { sheet = .health }
+            dataSource("Export Data", symbol: "square.and.arrow.up", detail: "Save your profile, highlights and measurements to Files.") { sheet = .export }
+
             if let importedSummary { Text(L10n.text(importedSummary)).font(PulseFont.body(14)).foregroundStyle(PulseColor.mint) }
             let count = store.days.filter { $0.source != .example }.count
             if count > 0 {
@@ -235,7 +210,7 @@ private struct FirstRunView: View {
                     Capsule().fill(item == step ? PulseColor.text : PulseColor.muted.opacity(0.25)).frame(width: item == step ? 24 : 7, height: 6)
                 }
             }.accessibilityElement(children: .ignore).accessibilityLabel(L10n.text("Setup step \(step.rawValue + 1) of 4"))
-            Button(L10n.text(buttonTitle), action: advance).buttonStyle(WButton()).disabled(store.isImporting || tracker.isConnecting)
+            Button(L10n.text(buttonTitle), action: advance).buttonStyle(WButton()).disabled(store.isImporting || tracker.isConnecting || tracker.isDownloadingHistory)
                 .accessibilityIdentifier("setupContinue")
         }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
             .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 28, style: .continuous), solid: PulseColor.background))
@@ -256,6 +231,7 @@ private struct FirstRunView: View {
             if step == .profile { draft.age = AppLanguage.canonicalDigits(draft.age); try store.updateProfile(draft) }
             if step == .data {
                 try store.completeSetup()
+                savedStep = 0
                 tracker.stop()
                 finish()
             } else { changeStep(1) }
@@ -264,7 +240,8 @@ private struct FirstRunView: View {
     private func changeStep(_ offset: Int) {
         guard let next = SetupStep(rawValue: step.rawValue + offset) else { return }
         tracker.stop(); error = nil
-        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { step = next }
+        savedStep = next.rawValue
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { step = next }
     }
     private func feature(_ title: String, symbol: String, detail: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
@@ -281,6 +258,6 @@ private struct FirstRunView: View {
                     Spacer(); Image(systemName: "chevron.right")
                 }.frame(minHeight: 54)
             }
-        }.buttonStyle(.plain).disabled(store.isImporting)
+        }.buttonStyle(.plain).disabled(store.isImporting).accessibilityIdentifier("setupData-\(symbol)")
     }
 }

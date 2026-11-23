@@ -259,7 +259,7 @@ struct RootView: View {
                         Image(systemName: recorder.isRecording ? "record.circle" : "applewatch").font(.system(size: 25, weight: .light)).foregroundStyle(.white)
                         Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : PulseColor.mint).frame(width: 6, height: 6)
                     }.frame(width: 44, height: 44)
-                }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker")
+                }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker").accessibilityIdentifier("homeTracker")
             }
             }
         }.frame(height: 44).padding(.horizontal, 18)

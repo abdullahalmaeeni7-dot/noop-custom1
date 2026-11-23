@@ -59,7 +59,7 @@ struct MeasurementExportView: View {
             .background(PulseColor.background).navigationTitle(L10n.text("Export Data")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(L10n.text("Done")) { dismiss() }.frame(minWidth: 44, minHeight: 44)
+                    Button(L10n.text("Done")) { dismiss() }.frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("exportDone")
                 }
             }
             .toolbarBackground(PulseColor.background, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)

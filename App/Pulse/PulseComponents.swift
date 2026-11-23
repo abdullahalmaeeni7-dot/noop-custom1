@@ -58,6 +58,36 @@ struct PulseCard<Content: View>: View {
             .background(PulseColor.card, in: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius, style: .continuous))
     }
 }
+/// The visible circle stays within its declared diameter on Home and detail pages.
+/// A missing/zero score draws only the track; no round-cap dot suggests activity.
+struct PulseRingTrack: View {
+    let fraction: Double
+    let tint: Color
+    var lineWidth: CGFloat = ReferenceSize.ringStroke
+    var marker: Double? = nil
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var progress = 0.0
+    var body: some View {
+        ZStack {
+            Circle().inset(by: lineWidth / 2).stroke(.white.opacity(0.10), lineWidth: lineWidth)
+            Circle().inset(by: lineWidth / 2).trim(from: 0, to: progress)
+                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .rotationEffect(.degrees(-90)).opacity(progress > 0 ? 1 : 0)
+            if let marker, marker.isFinite, (0...1).contains(marker) {
+                Circle().inset(by: lineWidth / 2).trim(from: max(0, marker - 0.002), to: min(1, marker + 0.002))
+                    .stroke(.white.opacity(0.8), lineWidth: lineWidth).rotationEffect(.degrees(-90))
+            }
+        }.environment(\.layoutDirection, .leftToRight).accessibilityHidden(true)
+            .onAppear(perform: update).onChange(of: fraction) { _, _ in update() }
+            .onChange(of: reduceMotion) { _, _ in update() }
+    }
+    private func update() {
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.7)) {
+            progress = fraction.isFinite ? min(1, max(0, fraction)) : 0
+        }
+    }
+}
+
 struct PulseRing: View {
     let value: String
     let fraction: Double
@@ -66,19 +96,11 @@ struct PulseRing: View {
     let label: String
     var action: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var progress = 0.0
     var body: some View {
         Button(action: action) {
             VStack(spacing: 12) {
                 ZStack {
-                    Circle().inset(by: 3).stroke(.white.opacity(0.10), lineWidth: ReferenceSize.ringStroke)
-                    Circle().inset(by: 3).trim(from: 0, to: progress)
-                        .stroke(tint, style: StrokeStyle(lineWidth: ReferenceSize.ringStroke, lineCap: .round))
-                        .rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-                    if let previous {
-                        Circle().inset(by: 3).trim(from: max(0, previous - 0.002), to: min(1, previous + 0.002))
-                            .stroke(.white.opacity(0.75), lineWidth: ReferenceSize.ringStroke).rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-                    }
+                    PulseRingTrack(fraction: fraction, tint: tint, marker: previous)
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
                         Text(L10n.text(value.hasSuffix("%") ? String(value.dropLast()) : value)).font(PulseFont.number(value == "NO DATA" ? 12 : 26))
                             .contentTransition(.numericText(value: Double(value.replacingOccurrences(of: "%", with: "")) ?? 0))
@@ -93,10 +115,6 @@ struct PulseRing: View {
             }.frame(maxWidth: .infinity).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(PulseColor.text)
             .accessibilityLabel(L10n.text("\(label), \(value). View today's context"))
-            .onAppear { animate() }.onChange(of: fraction) { _, _ in animate() }
-    }
-    private func animate() {
-        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.7)) { progress = min(1, max(0, fraction)) }
     }
 }
 struct PulseDayStrip: View {

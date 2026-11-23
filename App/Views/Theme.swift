@@ -173,22 +173,18 @@ struct ScoreRing: View {
     let day: DailySnapshot
     var large = false
     var comparisonFraction: Double? = nil
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.10), lineWidth: large ? 16 : 5)
-            Circle().trim(from: 0, to: metric.fraction(day))
-                .stroke(metric == .recovery ? PulseColor.recoveryScore(day.recovery.map(Double.init)) : metric.color, style: StrokeStyle(lineWidth: large ? 16 : 5, lineCap: .round))
-                .rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-            if let fraction = comparisonFraction, (0...1).contains(fraction) {
-                Circle().trim(from: max(0, fraction - 0.0025), to: min(1, fraction + 0.0025))
-                    .stroke(Color.white.opacity(0.8), lineWidth: large ? 16 : 5)
-                    .rotationEffect(.degrees(-90)).environment(\.layoutDirection, .leftToRight)
-            }
+            PulseRingTrack(fraction: metric.fraction(day),
+                           tint: metric == .recovery ? PulseColor.recoveryScore(day.recovery.map(Double.init)) : metric.color,
+                           lineWidth: large ? 16 : ReferenceSize.ringStroke, marker: comparisonFraction)
             VStack(spacing: large ? 8 : 0) {
                 if large { WhoopWordmark().frame(width: 94, height: 17).opacity(0.46).padding(.bottom, 2) }
                 if large {
                     HStack(alignment: .firstTextBaseline, spacing: 1) {
-                        Text(L10n.text(number)).font(WFont.number(74, bold: true))
+                        Text(L10n.text(number)).font(WFont.number(74, bold: true)).monospacedDigit().contentTransition(.numericText(value: metric.value(day) ?? 0))
+                            .animation(reduceMotion ? nil : .easeOut(duration: 0.7), value: metric.value(day))
                         if metric != .strain && metric.value(day) != nil { Text("%").font(WFont.number(37, bold: true)) }
                     }.foregroundStyle(.white).minimumScaleFactor(0.55).lineLimit(1)
                     Text(L10n.text(metric == .sleep ? "SLEEP\nPERFORMANCE" : metric == .strain ? "DAY STRAIN" : "RECOVERY"))

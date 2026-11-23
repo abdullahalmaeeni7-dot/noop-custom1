@@ -123,7 +123,8 @@
     "coachRingDiameter": 29,
     "coachSymbolWidth": 18,
     "coachSymbolHeight": 15,
-    "floatingBarVisibleBottomGap": 26
+    "floatingBarVisibleBottomGap": 26,
+    "ringOuterDiameter": 81
   },
   "motion": {
     "ringSeconds": 0.7,
@@ -135,10 +136,11 @@
     "pressScale": 0.98,
     "menuSeconds": 0.18,
     "compactHeaderSeconds": 0.18,
-    "numericTransition": "iOS 17 numericText"
+    "numericTransition": "iOS 17 numericText",
+    "sharedRingRenderer": "PulseRingTrack is shared by Home and ScoreRing; inset equals half of stroke width, empty arc is invisible, Reduce Motion is respected."
   },
   "requiredNativeComparison": "GitHub Actions now attempts actual simulator screenshots; result recorded in VALIDATION.json. Physical-device glass and camera remain unverified.",
-  "revision": 5,
+  "revision": 6,
   "sectionOrder": [
     "WHOOP wordmark and score rings",
     "Pushing Limits insight",
@@ -155,7 +157,7 @@
     "Discover More",
     "WHOOP Peak footer"
   ],
-  "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified. Shared standard cards now use the opaque reference surface; date strip is flat. Native comparison remains required.",
+  "revisionNotes": "WHOOP identity restored by explicit user request; original supplied wordmark/monogram and bundled DIN Pro/Proxima Nova fonts. Expiry banner remains removed. Date pill has a separate selected center. Original-app animation timing is unverified. Shared standard cards now use the opaque reference surface; date strip is flat. Native comparison remains required. Setup now has a single Get Started entry and sequential pairing, data sync/import and export. The system launch screen uses the same centered wordmark as saved-data loading. Detail ring strokes now fit inside their declared bounds; no unmeasured comparison tick is fabricated.",
   "membershipExpiryBanner": false,
   "functional_layout_revision": 10,
   "functional_layout_note": "Reference corrections: four tabs (Home, Health, Community, More); Nutrition remains functional under More. Standard cards use opaque #2B3135 with no glass stroke. System glass is confined to floating navigation/control surfaces. No membership expiry banner. Unavailable provider measurements are never fabricated.",
