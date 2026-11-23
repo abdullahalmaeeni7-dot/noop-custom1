@@ -1,0 +1,18 @@
+    t =    57.92s Tear Down
+Test Case '-[WHOOPUITests.SetupFlowTests testCCalendarAndLiveLayoutKeepHomeOnToday]' passed (58.570 seconds).
+Test Suite 'SetupFlowTests' passed at 2026-11-23 16:17:36.061.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.694 (146.706) seconds
+Test Suite 'WHOOPUITests.xctest' passed at 2026-11-23 16:17:36.062.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.694 (146.708) seconds
+Test Suite 'Selected tests' passed at 2026-11-23 16:17:36.063.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.694 (146.710) seconds
+2026-11-23 16:17:36.566 xcodebuild[42677:113411] [MT] IDETestOperationsObserverDebug: 159.405 elapsed -- Testing started completed.
+2026-11-23 16:17:36.566 xcodebuild[42677:113411] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-23 16:17:36.566 xcodebuild[42677:113411] [MT] IDETestOperationsObserverDebug: 159.405 sec, +159.405 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/runner/work/noop-custom1/noop-custom1/build/visual-review/setup-flow.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started

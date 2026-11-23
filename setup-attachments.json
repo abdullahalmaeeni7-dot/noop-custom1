@@ -1,0 +1,101 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "9E550970-E6B4-4236-AD7A-93383A0D3BBA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06-device-status_0_8E7C5DC3-B9B1-4708-B659-94FA584404E0.png",
+        "timestamp" : 1795450580.958
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "8BD642F2-6A64-4A51-819D-761410AA5CBE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "05-personal-home_0_7944DF4A-69BA-4B91-AB4E-7DEF974AB410.png",
+        "timestamp" : 1795450575.871
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "DAC81605-0275-47F4-BD9B-A71D26CB475C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "04-export_0_2DE9ADFB-3EB9-40CF-AF93-301F853C098B.png",
+        "timestamp" : 1795450570.63
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "06E00350-6DA4-4880-9D7D-45371F889556.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "03-sync-and-import_0_E54F4AA6-49BC-4074-9444-F2BB6E16B09D.png",
+        "timestamp" : 1795450559.835
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "2068711A-965A-4906-A5A5-7C6A35BFBE45.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "02-pairing_0_0C541729-F375-4DF5-A1DF-720A2663C679.png",
+        "timestamp" : 1795450543.459
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "C2721A80-D8F6-4438-8845-D2CA1E63D4DC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "01-welcome_0_0137F3BB-F37E-4331-B727-6390422F3CA2.png",
+        "timestamp" : 1795450531.218
+      }
+    ],
+    "testIdentifier" : "SetupFlowTests/testAFirstLaunchPairsThenOffersImportAndExport()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/SetupFlowTests/testAFirstLaunchPairsThenOffersImportAndExport"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "9E7C3871-2160-49DA-A483-935EF7672935.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "07-arabic-welcome_0_904F7910-5960-4E51-9052-7E8E8B045736.png",
+        "timestamp" : 1795450596.124
+      }
+    ],
+    "testIdentifier" : "SetupFlowTests/testBArabicWelcomeHasTheSameSingleEntry()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/SetupFlowTests/testBArabicWelcomeHasTheSameSingleEntry"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "DD2B1AD5-9976-4C85-8274-A6079F69A13A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "12-live-adjusted-recovery_0_08E82AB1-4343-425E-89ED-2918B4936853.png",
+        "timestamp" : 1795450638.785
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "3305058F-8854-4E22-91E6-E51F8B0A3AF3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "11-live-size-controls_0_0E095517-1A69-46FD-88AD-5783871E957D.png",
+        "timestamp" : 1795450632.367
+      }
+    ],
+    "testIdentifier" : "SetupFlowTests/testCCalendarAndLiveLayoutKeepHomeOnToday()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/SetupFlowTests/testCCalendarAndLiveLayoutKeepHomeOnToday"
+  }
+]
