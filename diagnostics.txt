@@ -1,0 +1,18 @@
+Test Suite 'SetupFlowTests' passed at 2026-11-23 14:45:33.454.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 77.835 (77.840) seconds
+Test Suite 'WHOOPUITests.xctest' passed at 2026-11-23 14:45:33.455.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 77.835 (77.842) seconds
+Test Suite 'All tests' passed at 2026-11-23 14:45:33.456.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 77.835 (77.844) seconds
+Resolve Package Graph
+
+2026-11-23 14:45:34.084 xcodebuild[32567:88440] [MT] IDETestOperationsObserverDebug: 95.613 elapsed -- Testing started completed.
+2026-11-23 14:45:34.084 xcodebuild[32567:88440] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-23 14:45:34.084 xcodebuild[32567:88440] [MT] IDETestOperationsObserverDebug: 95.613 sec, +95.613 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/runner/work/noop-custom1/noop-custom1/build/visual-review/setup-flow.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started
