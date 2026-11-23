@@ -115,6 +115,7 @@ struct PulseRing: View {
             }.frame(maxWidth: .infinity).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(PulseColor.text)
             .accessibilityLabel(L10n.text("\(label), \(value). View today's context"))
+            .accessibilityIdentifier("scoreRing-\(label.lowercased())")
     }
 }
 struct PulseDayStrip: View {

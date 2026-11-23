@@ -1,4 +1,6 @@
 import SwiftUI
+import AVFoundation
+import UIKit
 import UniformTypeIdentifiers
 import WHOOPCore
 
@@ -14,14 +16,18 @@ struct WHOOPApp: App {
     @StateObject private var liveActivity = LiveActivityDriver()
     @StateObject private var health = HealthDataModel()
     @StateObject private var nutrition = NutritionViewModel()
+    @State private var launchAnimationFinished = UIAccessibility.isReduceMotionEnabled
     @AppStorage(AppLanguage.preferenceKey) private var languageChoice = AppLanguage.system.rawValue
     var body: some Scene {
         WindowGroup {
-            AppLaunchView().environmentObject(tracker).environmentObject(store).environmentObject(account)
+            AppLaunchView(launchAnimationFinished: $launchAnimationFinished).environmentObject(tracker).environmentObject(store).environmentObject(account)
                 .environmentObject(recorder).environmentObject(dailyTracker).environmentObject(liveActivity)
                 .environmentObject(health).environmentObject(nutrition)
                 .task { recorder.bind(tracker); dailyTracker.bind(tracker, to: store); tracker.bindHistory(to: store); liveActivity.bind(recorder) }
-                .onChange(of: scenePhase) { _, phase in if phase != .active { dailyTracker.flush() } }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase != .active { dailyTracker.flush() } else { store.refreshCurrentDay() }
+                }
+                .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { date in store.refreshCurrentDay(now: date) }
                 .environment(\.locale, AppLanguage.current.locale)
                 .environment(\.layoutDirection, AppLanguage.isArabic ? .rightToLeft : .leftToRight)
                 .id(languageChoice)
@@ -32,13 +38,21 @@ struct WHOOPApp: App {
 
 /// Setup is remembered on this iPhone; reference screenshots are never the launch route.
 struct AppLaunchView: View {
+    @Binding var launchAnimationFinished: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("whoop.setup.completed.v1") private var completed = false
     @EnvironmentObject private var store: AppStore
     var body: some View {
-        if store.isLoadingSavedData {
+        if !launchAnimationFinished && !reduceMotion {
             ZStack {
-                PulseColor.background.ignoresSafeArea()
-                WhoopWordmark().frame(width: 150, height: 30)
+                Color.black.ignoresSafeArea()
+                BundledMotionView(resource: "whoop-loading", loops: false) { launchAnimationFinished = true }
+                    .frame(width: 375, height: 375).accessibilityLabel(L10n.text("Loading saved data"))
+            }
+        } else if store.isLoadingSavedData {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                WhoopMonogram().fill(.white).frame(width: 64, height: 64)
                 VStack { Spacer(); ProgressView().tint(.white).padding(.bottom, 48) }
             }.accessibilityLabel(L10n.text("Loading saved data"))
         } else if completed { RootView() }
@@ -131,9 +145,7 @@ private struct FirstRunView: View {
         GeometryReader { geometry in
             VStack(spacing: 18) {
                 Spacer(minLength: 12)
-                TrackerBandArtwork()
-                    .frame(height: max(170, min(300, geometry.size.height * 0.58)))
-                    .accessibilityHidden(true)
+                Spacer(minLength: 80)
                 Spacer(minLength: 8)
                 Text(L10n.text("WELCOME TO WHOOP")).font(PulseFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 2).foregroundStyle(PulseColor.muted)
                 Text(L10n.text("Unlock your potential.")).font(AppLanguage.isArabic ? .system(size: 36, weight: .bold) : PulseFont.number(38))
@@ -141,6 +153,12 @@ private struct FirstRunView: View {
                 Text(L10n.text("Sleep. Recover. Perform.")).font(PulseFont.body(17)).foregroundStyle(PulseColor.muted)
                 Spacer(minLength: 12)
             }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(.horizontal, 24)
+                .background {
+                    if !reduceMotion {
+                        BundledMotionView(resource: "whoop-intro", loops: true).allowsHitTesting(false)
+                            .overlay(LinearGradient(colors: [.black.opacity(0.05), .black.opacity(0.85)], startPoint: .top, endPoint: .bottom))
+                    }
+                }.clipped()
         }
     }
     private var welcomeActions: some View {
@@ -260,4 +278,57 @@ private struct FirstRunView: View {
             }
         }.buttonStyle(.plain).disabled(store.isImporting).accessibilityIdentifier("setupData-\(symbol)")
     }
+}
+
+
+/// Bundled APK motion is played locally; no web player, fetch or API key is used.
+private struct BundledMotionView: UIViewRepresentable {
+    let resource: String
+    let loops: Bool
+    var finished: (() -> Void)? = nil
+    @Environment(\.scenePhase) private var scenePhase
+    final class PlayerView: UIView {
+        override class var layerClass: AnyClass { AVPlayerLayer.self }
+        var video: AVPlayerLayer { layer as! AVPlayerLayer }
+    }
+    final class Coordinator {
+        var player: AVQueuePlayer?
+        var looper: AVPlayerLooper?
+        var observers: [NSObjectProtocol] = []
+        var fallback: Timer?
+        var finished: (() -> Void)?
+        var completed = false
+        func complete() {
+            guard !completed else { return }; completed = true; fallback?.invalidate(); finished?()
+        }
+        func stop() {
+            player?.pause(); looper?.disableLooping(); player?.removeAllItems()
+            observers.forEach { NotificationCenter.default.removeObserver($0) }; observers = []
+            fallback?.invalidate(); fallback = nil
+        }
+    }
+    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeUIView(context: Context) -> PlayerView {
+        let view = PlayerView(); view.backgroundColor = .black
+        let coordinator = context.coordinator; coordinator.finished = finished
+        guard let url = Bundle.main.url(forResource: resource, withExtension: "mp4") else {
+            DispatchQueue.main.async { coordinator.complete() }; return view
+        }
+        let player = AVQueuePlayer(); player.isMuted = true; player.automaticallyWaitsToMinimizeStalling = false
+        coordinator.player = player; view.video.player = player; view.video.videoGravity = .resizeAspectFill
+        let item = AVPlayerItem(url: url)
+        if loops { coordinator.looper = AVPlayerLooper(player: player, templateItem: item) }
+        else {
+            player.insert(item, after: nil)
+            for notification in [Notification.Name.AVPlayerItemDidPlayToEndTime, .AVPlayerItemFailedToPlayToEndTime] {
+                coordinator.observers.append(NotificationCenter.default.addObserver(forName: notification, object: item, queue: .main) { [weak coordinator] _ in coordinator?.complete() })
+            }
+            coordinator.fallback = Timer.scheduledTimer(withTimeInterval: 3.5, repeats: false) { [weak coordinator] _ in coordinator?.complete() }
+        }
+        player.play(); return view
+    }
+    func updateUIView(_ view: PlayerView, context: Context) {
+        if scenePhase == .active { context.coordinator.player?.play() } else { context.coordinator.player?.pause() }
+    }
+    static func dismantleUIView(_ view: PlayerView, coordinator: Coordinator) { coordinator.stop(); view.video.player = nil }
 }

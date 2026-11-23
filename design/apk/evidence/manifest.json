@@ -1,0 +1,32 @@
+[
+  {
+    "member": "res/layout/custom_calendar_day.xml",
+    "compiled_sha256": "a9becc83be304267783df9630729a356598e0f8e020ea3005adad5d2474daa06",
+    "decoded_sha256": "4ef1b0e0e2b13ee0bed22e453580164395cc99f8194472277d844dd6552d2006"
+  },
+  {
+    "member": "res/layout/calendar_layout.xml",
+    "compiled_sha256": "3abad7504c7d5977706ac6012414a0339f86b3425461ab8607265b8315678b01",
+    "decoded_sha256": "af69af715103e7052d81cc21d5ca9467f7df193e0c389699860023a7048f00bf"
+  },
+  {
+    "member": "res/layout/whoop_calendar_navigation_view.xml",
+    "compiled_sha256": "61b71ada9c3bdde8dd94f5e712393f81ce7a1d7d59685c6c204bdd3a58a758d7",
+    "decoded_sha256": "54b3b8db8aa73c2473c9fb485baf793094888d88125eec6c957ac2b6b7db9563"
+  },
+  {
+    "member": "res/layout/activity_selfie.xml",
+    "compiled_sha256": "443a0d070f8c1372533f2de3356abe519f30a38b83201557c2ae2c975e416f7e",
+    "decoded_sha256": "5e83acf658021d95a4a787114a883763ccb750db83e5751eafc9c0f464e8ac3b"
+  },
+  {
+    "member": "res/layout/pager_item_selfie_label.xml",
+    "compiled_sha256": "7a74802c1cc578658e810bfc4e6f7f6940b105f286c829ecb206838d9bf84123",
+    "decoded_sha256": "ec02bb2e571cd43eebf95f9a918f23beae79f42ea9b3c136d59b391bd412a536"
+  },
+  {
+    "member": "res/layout/splash_screen_view.xml",
+    "compiled_sha256": "636d4955d0e9d8c22e5749e0fef56af559866970c1d4b1849362467c089a65e1",
+    "decoded_sha256": "c5d8779593a101aef8ffa689d1c203cdd208164f0ba7963c74beb8cebd57cfc6"
+  }
+]

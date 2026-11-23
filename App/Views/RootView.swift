@@ -280,7 +280,7 @@ struct RootView: View {
                             Text(L10n.text(tab.title)).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
                         }.foregroundStyle(selected ? Color.white : WColor.muted)
                             .frame(maxWidth: .infinity, minHeight: ReferenceSize.navigationHeight)
-                    }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : [])
+                    }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : []).accessibilityIdentifier("tab-\(tab.rawValue)")
                 }
             }.padding(.horizontal, 9).background {
                 AppGlassSurface(shape: Capsule(), solid: PulseColor.top, interactive: true)
@@ -346,7 +346,7 @@ struct DaySelector: View {
                     Button { pickingDate = true } label: {
                         Text(L10n.text(dayTitle)).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.7).lineLimit(1).minimumScaleFactor(0.75).frame(maxWidth: .infinity, minHeight: 44)
                             .background { Capsule().fill(.white.opacity(0.09)).frame(width: 75, height: 28) }
-                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)"))
+                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)")).accessibilityIdentifier("openRecoveryCalendar")
                     dayArrow(1)
                 }.background { Capsule().fill(PulseColor.elevated.opacity(0.48)).frame(height: ReferenceSize.dayStripHeight) }
             } else {
@@ -358,17 +358,15 @@ struct DaySelector: View {
                             Text(L10n.text(dayTitle)).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.2)
                             Text(L10n.text(utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day()))).font(WFont.body(13)).foregroundStyle(WColor.muted)
                         }.frame(minHeight: 44)
-                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)"))
+                    }.accessibilityLabel(L10n.text("Choose date, \(dayTitle)")).accessibilityIdentifier("openRecoveryCalendar")
                     Spacer()
                     dayArrow(1)
                 }
             }
         }.foregroundStyle(.white)
             .sheet(isPresented: $pickingDate) {
-                SheetScaffold(title: "Choose a day") {
-                    DatePicker("Day", selection: $store.selectedDate, in: ...Date(), displayedComponents: .date)
-                        .datePickerStyle(.graphical).tint(WColor.green)
-                }.presentationDetents([.medium, .large])
+                RecoveryCalendarSheet(selection: $store.selectedDate, days: store.days)
+                    .presentationDetents([.large])
             }
     }
     private var dayTitle: String {
@@ -381,4 +379,100 @@ struct DaySelector: View {
             .accessibilityLabel(L10n.text(offset < 0 ? "Previous day" : "Next day"))
     }
 
+}
+
+
+/// The same recovery-colored calendar is used by Home, metric details and Live.
+struct RecoveryCalendarSheet: View {
+    @Binding var selection: Date
+    let days: [DailySnapshot]
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var displayed: Date
+    init(selection: Binding<Date>, days: [DailySnapshot]) {
+        _selection = selection; self.days = days
+        _displayed = State(initialValue: RecoveryCalendarMonth(containing: selection.wrappedValue).start)
+    }
+    private var today: Date { DashboardDatePolicy.today() }
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geometry in
+                ScrollView {
+                    let month = RecoveryCalendarMonth(containing: displayed)
+                    let index = days.reduce(into: [Date: DailySnapshot]()) { $0[DayCalendar.start(of: $1.date)] = $1 }
+                    VStack(spacing: 22) {
+                        HStack {
+                            Button { move(-1) } label: { Image(systemName: "chevron.backward").frame(width: 44, height: 44) }
+                                .accessibilityLabel(L10n.text("Previous month"))
+                            Spacer()
+                            Menu {
+                                ForEach((min(1900, days.map { DayCalendar.utc.component(.year, from: $0.date) }.min() ?? 1900)...DayCalendar.utc.component(.year, from: today)).reversed(), id: \.self) { year in
+                                    Button(String(year)) { selectYear(year) }
+                                }
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text(utcDateText(displayed, style: .dateTime.month(.wide).year())).font(PulseFont.body(24).weight(.semibold))
+                                    Image(systemName: "chevron.down").font(.system(size: 12))
+                                }.frame(minHeight: 44)
+                            }.accessibilityLabel(L10n.text("Choose month and year"))
+                            Spacer()
+                            Button { move(1) } label: { Image(systemName: "chevron.forward").frame(width: 44, height: 44) }
+                                .disabled(month.shifted(by: 1).start > RecoveryCalendarMonth(containing: today).start)
+                                .accessibilityLabel(L10n.text("Next month"))
+                        }
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 10) {
+                            ForEach(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"], id: \.self) { name in
+                                Text(L10n.text(name)).font(PulseFont.label(9)).foregroundStyle(PulseColor.muted).frame(maxWidth: .infinity, minHeight: 32)
+                            }
+                            ForEach(Array(month.cells.enumerated()), id: \.offset) { _, date in
+                                if let date { cell(date, day: index[date]) }
+                                else { Color.clear.frame(height: 60).accessibilityHidden(true) }
+                            }
+                        }.accessibilityIdentifier("recoveryCalendarGrid")
+                        HStack(spacing: 18) {
+                            legend("High", color: PulseColor.readiness)
+                            legend("Moderate", color: PulseColor.recoveryYellow)
+                            legend("Low", color: Color(red: 1, green: 0, blue: 0.18))
+                        }.frame(maxWidth: .infinity)
+                        Text(L10n.text("Colors show recorded Recovery. Dates without a score stay uncolored."))
+                            .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted).multilineTextAlignment(.center)
+                        Button(L10n.text("GO TO TODAY")) { choose(today) }.buttonStyle(WButton()).accessibilityIdentifier("calendarToday")
+                    }.padding(.horizontal, max(0, min(14, (geometry.size.width - 308) / 2))).padding(.vertical, 20)
+                }
+            }.background(PulseColor.background).navigationTitle(L10n.text("Recovery Calendar")).navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .topBarTrailing) {
+                    Button(L10n.text("Done")) { dismiss() }.frame(minWidth: 44, minHeight: 44)
+                } }
+        }.foregroundStyle(PulseColor.text).tint(.white).preferredColorScheme(.dark)
+    }
+    private func cell(_ date: Date, day: DailySnapshot?) -> some View {
+        let band = RecoveryBand(score: day?.recovery)
+        let selected = DayCalendar.start(of: selection) == date
+        let future = date > today
+        let color: Color = band == .green ? PulseColor.readiness : band == .yellow ? PulseColor.recoveryYellow : band == .red ? Color(red: 1, green: 0, blue: 0.18) : PulseColor.muted
+        return Button { choose(date) } label: {
+            VStack(spacing: 3) {
+                Text(String(DayCalendar.utc.component(.day, from: date))).font(PulseFont.number(17))
+                    .frame(width: 36, height: 36).foregroundStyle(band == .unavailable ? PulseColor.text : color)
+                    .background(Circle().fill(color.opacity(band == .unavailable ? 0 : 0.15)))
+                    .overlay(Circle().stroke(selected ? PulseColor.text : color.opacity(band == .unavailable ? 0.12 : 0.6), lineWidth: selected ? 2 : 1))
+                Text(day?.recovery.map { "\($0)%" } ?? " ").font(PulseFont.label(8)).foregroundStyle(color)
+            }.frame(maxWidth: .infinity, minHeight: 60).contentShape(Rectangle())
+        }.buttonStyle(.plain).disabled(future).opacity(future ? 0.25 : 1)
+            .accessibilityIdentifier("calendarDay-\(NutritionDay.key(date))")
+            .accessibilityLabel(utcDateText(date, style: .dateTime.month(.wide).day().year()) + ", " + L10n.text(day?.recovery.map { "Recovery \($0)%" } ?? "No recorded Recovery"))
+            .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+    private func legend(_ title: String, color: Color) -> some View {
+        HStack(spacing: 6) { Circle().fill(color).frame(width: 8, height: 8); Text(L10n.text(title)).font(PulseFont.body(12)) }
+    }
+    private func choose(_ date: Date) { selection = DayCalendar.start(of: date); dismiss() }
+    private func move(_ value: Int) {
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { displayed = RecoveryCalendarMonth(containing: displayed).shifted(by: value).start }
+    }
+    private func selectYear(_ year: Int) {
+        var components = DayCalendar.utc.dateComponents([.year, .month], from: displayed)
+        components.year = year; components.day = 1
+        if let date = DayCalendar.utc.date(from: components) { displayed = min(date, RecoveryCalendarMonth(containing: today).start) }
+    }
 }

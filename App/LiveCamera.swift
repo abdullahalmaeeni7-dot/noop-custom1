@@ -16,6 +16,9 @@ struct LiveOverlaySnapshot: Equatable, Sendable {
     var sampleDate: Date?
     var referenceMode: CameraOverlayMode? = nil
     var referenceMetrics: [CameraOverlayMetric]? = nil
+    var layout = LiveOverlayLayout()
+    var graphSamples: [HeartRateSample] = []
+    var historicalGraph = false
     func rendered(at now: Date) -> [String] {
         var result = values
         if let index = heartRateIndex, result.indices.contains(index), sampleDate.map({ !(0...10).contains(now.timeIntervalSince($0)) }) ?? true { result[index] = referenceMode == .live ? "Connect" : "—" }
@@ -24,6 +27,8 @@ struct LiveOverlaySnapshot: Equatable, Sendable {
 }
 enum LiveOverlayRenderer {
     static func image(snapshot: LiveOverlaySnapshot, size: CGSize, transparent: Bool) -> UIImage {
+        guard size.width.isFinite, size.height.isFinite, size.width > 0, size.height > 0,
+              size.width <= 8192, size.height <= 8192 else { return UIImage() }
         let format = UIGraphicsImageRendererFormat(); format.opaque = false; format.scale = 1
         return UIGraphicsImageRenderer(size: size, format: format).image { context in
             if let mode = snapshot.referenceMode, let metrics = snapshot.referenceMetrics {
@@ -55,14 +60,17 @@ enum LiveOverlayRenderer {
               let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 2_048] as CFDictionary) else { throw LiveCameraError.photo }
         let base = UIImage(cgImage: thumbnail)
         let originalSize = CGSize(width: CGFloat(thumbnail.width), height: CGFloat(thumbnail.height))
-        let cropWidth = min(originalSize.width, originalSize.height * 9 / 16)
-        let size = snapshot?.referenceMode == nil ? originalSize : CGSize(width: cropWidth, height: cropWidth * 16 / 9)
-        let scale = max(size.width / originalSize.width, size.height / originalSize.height)
-        let drawRect = CGRect(x: (size.width - originalSize.width * scale) / 2,
-                              y: (size.height - originalSize.height * scale) / 2,
+        let ratio = snapshot?.layout.aspect.ratio ?? LiveCanvasAspect.full.ratio
+        let cropWidth = min(originalSize.width, originalSize.height * ratio)
+        let size = snapshot?.referenceMode == nil ? originalSize : CGSize(width: cropWidth, height: cropWidth / ratio)
+        let scale = max(size.width / originalSize.width, size.height / originalSize.height) * (snapshot?.layout.boundedPhotoScale ?? 1)
+        let offsetX = snapshot?.layout.photoOffsetX ?? 0, offsetY = snapshot?.layout.photoOffsetY ?? 0
+        let drawRect = CGRect(x: (size.width - originalSize.width * scale) / 2 + (offsetX.isFinite ? offsetX : 0) * size.width,
+                              y: (size.height - originalSize.height * scale) / 2 + (offsetY.isFinite ? offsetY : 0) * size.height,
                               width: originalSize.width * scale, height: originalSize.height * scale)
         let format = UIGraphicsImageRendererFormat(); format.scale = 1
-        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            UIColor.black.setFill(); context.fill(CGRect(origin: .zero, size: size))
             base.draw(in: drawRect)
             if let snapshot { image(snapshot: snapshot, size: size, transparent: false).draw(in: CGRect(origin: .zero, size: size)) }
         }
@@ -99,7 +107,9 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
     private var outputURL: URL?
     private let ci = CIContext(options: [.cacheIntermediates: false])
     private var overlay: CIImage?
-    private var overlayKey = ""
+    private var overlaySnapshot: LiveOverlaySnapshot?
+    private var overlayValues: [String] = []
+    private var outputSize = CGSize.zero
     var onFinish: (@Sendable (Result<URL, LiveCameraError>) -> Void)?
     func update(_ snapshot: LiveOverlaySnapshot) { lock.lock(); self.snapshot = snapshot; lock.unlock() }
     func prepare(audioAllowed: Bool, completion: @escaping @Sendable (Bool) -> Void) {
@@ -208,7 +218,11 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
         }
     }
     private func begin(_ buffer: CVPixelBuffer, time: CMTime) throws {
-        let width = CVPixelBufferGetWidth(buffer), height = CVPixelBufferGetHeight(buffer)
+        lock.lock(); let state = snapshot; lock.unlock()
+        let ratio = state.referenceMode == nil ? Double(CVPixelBufferGetWidth(buffer)) / Double(CVPixelBufferGetHeight(buffer)) : state.layout.aspect.ratio
+        let cropWidth = min(Double(CVPixelBufferGetWidth(buffer)), Double(CVPixelBufferGetHeight(buffer)) * ratio)
+        let width = max(2, Int(cropWidth) / 2 * 2), height = max(2, Int(cropWidth / ratio) / 2 * 2)
+        outputSize = CGSize(width: CGFloat(width), height: CGFloat(height))
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("live-\(UUID().uuidString).mp4")
         let writer = try AVAssetWriter(outputURL: url, fileType: .mp4)
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: [AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height, AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 2_500_000]])
@@ -222,7 +236,7 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
         }
         guard writer.startWriting() else { throw LiveCameraError.record }
         writer.startSession(atSourceTime: time)
-        self.writer = writer; self.videoInput = input; self.adaptor = adaptor; outputURL = url; started = time; overlayKey = ""; overlay = nil
+        self.writer = writer; self.videoInput = input; self.adaptor = adaptor; outputURL = url; started = time; overlaySnapshot = nil; overlayValues = []; overlay = nil
     }
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard requested, !finishing else { return }
@@ -236,15 +250,18 @@ final class LiveCaptureEngine: NSObject, AVCaptureVideoDataOutputSampleBufferDel
             if let started, CMTimeGetSeconds(CMTimeSubtract(time, started)) >= 300 { finish(); return }
             guard writer?.status == .writing, let videoInput, videoInput.isReadyForMoreMediaData, let adaptor, let pool = adaptor.pixelBufferPool else { return }
             lock.lock(); let state = snapshot; lock.unlock()
-            let key = state.rendered(at: Date()).joined(separator: "|") + state.source + state.title
-                + (state.referenceMode?.rawValue ?? "standard") + String(describing: state.referenceMetrics)
-            if key != overlayKey {
-                let image = LiveOverlayRenderer.image(snapshot: state, size: CGSize(width: CGFloat(CVPixelBufferGetWidth(buffer)), height: CGFloat(CVPixelBufferGetHeight(buffer))), transparent: false)
-                if let cg = image.cgImage { overlay = CIImage(cgImage: cg) }; overlayKey = key
+            let values = state.rendered(at: Date())
+            if state != overlaySnapshot || values != overlayValues {
+                let image = LiveOverlayRenderer.image(snapshot: state, size: outputSize, transparent: false)
+                if let cg = image.cgImage { overlay = CIImage(cgImage: cg) }
+                overlaySnapshot = state; overlayValues = values
             }
             var target: CVPixelBuffer?
             guard CVPixelBufferPoolCreatePixelBuffer(nil, pool, &target) == kCVReturnSuccess, let target else { return }
-            let image = CIImage(cvPixelBuffer: buffer)
+            let source = CIImage(cvPixelBuffer: buffer)
+            let crop = CGRect(x: (source.extent.width - outputSize.width) / 2, y: (source.extent.height - outputSize.height) / 2,
+                              width: outputSize.width, height: outputSize.height)
+            let image = source.cropped(to: crop).transformed(by: CGAffineTransform(translationX: -crop.minX, y: -crop.minY))
             ci.render(overlay?.composited(over: image) ?? image, to: target)
             if !adaptor.append(target, withPresentationTime: time) { finish() }
         }
@@ -376,23 +393,41 @@ extension LiveOverlayRenderer {
                                                 width: w * 0.29, height: w * 0.09), size: w * (compact ? 0.0225 : 0.025))
             }
         }
+        func widget(_ kind: LiveOverlayWidget, draw: () -> Void) {
+            guard snapshot.layout.isVisible(kind, mode: mode) else { return }
+            let base = snapshot.layout.baseFrame(kind, mode: mode, width: w, height: h)
+            let target = snapshot.layout.frame(kind, mode: mode, width: w, height: h)
+            context.saveGState()
+            context.translateBy(x: target.midX, y: target.midY)
+            context.scaleBy(x: target.width / base.width, y: target.height / base.height)
+            context.translateBy(x: -base.midX, y: -base.midY)
+            draw(); context.restoreGState()
+        }
         if mode == .overview || mode == .live {
             brand(in: CGRect(x: w * 0.755, y: h * 0.035, width: w * 0.165, height: w * 0.027))
         }
         switch mode {
         case .overview:
             for (index, metric) in metrics.prefix(3).enumerated() {
-                ring(metric, center: CGPoint(x: w * (0.205 + CGFloat(index) * 0.295), y: h * 0.713),
-                     diameter: w * 0.222, stroke: w * 0.011, big: false)
+                widget([.strain, .recovery, .sleep][index]) {
+                    let base = snapshot.layout.baseFrame([.strain, .recovery, .sleep][index], mode: mode, width: w, height: h)
+                    ring(metric, center: CGPoint(x: base.midX, y: base.y + w * 0.111),
+                         diameter: w * 0.222, stroke: w * 0.011, big: false)
+                }
             }
         case .strain, .recovery, .sleep:
-            if let metric = metrics.first { ring(metric, center: CGPoint(x: w / 2, y: h / 2), diameter: w * 0.75, stroke: w * 0.038, big: true) }
+            if let metric = metrics.first {
+                widget(mode == .strain ? .strain : mode == .recovery ? .recovery : .sleep) {
+                    ring(metric, center: CGPoint(x: w / 2, y: h / 2), diameter: w * 0.75, stroke: w * 0.038, big: true)
+                }
+            }
         case .live:
             guard metrics.count == 4 else { return }
             let cardX = w * 0.71, cardW = w * 0.255
             for index in 1...3 {
                 let cardH = index == 3 ? h * 0.06 : h * 0.156
                 let y = index == 1 ? h * 0.066 : index == 2 ? h * 0.236 : h * 0.406
+                widget(index == 1 ? .strain : index == 2 ? .calories : .timer) {
                 UIColor.black.withAlphaComponent(0.78).setFill()
                 UIBezierPath(roundedRect: CGRect(x: cardX, y: y, width: cardW, height: cardH), cornerRadius: w * 0.014).fill()
                 if index == 1 {
@@ -401,13 +436,36 @@ extension LiveOverlayRenderer {
                     text(metrics[index].value, center: CGPoint(x: cardX + cardW / 2, y: y + cardH * 0.43), size: w * (index == 3 ? 0.037 : 0.058))
                     text(metrics[index].label, center: CGPoint(x: cardX + cardW / 2, y: y + cardH * 0.78), size: w * 0.023, tracking: w * 0.002)
                 }
+                }
             }
+            widget(.heartRate) {
             let center = CGPoint(x: w * 0.5, y: h * 0.718), radius = w * 0.142
             UIColor.black.withAlphaComponent(0.8).setFill(); UIBezierPath(ovalIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)).fill()
             text("♥", center: CGPoint(x: center.x, y: center.y - w * 0.075), size: w * 0.045)
             let rate = snapshot.rendered(at: Date()).first ?? "Connect"
             text(rate, center: center, size: Double(rate) == nil ? w * 0.042 : w * 0.115)
-            text("BPM", center: CGPoint(x: center.x, y: center.y + w * 0.082), size: w * 0.025, tracking: w * 0.004)
+            text(metrics[0].label, center: CGPoint(x: center.x, y: center.y + w * 0.082), size: w * 0.025, tracking: w * 0.004)
+            }
+            widget(.heartRateGraph) {
+                let rect = snapshot.layout.baseFrame(.heartRateGraph, mode: mode, width: w, height: h)
+                let samples = snapshot.graphSamples.filter { $0.bpm.isFinite && (1...300).contains($0.bpm) }.sorted { $0.timestamp < $1.timestamp }
+                guard let first = samples.first, let last = samples.last else {
+                    text("Waiting for heart-rate data", center: CGPoint(x: rect.midX, y: rect.midY), size: w * 0.025); return
+                }
+                let low = (samples.map(\.bpm).min() ?? 0) - 5, high = (samples.map(\.bpm).max() ?? 0) + 5
+                let span = max(1, last.timestamp.timeIntervalSince(first.timestamp))
+                context.setStrokeColor(UIColor.white.cgColor); context.setLineWidth(w * 0.004)
+                var previous: Date?
+                for sample in samples {
+                    let point = CGPoint(x: rect.x + sample.timestamp.timeIntervalSince(first.timestamp) / span * rect.width,
+                                        y: rect.y + (1 - (sample.bpm - low) / (high - low)) * rect.height)
+                    if previous == nil || sample.timestamp.timeIntervalSince(previous!) > (snapshot.historicalGraph ? 90 : 10) {
+                        context.move(to: point)
+                    } else { context.addLine(to: point) }
+                    previous = sample.timestamp
+                }
+                context.strokePath()
+            }
         }
     }
 }

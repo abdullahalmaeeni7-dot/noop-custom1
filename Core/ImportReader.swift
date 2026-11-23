@@ -102,6 +102,8 @@ public enum WhoopExportImporter {
                 day.restingHeartRate = try cycles.number(row, ["Resting heart rate (bpm)"])
                 day.hrv = try cycles.number(row, ["Heart rate variability (ms)", "HRV (ms)"])
                 day.respiratoryRate = try cycles.number(row, ["Respiratory rate (rpm)"])
+                day.oxygenSaturation = try cycles.number(row, ["Blood oxygen (%)", "SpO2 (%)", "Blood oxygen saturation (%)"])
+                day.skinTemperatureCelsius = try cycles.number(row, ["Skin temp (celsius)", "Skin temperature (celsius)"])
                 day.energyKcal = try cycles.number(row, ["Energy burned (cal)", "Energy burned (kcal)"]) ?? 0
                 try addSleep(cycles, row, to: &day)
                 try ImportReader.validate(day)
@@ -129,6 +131,7 @@ public enum WhoopExportImporter {
                 if day.sleepMinutes == 0 { day.sleepMinutes = incoming.sleepMinutes }
                 if day.sleepNeededMinutes == 0 { day.sleepNeededMinutes = incoming.sleepNeededMinutes }
                 if day.respiratoryRate == nil { day.respiratoryRate = incoming.respiratoryRate }
+                if day.sleepBreakdown == nil { day.sleepBreakdown = incoming.sleepBreakdown }
                 cyclesByStart[start] = day
             }
         }
@@ -164,6 +167,14 @@ public enum WhoopExportImporter {
         day.sleepMinutes = try table.integer(row, ["Asleep duration (min)"]) ?? 0
         day.sleepNeededMinutes = try table.integer(row, ["Sleep need (min)"]) ?? 0
         if day.respiratoryRate == nil { day.respiratoryRate = try table.number(row, ["Respiratory rate (rpm)"]) }
+        let stages = try SleepBreakdown(awakeMinutes: table.number(row, ["Awake duration (min)"]),
+            lightMinutes: table.number(row, ["Light sleep duration (min)", "Light duration (min)"]),
+            deepMinutes: table.number(row, ["Deep (SWS) duration (min)", "Deep sleep duration (min)"]),
+            remMinutes: table.number(row, ["REM duration (min)"]), inBedMinutes: table.number(row, ["In bed duration (min)"]),
+            efficiencyPercent: table.number(row, ["Sleep efficiency %", "Sleep efficiency (%)"]),
+            consistencyPercent: table.number(row, ["Sleep consistency %", "Sleep consistency (%)"]),
+            debtMinutes: table.number(row, ["Sleep debt (min)"]))
+        if stages != SleepBreakdown() { try stages.validated(); day.sleepBreakdown = stages }
     }
 
     // Stable, non-security identity for exports without provider workout IDs.
@@ -413,6 +424,7 @@ public enum ImportReader {
     }
     static func validate(_ day: DailySnapshot) throws {
         try validateCycleRecords(day)
+        try day.sleepBreakdown?.validated()
         func optionalRange<T: Comparable>(_ value: T?, _ range: ClosedRange<T>) -> Bool {
             value.map(range.contains) ?? true
         }
@@ -421,6 +433,7 @@ public enum ImportReader {
               (0...1440).contains(day.sleepMinutes), (0...1440).contains(day.sleepNeededMinutes),
               optionalRange(day.restingHeartRate, 1.0...300.0), optionalRange(day.hrv, 0.0...1000.0),
               optionalRange(day.respiratoryRate, 0.0...100.0),
+              optionalRange(day.oxygenSaturation, 0.0...100.0), optionalRange(day.skinTemperatureCelsius, 0.0...60.0),
               (0...1_000_000).contains(day.steps), day.energyKcal.isFinite, day.energyKcal >= 0,
               day.energyKcal <= 100_000 else {
             throw ImportError.invalid("A daily metric is outside the supported range. Recovery and sleep scores must be 0–100, and strain must be 0–21.")

@@ -10,11 +10,14 @@ struct MetricDetailView: View {
     var embedded = false
     @State private var showingInformation = false
     @State private var showingCoach = false
+    @State private var trendDays = 7
+    @State private var trendSelection: Date?
     private var day: DailySnapshot { store.selectedDay }
     private var previous: DailySnapshot? { precedingDay(in: store) }
     private var trend: [DailySnapshot] {
-        Array(store.days.filter { $0.source == day.source && $0.date <= day.date && metric.value($0) != nil }.sorted { $0.date < $1.date }.suffix(7))
+        store.days.filter { $0.source == day.source && $0.date <= day.date && $0.date >= trendStart && metric.value($0) != nil }.sorted { $0.date < $1.date }
     }
+    private var trendStart: Date { DayCalendar.utc.date(byAdding: .day, value: -(trendDays - 1), to: day.date)! }
     var body: some View {
         VStack(spacing: 0) {
             if !embedded { header }
@@ -41,6 +44,7 @@ struct MetricDetailView: View {
                             Text(L10n.text("Only received heart-rate intervals contribute to the local estimate. Disconnected time and intervals still waiting for smoothing are excluded. Official WHOOP scores take priority when imported.")).font(WFont.body(12)).foregroundStyle(WColor.muted)
                         }
                     }
+                    if metric == .sleep, let breakdown = day.sleepBreakdown { sleepStages(breakdown) }
                     WCard(padding: 16) { statistics }
                         .overlay(alignment: .top) {
                             StatisticsPointer().fill(WColor.card).frame(width: 18, height: 9).offset(y: -8)
@@ -55,7 +59,7 @@ struct MetricDetailView: View {
                             }
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    if !trend.isEmpty { trendCard }
+                    trendCard
                     if !day.heartRates.isEmpty {
                         SectionHeading(title: "Heart rate")
                         WCard { HeartRateChart(samples: day.heartRates).frame(height: 160) }
@@ -71,8 +75,7 @@ struct MetricDetailView: View {
                 Image(systemName: "chevron.left").font(.system(size: 25, weight: .light)).frame(width: 42, height: 44)
             }.accessibilityLabel(L10n.text("Back"))
             Spacer()
-            Text(L10n.text(DayCalendar.utc.isDateInToday(day.date) ? "TODAY" : utcDateText(day.date, style: .dateTime.month(.abbreviated).day()).uppercased()))
-                .font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.5)
+            DaySelector(compact: true).frame(width: ReferenceSize.dayStripWidth)
             Spacer()
             Button { showingInformation = true } label: {
                 Image(systemName: "info.circle").font(.system(size: 26, weight: .ultraLight))
@@ -94,11 +97,11 @@ struct MetricDetailView: View {
             } else if metric == .sleep {
                 ReferenceMetricRow(title: "Hours vs. needed", value: sleepRatio, symbol: "clock")
                 Divider().overlay(WColor.line)
-                ReferenceMetricRow(title: "Sleep consistency", value: "—", symbol: "bed.double")
+                ReferenceMetricRow(title: "Sleep consistency", value: day.sleepBreakdown?.consistencyPercent.map { decimalText($0, places: 0) + "%" } ?? "—", symbol: "bed.double")
                 Divider().overlay(WColor.line)
-                ReferenceMetricRow(title: "Sleep efficiency", value: "—", symbol: "bed.double")
+                ReferenceMetricRow(title: "Sleep efficiency", value: day.sleepBreakdown?.efficiencyPercent.map { decimalText($0, places: 0) + "%" } ?? "—", symbol: "bed.double")
                 Divider().overlay(WColor.line)
-                ReferenceMetricRow(title: "Sleep stress", value: "—", symbol: "gauge.with.dots.needle.33percent")
+                ReferenceMetricRow(title: "Sleep debt", value: day.sleepBreakdown?.debtMinutes.map { clockDuration(Int($0.rounded())) } ?? "—", symbol: "clock.arrow.circlepath")
                 HStack(spacing: 12) {
                     legend("Poor", color: WColor.yellow)
                     legend("Sufficient", color: WColor.muted)
@@ -118,18 +121,66 @@ struct MetricDetailView: View {
 
     private var trendCard: some View {
         VStack(alignment: .leading, spacing: 11) {
-            Text(L10n.text("Recent Days")).font(WFont.number(22, bold: true))
+            Text(L10n.text("Trends")).font(WFont.number(22, bold: true))
+            Picker(L10n.text("Trend period"), selection: $trendDays) {
+                Text(L10n.text("7 DAYS")).tag(7); Text(L10n.text("30 DAYS")).tag(30); Text(L10n.text("90 DAYS")).tag(90)
+            }.pickerStyle(.segmented).accessibilityIdentifier("metricTrendPeriod")
             WCard {
-                Chart {
-                    ForEach(trend) { item in
-                        if let value = metric.value(item) {
-                            BarMark(x: .value("Day", item.date, unit: .day), y: .value(metric.title, value))
-                                .foregroundStyle(metric.color.opacity(DayCalendar.utc.isDate(item.date, inSameDayAs: day.date) ? 1 : 0.4)).cornerRadius(3)
+                if trend.isEmpty {
+                    Text(L10n.text("No recorded scores in this period.")).font(WFont.body(14)).foregroundStyle(WColor.muted).frame(height: 145)
+                } else {
+                    Chart {
+                        ForEach(trend) { item in
+                            if let value = metric.value(item) {
+                                BarMark(x: .value("Day", item.date, unit: .day), y: .value(metric.title, value))
+                                    .foregroundStyle(metric == .recovery ? PulseColor.recoveryScore(Double(item.recovery ?? 0)) : metric.color)
+                                    .cornerRadius(3)
+                            }
+                        }
+                        if let trendSelection {
+                            RuleMark(x: .value("Selected day", trendSelection)).foregroundStyle(.white.opacity(0.5))
+                        }
+                    }.frame(height: 145).chartYScale(domain: metric == .strain ? 0.0...21.0 : 0.0...100.0)
+                        .chartXScale(domain: trendStart...DayCalendar.utc.date(byAdding: .day, value: 1, to: day.date)!)
+                        .chartXSelection(value: $trendSelection)
+                        .chartXAxis { AxisMarks(values: .automatic(desiredCount: trendDays == 7 ? 7 : 4)) { _ in AxisValueLabel(format: utcDateFormat(.dateTime.month(.abbreviated).day())).foregroundStyle(WColor.muted) } }
+                        .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { _ in AxisGridLine().foregroundStyle(WColor.line); AxisValueLabel().foregroundStyle(WColor.muted) } }
+                        .accessibilityLabel(L10n.text(metric.title) + ", " + L10n.text("\(trend.count) recorded days"))
+                    if let date = trendSelection, let selected = trend.first(where: { DayCalendar.start(of: $0.date) == DayCalendar.start(of: date) }) {
+                        Text(utcDateText(selected.date, style: .dateTime.month(.abbreviated).day()) + " · " + metric.text(selected)).font(WFont.body(14))
+                    }
+                    let average = trend.compactMap { metric.value($0) }.reduce(0, +) / Double(trend.count)
+                    HStack {
+                        Text(L10n.text("Daily average")).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                        Spacer()
+                        Text(decimalText(average, places: metric == .strain ? 1 : 0) + (metric == .strain ? "" : "%")).font(WFont.number(20, bold: true))
+                    }
+                }
+            }
+        }.onChange(of: trendDays) { _, _ in trendSelection = nil }
+    }
+    private func sleepStages(_ details: SleepBreakdown) -> some View {
+        let stages: [(String, Double?, Color)] = [("Awake", details.awakeMinutes, WColor.muted), ("Light", details.lightMinutes, WColor.sleep),
+                                                   ("Deep (SWS)", details.deepMinutes, Color.purple), ("REM", details.remMinutes, Color.cyan)]
+        let total = stages.compactMap { $0.1 }.reduce(0, +)
+        return WCard {
+            Text(L10n.text("SLEEP STAGES")).font(WFont.label(12))
+            if total > 0 {
+                GeometryReader { geometry in
+                    HStack(spacing: 0) {
+                        ForEach(stages, id: \.0) { item in
+                            if let value = item.1, value > 0 { Rectangle().fill(item.2).frame(width: geometry.size.width * value / total) }
                         }
                     }
-                }.frame(height: 145).chartYScale(domain: metric == .strain ? 0.0...21.0 : 0.0...100.0)
-                    .chartXAxis { AxisMarks(values: .stride(by: .day)) { _ in AxisValueLabel(format: utcDateFormat(.dateTime.weekday(.abbreviated))).foregroundStyle(WColor.muted) } }
-                    .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { _ in AxisGridLine().foregroundStyle(WColor.line); AxisValueLabel().foregroundStyle(WColor.muted) } }
+                }.frame(height: 10).clipShape(Capsule()).accessibilityHidden(true)
+            }
+            ForEach(stages, id: \.0) { item in
+                HStack {
+                    Circle().fill(item.2).frame(width: 8, height: 8)
+                    Text(L10n.text(item.0)).font(WFont.body(15))
+                    Spacer()
+                    Text(item.1.map { clockDuration(Int($0.rounded())) } ?? "—").font(WFont.number(19, bold: true))
+                }.accessibilityElement(children: .combine)
             }
         }
     }

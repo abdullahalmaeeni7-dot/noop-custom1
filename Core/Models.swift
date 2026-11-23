@@ -21,7 +21,7 @@ public struct LaunchDayData: Equatable, Sendable {
     public let selectedDate: Date
     public init(savedDays: [DailySnapshot] = [], selectedDate: Date? = nil, now: Date = Date()) {
         days = savedDays.filter { $0.source != .example }.sorted { $0.date < $1.date }
-        self.selectedDate = DayCalendar.start(of: days.isEmpty ? now : (selectedDate ?? now))
+        self.selectedDate = DashboardDatePolicy.today(now: now)
     }
 }
 
@@ -47,6 +47,9 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public var heartRates: [HeartRateSample]
     public var source: DataSource
     public var trackerRecording: DailyTrackerRecording?
+    public var oxygenSaturation: Double?
+    public var skinTemperatureCelsius: Double?
+    public var sleepBreakdown: SleepBreakdown?
     public var displayedStrain: Double? { strain ?? trackerRecording?.strainEstimate }
     public var strainIsLocalEstimate: Bool { strain == nil && trackerRecording?.strainEstimate != nil }
     public var cycleRecords: [WhoopCycleRecord]?
@@ -55,12 +58,14 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public init(date: Date, recovery: Int?, strain: Double?, sleepPerformance: Int?,
                 sleepMinutes: Int, sleepNeededMinutes: Int, restingHeartRate: Double?,
                 hrv: Double?, respiratoryRate: Double?, steps: Int, energyKcal: Double,
-                heartRates: [HeartRateSample], source: DataSource, cycleRecords: [WhoopCycleRecord]? = nil, trackerRecording: DailyTrackerRecording? = nil) {
+                heartRates: [HeartRateSample], source: DataSource, cycleRecords: [WhoopCycleRecord]? = nil, trackerRecording: DailyTrackerRecording? = nil,
+                oxygenSaturation: Double? = nil, skinTemperatureCelsius: Double? = nil, sleepBreakdown: SleepBreakdown? = nil) {
         self.date = date; self.recovery = recovery; self.strain = strain
         self.sleepPerformance = sleepPerformance; self.sleepMinutes = sleepMinutes
         self.sleepNeededMinutes = sleepNeededMinutes; self.restingHeartRate = restingHeartRate
         self.hrv = hrv; self.respiratoryRate = respiratoryRate; self.steps = steps
         self.energyKcal = energyKcal; self.heartRates = heartRates; self.source = source; self.cycleRecords = cycleRecords; self.trackerRecording = trackerRecording
+        self.oxygenSaturation = oxygenSaturation; self.skinTemperatureCelsius = skinTemperatureCelsius; self.sleepBreakdown = sleepBreakdown
     }
 
     public static func empty(on date: Date, source: DataSource = .imported) -> Self {
@@ -71,7 +76,7 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case date, recovery, strain, sleepPerformance, sleepMinutes, sleepNeededMinutes
-        case restingHeartRate, hrv, respiratoryRate, steps, energyKcal, heartRates, source, cycleRecords, trackerRecording
+        case restingHeartRate, hrv, respiratoryRate, steps, energyKcal, heartRates, source, cycleRecords, trackerRecording, oxygenSaturation, skinTemperatureCelsius, sleepBreakdown
     }
 
     public init(from decoder: Decoder) throws {
@@ -91,6 +96,9 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
         source = try values.decodeIfPresent(DataSource.self, forKey: .source) ?? .imported
         cycleRecords = try values.decodeIfPresent([WhoopCycleRecord].self, forKey: .cycleRecords)
         trackerRecording = try values.decodeIfPresent(DailyTrackerRecording.self, forKey: .trackerRecording)
+        oxygenSaturation = try values.decodeIfPresent(Double.self, forKey: .oxygenSaturation)
+        skinTemperatureCelsius = try values.decodeIfPresent(Double.self, forKey: .skinTemperatureCelsius)
+        sleepBreakdown = try values.decodeIfPresent(SleepBreakdown.self, forKey: .sleepBreakdown)
     }
 }
 

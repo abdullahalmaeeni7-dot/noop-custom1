@@ -48,3 +48,9 @@ https://github.com/OpenStrap/protocol/tree/3ecf17e89ae2750ee0a64155266b41a9a3aa9
 The complete license is retained in Docs/ThirdParty/OpenStrap-protocol-MIT-LICENSE.txt.
 Later AGPL versions are not incorporated. The Swift transfer/state/storage code is
 independently written; captured test records are attributed to this snapshot.
+
+Additional user-supplied WHOOP Android UI evidence and motion assets:
+The packaged intro video is retained byte-for-byte from the provided APK.
+The loading video is rendered from its Lottie animation at the original timing.
+These assets are not claimed to be original work or licensed under this repository's
+source-code license. See App/Resources/apk-motion-provenance.json and design/apk/COVERAGE.md.

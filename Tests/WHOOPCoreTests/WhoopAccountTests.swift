@@ -70,6 +70,29 @@ final class WhoopAccountTests: XCTestCase {
         XCTAssertEqual(activity.durationMinutes, 45); XCTAssertEqual(activity.strainIsEstimate, false)
     }
 
+    func testPreservesReportedSleepAndHealthDetails() throws {
+        var payload = fixture()
+        score(&payload, "recoveries", "spo2_percentage", 98.0)
+        score(&payload, "recoveries", "skin_temp_celsius", 33.7)
+        score(&payload, "sleeps", "sleep_efficiency_percentage", 92.5)
+        score(&payload, "sleeps", "sleep_consistency_percentage", 80.0)
+        let day = try XCTUnwrap(map(payload).days.first)
+        XCTAssertEqual(day.oxygenSaturation, 98); XCTAssertEqual(day.skinTemperatureCelsius, 33.7)
+        let stages = try XCTUnwrap(day.sleepBreakdown)
+        XCTAssertEqual(stages.efficiencyPercent, 92.5); XCTAssertEqual(stages.consistencyPercent, 80)
+        XCTAssertEqual((stages.lightMinutes ?? 0) + (stages.deepMinutes ?? 0) + (stages.remMinutes ?? 0), 450, accuracy: 0.001)
+        XCTAssertNotNil(stages.debtMinutes)
+        XCTAssertEqual(try ImportReader.read(ImportReader.jsonEncoder().encode(DayArchive(days: [day])), filename: "export.json"), [day])
+    }
+    func testInvalidReportedHealthAndSleepScoresFailBeforeSaving() {
+        var payload = fixture(); score(&payload, "recoveries", "spo2_percentage", 101.0)
+        XCTAssertThrowsError(try map(payload))
+        payload = fixture(); score(&payload, "recoveries", "skin_temp_celsius", 100.0)
+        XCTAssertThrowsError(try map(payload))
+        payload = fixture(); score(&payload, "sleeps", "sleep_efficiency_percentage", -1.0)
+        XCTAssertThrowsError(try map(payload))
+    }
+
     func testStableWorkoutIdentityMakesRepeatedImportsIdempotent() throws {
         XCTAssertEqual(try map(fixture()).activities, try map(fixture()).activities)
     }

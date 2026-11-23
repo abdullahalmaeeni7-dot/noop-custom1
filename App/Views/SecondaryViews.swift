@@ -121,7 +121,7 @@ struct MenuView: View {
                     Divider()
                     MenuActionRow(title: "Membership", symbol: "square.stack.3d.up", action: openTier)
                     Divider()
-                    MenuActionRow(title: "Live camera & photo overlays", symbol: "camera", action: openLive)
+                    MenuActionRow(title: "Live camera & photo overlays", symbol: "camera", action: openLive).accessibilityIdentifier("openLiveCamera")
                     Divider()
                     MenuActionRow(title: "My Account", symbol: "person.crop.circle", action: openAccount)
                     Divider()

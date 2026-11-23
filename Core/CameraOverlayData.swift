@@ -17,8 +17,10 @@ public struct CameraOverlayMetric: Equatable, Sendable {
 public enum CameraOverlayData {
     public static func metrics(mode: CameraOverlayMode, day: DailySnapshot,
                                liveHeartRate: Double?, sampleDate: Date?, now: Date = Date(),
-                               elapsedSeconds: Int = 0, allowLocalEstimates: Bool = false) -> [CameraOverlayMetric] {
-        let strain = metric(day.strain ?? (allowLocalEstimates ? day.trackerRecording?.strainEstimate : nil), label: allowLocalEstimates && day.strainIsLocalEstimate ? "LOCAL STRAIN EST." : "DAY STRAIN", maximum: 21, tone: .cyan, digits: 1)
+                               elapsedSeconds: Int = 0, allowLocalEstimates: Bool = false,
+                               activity: ActivityRecord? = nil, historical: Bool = false) -> [CameraOverlayMetric] {
+        let activityValue = activity.flatMap { $0.strainIsEstimate == true && !allowLocalEstimates ? nil : $0.strain }
+        let strain = metric(activityValue ?? day.strain ?? (allowLocalEstimates ? day.trackerRecording?.strainEstimate : nil), label: activityValue != nil ? (activity?.strainIsEstimate == true ? "LOCAL ACTIVITY STRAIN" : "ACTIVITY STRAIN") : allowLocalEstimates && day.strainIsLocalEstimate ? "LOCAL STRAIN EST." : "DAY STRAIN", maximum: 21, tone: .cyan, digits: 1)
         let recoveryValue = day.recovery.flatMap { (0...100).contains($0) ? Double($0) : nil }
         let recovery = metric(recoveryValue, label: "RECOVERY", maximum: 100,
                               tone: (recoveryValue ?? 0) <= 33 ? .red : (recoveryValue ?? 0) <= 66 ? .yellow : .green,
@@ -33,9 +35,9 @@ public enum CameraOverlayData {
         case .recovery: return [recovery]
         case .sleep: return [sleep]
         case .live:
-            let fresh = sampleDate.map { (0...10).contains(now.timeIntervalSince($0)) } ?? false
+            let fresh = historical || (sampleDate.map { (0...10).contains(now.timeIntervalSince($0)) } ?? false)
             let rate = liveHeartRate.flatMap { $0.isFinite && (1...300).contains($0) && fresh ? $0 : nil }
-            let heartRate = metric(rate, label: "BPM", maximum: 300, tone: .neutral, missing: "Connect")
+            let heartRate = metric(rate, label: historical ? "DAY AVG BPM" : "BPM", maximum: 300, tone: .neutral, missing: "Connect")
             let energy = metric(day.energyKcal > 0 ? day.energyKcal : nil, label: "DAY CALORIES", maximum: 100_000, tone: .neutral)
             let seconds = min(21_600, max(0, elapsedSeconds))
             let timer = CameraOverlayMetric(value: "\(seconds / 60):\(String(format: "%02d", seconds % 60))",

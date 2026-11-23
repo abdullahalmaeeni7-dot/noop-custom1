@@ -73,6 +73,8 @@ public enum WhoopAccountMapper {
             if let score = recovery.score {
                 try bounds(score.recovery_score, 0...100); try bounds(score.resting_heart_rate, 1...300)
                 try bounds(score.hrv_rmssd_milli, 0...1_000)
+                if let value = score.spo2_percentage { try bounds(value, 0...100) }
+                if let value = score.skin_temp_celsius { try bounds(value, 0...60) }
             }
             if let sleep = sleeps[sleepID], sleep.cycle_id != recovery.cycle_id || sleep.nap {
                 throw invalid("a recovery references a different cycle or a nap.")
@@ -83,12 +85,13 @@ public enum WhoopAccountMapper {
             if recovery.score_state == "SCORED", let score = recovery.score {
                 day.recovery = Int(score.recovery_score.rounded())
                 day.restingHeartRate = score.resting_heart_rate; day.hrv = score.hrv_rmssd_milli
+                day.oxygenSaturation = score.spo2_percentage; day.skinTemperatureCelsius = score.skin_temp_celsius
             }
             if let sleep = sleeps[sleepID], sleep.score_state == "SCORED", let score = sleep.score {
                 let values = try sleepValues(score)
                 day.sleepPerformance = Int(score.sleep_performance_percentage.rounded())
                 day.sleepMinutes = values.asleep; day.sleepNeededMinutes = values.needed
-                day.respiratoryRate = score.respiratory_rate
+                day.respiratoryRate = score.respiratory_rate; day.sleepBreakdown = breakdown(score)
             }
             days[cycle.id] = day
         }
@@ -101,7 +104,7 @@ public enum WhoopAccountMapper {
             guard var day = days[cycle.id] else { continue }
             let values = try sleepValues(score)
             day.sleepPerformance = Int(score.sleep_performance_percentage.rounded())
-            day.sleepMinutes = values.asleep; day.sleepNeededMinutes = values.needed; day.respiratoryRate = score.respiratory_rate
+            day.sleepMinutes = values.asleep; day.sleepNeededMinutes = values.needed; day.respiratoryRate = score.respiratory_rate; day.sleepBreakdown = breakdown(score)
             days[cycle.id] = day
         }
         var workoutIDs = Set<UUID>(), activities: [ActivityRecord] = []
@@ -149,6 +152,14 @@ public enum WhoopAccountMapper {
         }
         return date
     }
+    private static func breakdown(_ score: SleepScore) -> SleepBreakdown {
+        let stage = score.stage_summary
+        return SleepBreakdown(awakeMinutes: stage.total_awake_time_milli / 60_000,
+            lightMinutes: stage.total_light_sleep_time_milli / 60_000, deepMinutes: stage.total_slow_wave_sleep_time_milli / 60_000,
+            remMinutes: stage.total_rem_sleep_time_milli / 60_000, inBedMinutes: stage.total_in_bed_time_milli / 60_000,
+            efficiencyPercent: score.sleep_efficiency_percentage, consistencyPercent: score.sleep_consistency_percentage,
+            debtMinutes: score.sleep_needed.need_from_sleep_debt_milli / 60_000)
+    }
     private static func sleepValues(_ score: SleepScore) throws -> (asleep: Int, needed: Int) {
         let stage = score.stage_summary, need = score.sleep_needed
         let values = [stage.total_in_bed_time_milli, stage.total_awake_time_milli, stage.total_no_data_time_milli,
@@ -164,6 +175,7 @@ public enum WhoopAccountMapper {
             throw invalid("sleep stages exceed time in bed.")
         }
         try bounds(score.sleep_performance_percentage, 0...100); try bounds(score.respiratory_rate, 0...100)
+        try breakdown(score).validated()
         return (Int(asleep / 60_000), Int(needed / 60_000))
     }
 }
@@ -173,9 +185,9 @@ private struct Profile: Decodable { let user_id: Int64; let first_name: String?;
 private struct Cycle: Decodable { let id: Int64; let user_id: Int64; let start: String; let end: String?; let score_state: String; let score: CycleScore? }
 private struct CycleScore: Decodable { let strain: Double; let kilojoule: Double }
 private struct Recovery: Decodable { let cycle_id: Int64; let user_id: Int64; let sleep_id: String; let score_state: String; let score: RecoveryScore? }
-private struct RecoveryScore: Decodable { let recovery_score: Double; let resting_heart_rate: Double; let hrv_rmssd_milli: Double }
+private struct RecoveryScore: Decodable { let recovery_score: Double; let resting_heart_rate: Double; let hrv_rmssd_milli: Double; let spo2_percentage: Double?; let skin_temp_celsius: Double? }
 private struct Sleep: Decodable { let id: String; let user_id: Int64; let cycle_id: Int64; let nap: Bool; let start: String; let end: String; let score_state: String; let score: SleepScore? }
-private struct SleepScore: Decodable { let stage_summary: Stages; let sleep_needed: SleepNeed; let respiratory_rate: Double; let sleep_performance_percentage: Double }
+private struct SleepScore: Decodable { let stage_summary: Stages; let sleep_needed: SleepNeed; let respiratory_rate: Double; let sleep_performance_percentage: Double; let sleep_efficiency_percentage: Double?; let sleep_consistency_percentage: Double? }
 private struct Stages: Decodable { let total_in_bed_time_milli: Double; let total_awake_time_milli: Double; let total_no_data_time_milli: Double; let total_light_sleep_time_milli: Double; let total_slow_wave_sleep_time_milli: Double; let total_rem_sleep_time_milli: Double }
 private struct SleepNeed: Decodable { let baseline_milli: Double; let need_from_sleep_debt_milli: Double; let need_from_recent_strain_milli: Double; let need_from_recent_nap_milli: Double }
 private struct Workout: Decodable { let id: String; let user_id: Int64; let sport_id: Int; let start: String; let end: String; let score_state: String; let score: WorkoutScore? }

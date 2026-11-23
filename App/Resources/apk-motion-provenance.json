@@ -1,0 +1,25 @@
+{
+  "source": "User-supplied WHOOP Android 5.444.1 / 431134 original base APK",
+  "inputs": [
+    {
+      "member": "res/raw/splash_animation.json",
+      "sha256": "5a29faa0fbcdd51c2fa143de2889403e13a92589314fd111241a48546f6e292b"
+    },
+    {
+      "member": "res/raw/splash_video_v2.mp4",
+      "sha256": "f09ed4be7edacee2bbcb19de74160fec83a73a363a9ab6940901ee4c63d72d72"
+    }
+  ],
+  "loading_conversion": "Original Lottie JSON rendered at its native 60 FPS, frames 0\u2013131, 2.2 seconds. Native 375-pixel frames upscaled to 750 pixels and H.264 encoded for AVFoundation. No timing inferred from screenshots.",
+  "intro": "Original splash_video_v2.mp4 copied byte-for-byte; audio is muted in the app.",
+  "outputs": [
+    {
+      "path": "whoop-loading.mp4",
+      "sha256": "42594f23ff31e8a9bd549483e19b8a2d3269dac1b0deb35279366ec3fcd316bb"
+    },
+    {
+      "path": "whoop-intro.mp4",
+      "sha256": "f09ed4be7edacee2bbcb19de74160fec83a73a363a9ab6940901ee4c63d72d72"
+    }
+  ]
+}

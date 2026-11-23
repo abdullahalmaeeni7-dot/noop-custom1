@@ -17,6 +17,18 @@ struct ReferenceLiveView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var camera = LiveCameraModel()
+    @AppStorage("whoop.live.layout.v1") private var savedLayout = Data()
+    @State private var layout = LiveOverlayLayout()
+    @State private var editing = false
+    @State private var editingPhoto = false
+    @State private var photoDragOrigin: CGSize?
+    @State private var photoPinchOrigin: Double?
+    @State private var selectedWidget = LiveOverlayWidget.recovery
+    @State private var canvasSize = CGSize(width: 393, height: 698)
+    @State private var recordedDate = DashboardDatePolicy.today()
+    @State private var pickingRecordedDate = false
+    @State private var activityID: UUID?
+    @State private var graphSamples: [HeartRateSample] = []
     @State private var mode = CameraOverlayMode.overview
     @State private var now = Date()
     @State private var drawer = false
@@ -40,17 +52,33 @@ struct ReferenceLiveView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = min(width * 16 / 9, geometry.size.height - 100)
+            let width = min(geometry.size.width, max(1, geometry.size.height - 100) * layout.aspect.ratio)
+            let height = width / layout.aspect.ratio
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 canvas(width: width, height: height)
-                footer(width: width).frame(height: 100)
+                    .onAppear { canvasSize = CGSize(width: width, height: height) }
+                    .onChange(of: CGSize(width: width, height: height)) { _, size in canvasSize = size }
+                footer(width: geometry.size.width).frame(height: 100)
             }.frame(maxWidth: .infinity, maxHeight: .infinity).background(.black)
         }.ignoresSafeArea().statusBarHidden(true).preferredColorScheme(.dark)
-            .task { if photoData == nil { await openCamera() } }
+            .task {
+                recordedDate = store.selectedDate
+                if savedLayout.count <= 65_536, let restored = try? JSONDecoder().decode(LiveOverlayLayout.self, from: savedLayout) { layout = restored }
+                if photoData == nil { await openCamera() }
+            }
             .onReceive(clock) { date in now = date; camera.engine.update(snapshot()) }
-            .onChange(of: mode) { _, _ in camera.engine.update(snapshot()) }
+            .onChange(of: mode) { _, _ in
+                if !LiveOverlayLayout.widgets(for: mode).contains(selectedWidget) { selectedWidget = LiveOverlayLayout.widgets(for: mode)[0] }
+                camera.engine.update(snapshot())
+            }
+            .onChange(of: layout) { _, _ in mediaURL = nil; camera.engine.update(snapshot()) }
+            .onChange(of: recordedDate) { _, _ in useHomeExample = false; activityID = nil; mediaURL = nil; camera.engine.update(snapshot()) }
+            .onReceive(device.heartRateSamples) { sample in
+                graphSamples.append(sample)
+                if graphSamples.count > 120 { graphSamples.removeFirst(graphSamples.count - 120) }
+            }
+            .onChange(of: showLocalEstimates) { _, value in if !value { activityID = nil } }
             .onChange(of: photo) { _, item in loadPhoto(item) }
             .onChange(of: camera.movie) { _, url in if let url { mediaURL = url; drawer = true } }
             .onChange(of: camera.recording) { _, recording in clipStarted = recording ? Date() : nil }
@@ -58,7 +86,7 @@ struct ReferenceLiveView: View {
                 if phase != .active { camera.close(); torch = false }
                 else if photoData == nil { task = Task { await openCamera() } }
             }
-            .onDisappear { task?.cancel(); camera.close() }
+            .onDisappear { persistLayout(); task?.cancel(); camera.close() }
             .sheet(isPresented: $drawer) { controls }
             .alert(L10n.text("Live"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
                 Button(L10n.text("OK"), role: .cancel) { message = nil }
@@ -68,7 +96,9 @@ struct ReferenceLiveView: View {
     private func canvas(width: CGFloat, height: CGFloat) -> some View {
         ZStack {
             if let photoImage {
-                Image(uiImage: photoImage).resizable().scaledToFill().frame(width: width, height: height).clipped()
+                Image(uiImage: photoImage).resizable().scaledToFill().frame(width: width, height: height)
+                    .scaleEffect(layout.boundedPhotoScale).offset(x: layout.photoOffsetX * width, y: layout.photoOffsetY * height)
+                    .gesture(photoGesture(width: width, height: height), including: editing && editingPhoto ? .all : .none)
             } else if camera.ready {
                 ReferenceCameraPreview(session: camera.engine.session).frame(width: width, height: height)
             } else {
@@ -86,12 +116,14 @@ struct ReferenceLiveView: View {
             CachedLiveOverlay(snapshot: snapshot(), size: CGSize(width: width, height: height))
                 .allowsHitTesting(false)
                 .accessibilityLabel(snapshot().referenceMetrics?.map { "\($0.label.replacingOccurrences(of: "\n", with: " ")), \($0.value)" }.joined(separator: ". ") ?? "Saved day stats")
+            if editing && !editingPhoto { adjustmentTargets(width: width, height: height) }
             VStack {
                 HStack {
                     Button {
-                        if camera.recording { camera.stop(); drawer = true } else { dismiss() }
+                        if editing { persistLayout(); editing = false }
+                        else if camera.recording { camera.stop(); drawer = true } else { dismiss() }
                     } label: { Image(systemName: "xmark").font(.system(size: 21, weight: .semibold)).frame(width: 44, height: 44) }
-                        .accessibilityLabel(camera.recording ? "Stop video and review" : "Close Live")
+                        .accessibilityLabel(camera.recording ? "Stop video and review" : "Close Live").accessibilityIdentifier("closeLive")
                     Spacer()
                 }.padding(.horizontal, width * 0.018).padding(.top, height * 0.017)
                 Spacer()
@@ -99,15 +131,25 @@ struct ReferenceLiveView: View {
                     Label(L10n.text("RECORDING"), systemImage: "record.circle.fill").font(PulseFont.label(10))
                         .foregroundStyle(.red).padding(8).background(.black.opacity(0.6), in: Capsule())
                 }
+                if editing {
+                    HStack {
+                        Text(L10n.text("Zoom and drag to adjust")).font(PulseFont.body(12))
+                        Spacer()
+                        Button(L10n.text("SAVE CHANGES")) { persistLayout(); editing = false }
+                            .font(PulseFont.label(11)).frame(minWidth: 100, minHeight: 44).accessibilityIdentifier("liveSaveChanges")
+                    }.padding(.horizontal, 18).background(.black.opacity(0.8))
+                }
                 captureControls(width: width).padding(.bottom, height * 0.013)
             }.foregroundStyle(.white)
             if busy { ProgressView(L10n.text("Preparing media…")).padding(20).background(.black.opacity(0.8), in: RoundedRectangle(cornerRadius: 12)).tint(.white) }
-        }.frame(width: width, height: height).clipShape(RoundedRectangle(cornerRadius: 8))
+        }.environment(\.layoutDirection, .leftToRight)
+            .frame(width: width, height: height).clipShape(RoundedRectangle(cornerRadius: 8))
             .simultaneousGesture(DragGesture(minimumDistance: 50).onEnded { drag in
-                guard abs(drag.translation.width) > abs(drag.translation.height) * 1.5, let index = CameraOverlayMode.allCases.firstIndex(of: mode) else { return }
+                guard !editing, abs(drag.translation.width) > abs(drag.translation.height) * 1.5, let index = CameraOverlayMode.allCases.firstIndex(of: mode) else { return }
                 let next = min(CameraOverlayMode.allCases.count - 1, max(0, index + (drag.translation.width < 0 ? 1 : -1)))
                 select(CameraOverlayMode.allCases[next])
             })
+            .onTapGesture(count: 2) { if !camera.recording { editing.toggle(); persistLayout() } }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(L10n.text("Live camera, \(mode.rawValue). \(snapshot().source)"))
     }
@@ -123,7 +165,7 @@ struct ReferenceLiveView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 4)).frame(maxWidth: .infinity, minHeight: 48)
             }.accessibilityLabel(L10n.text("Choose a saved photo")).disabled(camera.recording || busy)
             Button { drawer = true } label: { Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 23)).frame(maxWidth: .infinity, minHeight: 48) }
-                .accessibilityLabel(L10n.text("Overlay and capture settings")).disabled(camera.recording || camera.starting || busy)
+                .accessibilityLabel(L10n.text("Overlay and capture settings")).accessibilityIdentifier("liveControls").disabled(camera.recording || camera.starting || busy)
             Button(action: shutter) {
                 ZStack {
                     Circle().fill(mode == .live ? Color.red : .white.opacity(0.4)).frame(width: 69, height: 69)
@@ -132,7 +174,7 @@ struct ReferenceLiveView: View {
                     else { WhoopMonogram().fill(mode == .live ? .red : Color(white: 0.23)).environment(\.layoutDirection, .leftToRight).frame(width: 25, height: 22) }
                 }.frame(width: width / 5, height: 76)
             }.accessibilityLabel(camera.recording ? "Stop video" : mode == .live && photoData == nil ? "Record video" : "Capture photo with stats")
-                .disabled(busy || camera.starting || (photoData == nil && !camera.ready))
+                .disabled(editing || busy || camera.starting || (photoData == nil && !camera.ready))
             Button {
                 let requested = !torch
                 camera.engine.setTorch(requested) { accepted in Task { @MainActor in
@@ -155,7 +197,7 @@ struct ReferenceLiveView: View {
                             Button { select(item) } label: {
                                 Text(L10n.text(item.rawValue.uppercased())).font(PulseFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 2)
                                     .foregroundStyle(mode == item ? .white : .white.opacity(0.45)).frame(width: 108, height: 44)
-                            }.id(item.rawValue).disabled(camera.recording || camera.starting || busy)
+                            }.id(item.rawValue).accessibilityIdentifier("liveMode-\(item.rawValue)").disabled(camera.recording || camera.starting || busy)
                         }
                     }.padding(.horizontal, max(0, (width - 108) / 2))
                 }.scrollIndicators(.hidden)
@@ -172,7 +214,9 @@ struct ReferenceLiveView: View {
     }
 
     private var day: DailySnapshot {
-        guard useHomeExample, store.isExampleMode, let reference, let date = NutritionDay.date(reference.id) else { return store.selectedDay }
+        guard useHomeExample, store.isExampleMode, let reference, let date = NutritionDay.date(reference.id) else {
+            return store.days.first { DayCalendar.start(of: $0.date) == DayCalendar.start(of: recordedDate) } ?? DailySnapshot.empty(on: recordedDate)
+        }
         var day = DailySnapshot.empty(on: date, source: .example)
         day.strain = reference.load; day.recovery = reference.readiness; day.sleepPerformance = reference.sleep
         let components = reference.sleepDuration.split(separator: ":").compactMap { Int($0) }
@@ -186,15 +230,20 @@ struct ReferenceLiveView: View {
     private func snapshot() -> LiveOverlaySnapshot {
         let day = day
         let useRecorder = !recorder.isPaused && (recorder.latestSampleDate ?? .distantPast) > (device.heartRateReceivedAt ?? .distantPast)
-        let hr = photoData == nil ? (useRecorder ? recorder.latestHeartRate : device.heartRate) : nil
+        let historical = photoData != nil
+        let average = day.heartRates.isEmpty ? nil : day.heartRates.map(\.bpm).reduce(0, +) / Double(day.heartRates.count)
+        let hr = historical ? average : (useRecorder ? recorder.latestHeartRate : device.heartRate)
         let received = photoData == nil ? (useRecorder ? recorder.latestSampleDate : device.heartRateReceivedAt) : nil
         let elapsed = clipStarted.map { max(0, Int(Date().timeIntervalSince($0))) } ?? recorder.elapsedSeconds
-        let metrics = CameraOverlayData.metrics(mode: mode, day: day, liveHeartRate: hr, sampleDate: received, now: now, elapsedSeconds: elapsed, allowLocalEstimates: showLocalEstimates)
+        let metrics = CameraOverlayData.metrics(mode: mode, day: day, liveHeartRate: hr, sampleDate: received, now: now, elapsedSeconds: elapsed, allowLocalEstimates: showLocalEstimates,
+                                                activity: store.activities.first { $0.id == activityID }, historical: historical)
         let exists = store.days.contains { DayCalendar.utc.isDate($0.date, inSameDayAs: day.date) }
         let label = day.source == .example ? "EXAMPLE" : exists ? "RECORDED DAY" : "NO SAVED DATA"
         return LiveOverlaySnapshot(title: "WHOOP Live", source: label,
-                                   values: metrics.map(\.value), labels: metrics.map(\.label), heartRateIndex: mode == .live ? 0 : nil,
-                                   sampleDate: received, referenceMode: mode, referenceMetrics: metrics)
+                                   values: metrics.map(\.value), labels: metrics.map(\.label), heartRateIndex: mode == .live && !historical ? 0 : nil,
+                                   sampleDate: received, referenceMode: mode, referenceMetrics: metrics,
+                                   layout: layout, graphSamples: historical ? Array(day.heartRates.suffix(120)) : graphSamples,
+                                   historicalGraph: historical)
     }
     private func openCamera() async {
         guard scenePhase == .active, !camera.recording, !camera.starting, !Task.isCancelled else { return }
@@ -227,7 +276,7 @@ struct ReferenceLiveView: View {
                       let source = CGImageSourceCreateWithData(data as CFData, nil),
                       let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true,
                           kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceThumbnailMaxPixelSize: 2048] as CFDictionary) else { throw LiveCameraError.photo }
-                try Task.checkCancellation(); photoData = data; photoImage = UIImage(cgImage: image); mediaURL = nil
+                try Task.checkCancellation(); layout.resetPhoto(); photoData = data; photoImage = UIImage(cgImage: image); mediaURL = nil
             } catch { if !Task.isCancelled { message = error.localizedDescription } }
         }
     }
@@ -254,10 +303,23 @@ struct ReferenceLiveView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    layoutControls
                     PulseCard {
                         Text(L10n.text("\(day.source == .example ? "Example" : "Saved") day stats")).font(PulseFont.body(20).weight(.semibold))
-                        DatePicker("Recorded day · UTC", selection: $store.selectedDate, displayedComponents: .date)
-                            .frame(minHeight: 44).onChange(of: store.selectedDate) { _, _ in useHomeExample = false }
+                        Button { pickingRecordedDate = true } label: {
+                            HStack { Text(utcDateText(recordedDate, style: .dateTime.month(.wide).day().year())); Spacer(); Image(systemName: "calendar") }
+                                .frame(minHeight: 44)
+                        }.accessibilityIdentifier("liveRecordedDay")
+                        if !DayCalendar.utc.isDateInToday(recordedDate) {
+                            Button(L10n.text("USE TODAY")) { recordedDate = DashboardDatePolicy.today() }.frame(minHeight: 44)
+                        }
+                        let activities = store.activities.filter { DayCalendar.start(of: $0.start) == DayCalendar.start(of: recordedDate) && $0.strain != nil && ($0.strainIsEstimate != true || showLocalEstimates) }
+                        if !activities.isEmpty {
+                            Picker(L10n.text("Strain source"), selection: $activityID) {
+                                Text(L10n.text("Day Strain")).tag(Optional<UUID>.none)
+                                ForEach(activities) { activity in Text(activity.name).tag(Optional(activity.id)) }
+                            }.frame(minHeight: 44)
+                        }
                         Text(L10n.text("Overview shows day Strain, Recovery and hours asleep. Live shows received heart rate and day totals; calories are not a workout estimate."))
                             .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
                         if store.isExampleMode, reference != nil {
@@ -301,10 +363,72 @@ struct ReferenceLiveView: View {
             .environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
             .presentationDetents([.medium, .large]).presentationDragIndicator(.visible)
             .sheet(isPresented: $showTracker) { PulseTrackerView().environmentObject(device) }
+            .sheet(isPresented: $pickingRecordedDate) { RecoveryCalendarSheet(selection: $recordedDate, days: store.days) }
             .confirmationDialog(L10n.text("Discard this workout?"), isPresented: $confirmDiscard, titleVisibility: .visible) {
                 Button(L10n.text("Discard workout"), role: .destructive) { recorder.discard() }
             }
     }
+    private var layoutControls: some View {
+        PulseCard {
+            Text(L10n.text("ADJUST")).font(PulseFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1)
+            Picker(L10n.text("Frame"), selection: $layout.aspect) {
+                Text(L10n.text("Full")).tag(LiveCanvasAspect.full)
+                Text(L10n.text("Condensed")).tag(LiveCanvasAspect.condensed)
+            }.pickerStyle(.segmented).accessibilityIdentifier("liveAspect")
+            Picker(L10n.text("Stat"), selection: $selectedWidget) {
+                ForEach(LiveOverlayLayout.widgets(for: mode), id: \.rawValue) { kind in Text(L10n.text(kind.title)).tag(kind) }
+            }.frame(minHeight: 44)
+            HStack {
+                Text(L10n.text("Size")).font(PulseFont.body(15))
+                Slider(value: scaleBinding, in: 0.35...1.65, step: 0.05,
+                       onEditingChanged: { active in if !active { persistLayout() } }) { Text(L10n.text("Overlay size")) }
+                    .accessibilityIdentifier("liveLayoutSize")
+                Text("\(Int(scaleBinding.wrappedValue * 100))%").font(PulseFont.number(16)).monospacedDigit().frame(width: 50)
+            }
+            Button(L10n.text("ZOOM AND DRAG TO ADJUST")) {
+                layout.setVisible(true, widget: selectedWidget, mode: mode); editingPhoto = false; editing = true; drawer = false
+            }.buttonStyle(WButton()).accessibilityIdentifier("liveAdjust")
+            ForEach(LiveOverlayLayout.widgets(for: mode), id: \.rawValue) { kind in
+                Toggle(L10n.text(kind.title), isOn: Binding(get: { layout.isVisible(kind, mode: mode) }, set: {
+                    layout.setVisible($0, widget: kind, mode: mode); persistLayout()
+                })).frame(minHeight: 44).accessibilityIdentifier("liveWidget-\(kind.rawValue)")
+            }
+            if photoData != nil {
+                Button(L10n.text("ADJUST PHOTO")) { editingPhoto = true; editing = true; drawer = false }.frame(minHeight: 44)
+                Button(L10n.text("RESET PHOTO")) { layout.resetPhoto(); persistLayout() }.frame(minHeight: 44)
+            }
+            Button(L10n.text("RESET LAYOUT")) { layout.reset(mode: mode); persistLayout() }.frame(minHeight: 44).accessibilityIdentifier("liveResetLayout")
+        }.disabled(camera.recording || camera.starting || busy)
+    }
+    private var scaleBinding: Binding<Double> {
+        Binding(get: { min(1.65, max(0.35, layout.placement(selectedWidget, mode: mode).scale)) }, set: { scale in
+            var p = layout.placement(selectedWidget, mode: mode); p.scale = scale
+            layout.setPlacement(p, widget: selectedWidget, mode: mode, width: canvasSize.width, height: canvasSize.height)
+        })
+    }
+    private func photoGesture(width: CGFloat, height: CGFloat) -> some Gesture {
+        DragGesture().onChanged { value in
+            if photoDragOrigin == nil { photoDragOrigin = CGSize(width: layout.photoOffsetX, height: layout.photoOffsetY) }
+            layout.photoOffsetX = (photoDragOrigin?.width ?? 0) + value.translation.width / width
+            layout.photoOffsetY = (photoDragOrigin?.height ?? 0) + value.translation.height / height
+        }.onEnded { _ in photoDragOrigin = nil; persistLayout() }
+            .simultaneously(with: MagnificationGesture().onChanged { value in
+                if photoPinchOrigin == nil { photoPinchOrigin = layout.boundedPhotoScale }
+                layout.photoScale = min(8, max(0.6, (photoPinchOrigin ?? 1) * value))
+            }.onEnded { _ in photoPinchOrigin = nil; persistLayout() })
+    }
+    private func persistLayout() { if let data = try? JSONEncoder().encode(layout) { savedLayout = data } }
+    private func adjustmentTargets(width: CGFloat, height: CGFloat) -> some View {
+        ZStack {
+            ForEach(LiveOverlayLayout.widgets(for: mode).filter { layout.isVisible($0, mode: mode) }, id: \.rawValue) { kind in
+                let rect = layout.frame(kind, mode: mode, width: width, height: height)
+                LiveOverlayAdjustmentTarget(kind: kind, mode: mode, layout: $layout, selected: $selectedWidget,
+                                            canvasSize: CGSize(width: width, height: height), saved: persistLayout)
+                    .frame(width: max(44, rect.width), height: max(44, rect.height)).position(x: rect.midX, y: rect.midY)
+            }
+        }.environment(\.layoutDirection, .leftToRight)
+    }
+
     private var workoutControls: some View {
         PulseCard {
             Text(L10n.text("WORKOUT")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
@@ -332,7 +456,7 @@ struct ReferenceLiveView: View {
     }
     private func exportTransparent() {
         do {
-            let image = LiveOverlayRenderer.image(snapshot: snapshot(), size: CGSize(width: 1080, height: 1920), transparent: true)
+            let image = LiveOverlayRenderer.image(snapshot: snapshot(), size: CGSize(width: 1080, height: 1080 / layout.aspect.ratio), transparent: true)
             guard let data = image.pngData() else { throw LiveCameraError.photo }
             let url = FileManager.default.temporaryDirectory.appendingPathComponent("live-overlay-\(UUID().uuidString).png")
             try data.write(to: url, options: [.atomic, .completeFileProtection]); mediaURL = url
@@ -387,5 +511,44 @@ private struct CachedLiveOverlay: View {
     }
     private func render() {
         rendered = LiveOverlayRenderer.image(snapshot: snapshot, size: CGSize(width: size.width * 2, height: size.height * 2), transparent: true)
+    }
+}
+
+
+private struct LiveOverlayAdjustmentTarget: View {
+    let kind: LiveOverlayWidget
+    let mode: CameraOverlayMode
+    @Binding var layout: LiveOverlayLayout
+    @Binding var selected: LiveOverlayWidget
+    let canvasSize: CGSize
+    var saved: () -> Void
+    @State private var dragOrigin: LiveOverlayPlacement?
+    @State private var pinchOrigin: Double?
+    var body: some View {
+        RoundedRectangle(cornerRadius: 10).stroke(selected == kind ? Color.white : Color.white.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+            .background(.white.opacity(0.001)).contentShape(Rectangle())
+            .onTapGesture { selected = kind }
+            .gesture(DragGesture().onChanged { value in
+                selected = kind
+                if dragOrigin == nil { dragOrigin = layout.placement(kind, mode: mode) }
+                var p = layout.placement(kind, mode: mode)
+                p.offsetX = (dragOrigin?.offsetX ?? 0) + value.translation.width / canvasSize.width
+                p.offsetY = (dragOrigin?.offsetY ?? 0) + value.translation.height / canvasSize.height
+                update(p)
+            }.onEnded { _ in dragOrigin = nil; saved() })
+            .simultaneousGesture(MagnificationGesture().onChanged { value in
+                selected = kind
+                if pinchOrigin == nil { pinchOrigin = layout.placement(kind, mode: mode).scale }
+                var p = layout.placement(kind, mode: mode); p.scale = (pinchOrigin ?? 1) * value; update(p)
+            }.onEnded { _ in pinchOrigin = nil; saved() })
+            .accessibilityLabel(L10n.text(kind.title) + ", " + L10n.text("Overlay size"))
+            .accessibilityIdentifier("liveOverlay-\(kind.rawValue)")
+            .accessibilityAdjustableAction { direction in
+                var p = layout.placement(kind, mode: mode)
+                p.scale += direction == .increment ? 0.05 : -0.05; update(p); saved()
+            }
+    }
+    private func update(_ p: LiveOverlayPlacement) {
+        layout.setPlacement(p, widget: kind, mode: mode, width: canvasSize.width, height: canvasSize.height)
     }
 }

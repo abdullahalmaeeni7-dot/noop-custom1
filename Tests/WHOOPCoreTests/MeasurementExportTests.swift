@@ -51,7 +51,9 @@ final class MeasurementExportTests: XCTestCase {
         let rows = text.components(separatedBy: "\r\n")
         let columns = rows[1].components(separatedBy: ",")
         XCTAssertTrue(rows[0].contains("hrv_rmssd_ms"))
-        XCTAssertEqual(columns, ["2026-11-08", "", "15.8", "33", "224", "480", "", "122.75", "19.7", "26783", "2886.5", "0", "imported"])
+        XCTAssertEqual(Array(columns.prefix(13)), ["2026-11-08", "", "15.8", "33", "224", "480", "", "122.75", "19.7", "26783", "2886.5", "0", "imported"])
+        XCTAssertEqual(Array(columns.dropFirst(13)), Array(repeating: "", count: 10))
+        XCTAssertEqual(rows[0].components(separatedBy: ",").count, columns.count)
         XCTAssertTrue(text.hasSuffix("\r\n"))
     }
 

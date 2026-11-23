@@ -1,0 +1,1697 @@
+{
+  "source": "User-supplied WHOOP Android 5.444.1 / 431134",
+  "scope": "All 24 packaged XML navigation graphs, not all Compose/server-fed UI or live service behavior.",
+  "declarations_sha256": "7743813d27b1bdd1c8cfd6b491aa7f329f8e3b0810730adb5c96df2e3fced054",
+  "graph_count": 24,
+  "destination_count": 209,
+  "action_count": 92,
+  "coverage_by_graph": {
+    "service_gap": 5,
+    "partial_native": 15,
+    "developer_only": 1,
+    "native_local": 1,
+    "not_implemented": 2
+  },
+  "graphs": [
+    {
+      "graph": "advanced_labs_graph",
+      "coverage": "service_gap",
+      "implementation": null,
+      "note": "Lab ordering, clinician review and provider biomarker integration require the vendor service.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "advancedLabsFragment",
+          "class": "com.whoop.advancedlabs.view.AdvancedLabsFragment",
+          "label": "ADVANCED_LABS_HOME",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "biomarkerSummaryFragment",
+          "class": "com.whoop.advancedlabs.biomarkersummary.view.BiomarkerSummaryFragment",
+          "label": "BiomarkerSummaryFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "biomarkerDetailsFragment",
+          "class": "com.whoop.advancedlabs.biomarkerdetails.view.BiomarkerDetailsFragment",
+          "label": "BiomarkerDetailsFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "testResultsFragment",
+          "class": "com.whoop.advancedlabs.testresults.view.TestResultsFragment",
+          "label": "TestResultsFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "multiConsentFragment",
+          "class": "com.whoop.advancedlabs.multiconsentscreen.view.MultiConsentFragment",
+          "label": "MultiConsentFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "schedulingStepFragment",
+          "class": "com.whoop.advancedlabs.schedulingstep.view.SchedulingStepFragment",
+          "label": "SchedulingStepFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "schedulePrimerFragment",
+          "class": "com.whoop.advancedlabs.scheduleprimer.view.SchedulePrimerFragment",
+          "label": "SchedulePrimerFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "advancedLabsTypeformWebviewFragment",
+          "class": "com.whoop.advancedlabs.typeformwebview.view.AdvancedLabsTypeformWebviewFragment",
+          "label": "AdvancedLabsTypeformWebviewFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "allRecordingsFragment",
+          "class": "com.whoop.advancedlabs.allrecordings.view.AllRecordingsFragment",
+          "label": "AllRecordingsFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "actionPlanFragment",
+          "class": "com.whoop.advancedlabs.actionplan.view.ActionPlanFragment",
+          "label": "ActionPlanFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "testUploadFragment",
+          "class": "com.whoop.advancedlabs.testupload.view.TestUploadFragment",
+          "label": "TestUploadFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "clinicalInsightsFragment",
+          "class": "com.whoop.advancedlabs.clinicalinsights.view.ClinicalInsightsFragment",
+          "label": "ClinicalInsightsFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "insightsDeepDiveFragment",
+          "class": "com.whoop.advancedlabs.insightsdeepdive.view.InsightsDeepDiveFragment",
+          "label": "InsightsDeepDiveFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "rafReceiverFragment",
+          "class": "com.whoop.advancedlabs.rafReceiver.view.RafReceiverFragment",
+          "label": "RafReceiverFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "editBiomarkersFragment",
+          "class": "com.whoop.advancedlabs.editbiomarkers.view.EditBiomarkersFragment",
+          "label": "EditBiomarkersFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "editTestDetailsFragment",
+          "class": "com.whoop.advancedlabs.edittestdetails.view.EditTestDetailsFragment",
+          "label": "EditTestDetailsFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "testHistoryFragment",
+          "class": "com.whoop.advancedlabs.testhistory.view.TestHistoryFragment",
+          "label": "TestHistoryFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        },
+        {
+          "id": "schedulingFormFragment",
+          "class": "com.whoop.advancedlabs.schedulingform.view.SchedulingFormFragment",
+          "label": "SchedulingFormFragment",
+          "coverage": "service_gap",
+          "implementation": null
+        }
+      ]
+    },
+    {
+      "graph": "change_password_graph",
+      "coverage": "service_gap",
+      "implementation": "App/Views/AccountView.swift",
+      "note": "An account bridge does not implement WHOOP password changes.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "changePasswordFragmentV2",
+          "class": "com.whoop.changepassword.view.ChangePasswordV2Fragment",
+          "label": "ChangePasswordFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/AccountView.swift"
+        },
+        {
+          "id": "passwordResetFragment",
+          "class": "com.whoop.changepassword.view.reset.PasswordResetFragment",
+          "label": "PasswordResetFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/AccountView.swift"
+        }
+      ]
+    },
+    {
+      "graph": "community_graph",
+      "coverage": "service_gap",
+      "implementation": "App/Views/SecondaryViews.swift",
+      "note": "Local activity history exists. WHOOP teams, leaderboards, friends, referrals and family billing are not connected.",
+      "actions": 20,
+      "destinations": [
+        {
+          "id": "communityLandingFragment",
+          "class": "com.whoop.community.CommunityLandingHostFragment",
+          "label": "Community Landing page",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityPendingFragment",
+          "class": "com.whoop.community.CommunityPendingInviteFragment",
+          "label": "fragment_community_pending",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "inviteCodeActivity",
+          "class": "com.whoop.community.presentation.login.InviteCodeActivity",
+          "label": "InviteCodeActivity",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "teamCreateActivity",
+          "class": "com.whoop.community.presentation.teams.TeamCreateActivity",
+          "label": "TeamCreateActivity",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityFragment",
+          "class": "com.whoop.community.CommunityFragment",
+          "label": "CommunityFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityShowInviteFragment",
+          "class": "com.whoop.community.CommunityShowInviteFragment",
+          "label": "CommunityShowInviteFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityAddMemberFragment",
+          "class": "com.whoop.community.CommunityAddMemberFragment",
+          "label": "CommunityAddMemberFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityManageTeamFragment",
+          "class": "com.whoop.community.CommunityManageTeamFragment",
+          "label": "CommunityManageTeamFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "communityRemoveMembersFragment",
+          "class": "com.whoop.community.CommunityRemoveMembersFragment",
+          "label": "CommunityRemoveMembersFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "notificationSettingsFragment",
+          "class": "com.whoop.community.presentation.chat.NotificationSettingsFragment",
+          "label": "NotificationSettingsFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/SecondaryViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "core_details_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DetailViews.swift",
+      "note": "Sleep/Recovery/Strain details, stages, reported efficiency/consistency/debt, chart selection and trends; not every proprietary insight is available.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "core_details_fragment",
+          "class": "com.whoop.core.details.view.CoreDetailsFragment",
+          "label": "CoreDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "core_details_weightlifting_activity_details_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DetailViews.swift",
+      "note": "Recorded activities are available; vendor muscular-load details are absent.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "weight_lifting_details_fragment",
+          "class": "com.whoop.core.details.weightliftingdetails.view.WeightLiftingDetailsFragment",
+          "label": "weightLiftingDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "design_showcase_graph",
+      "coverage": "developer_only",
+      "implementation": null,
+      "note": "Packaged design-system demonstration; not treated as a member feature.",
+      "actions": 4,
+      "destinations": [
+        {
+          "id": "designShowcaseMenuFragment",
+          "class": "com.whoop.design.showcase.menu.view.fragment.DesignShowcaseMenuFragment",
+          "label": "Design Showcase",
+          "coverage": "developer_only",
+          "implementation": null
+        },
+        {
+          "id": "designShowcaseGallery",
+          "class": "com.whoop.design.showcase.gallery.view.fragment.DesignShowcaseGalleryFragment",
+          "label": "Design Showcase Gallery",
+          "coverage": "developer_only",
+          "implementation": null
+        },
+        {
+          "id": "designShowcaseLegacyGallery",
+          "class": "com.whoop.design.showcase.gallery.view.fragment.DesignShowcaseLegacyGalleryFragment",
+          "label": "Design Showcase Legacy Gallery",
+          "coverage": "developer_only",
+          "implementation": null
+        },
+        {
+          "id": "designShowcaseAtomicGallery",
+          "class": "com.whoop.design.showcase.gallery.view.fragment.AtomicGalleryFragment",
+          "label": "Design Showcase Navigation Bar",
+          "coverage": "developer_only",
+          "implementation": null
+        }
+      ]
+    },
+    {
+      "graph": "download_graph",
+      "coverage": "partial_native",
+      "implementation": "App/DeviceModel.swift",
+      "note": "Supported history transfer, storage-before-acknowledgement, raw export and HR/R-R projection; physical device compatibility is not verified.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "downloaded_file_export_fragment",
+          "class": "com.whoop.whoopaction.view.DownloadedFileExportFragment",
+          "label": "DownloadedFileExportFragment",
+          "coverage": "partial_native",
+          "implementation": "App/DeviceModel.swift"
+        }
+      ]
+    },
+    {
+      "graph": "health_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DashboardViews.swift",
+      "note": "Recorded health measurements and personalized age display; proprietary aging, pace and clinical services are unavailable.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "healthLandingFragment",
+          "class": "com.whoop.health.view.HealthTabFragment",
+          "label": "HealthTabFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "home_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DashboardViews.swift",
+      "note": "Home, score details, day navigation, recovery calendar, activities and trend windows; original Home content is server-fed.",
+      "actions": 20,
+      "destinations": [
+        {
+          "id": "home_fragment",
+          "class": "com.whoop.home.view.HomeFragment",
+          "label": "Home Fragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "healthLandingFragment",
+          "class": "com.whoop.health.view.HealthTabFragment",
+          "label": "HealthTabFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "profileFoundationFragment",
+          "class": "com.whoop.profile.view.ProfileFragment",
+          "label": "ProfileFoundationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "homeCustomizationFragment",
+          "class": "com.whoop.homecustomization.view.legacy.HomeCustomizationFragment",
+          "label": "homeCustomizationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "customizeOverview",
+          "class": "com.whoop.homecustomization.view.CustomizeOverviewFragment",
+          "label": "customizeOverviewFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "behaviorImpactDetailsFragment",
+          "class": "com.whoop.impacts.details.view.BehaviorDetailsFragment",
+          "label": "BehaviorDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "behaviorImpactFragment",
+          "class": "com.whoop.impacts.impacts.view.BehaviorImpactFragment",
+          "label": "BehaviorImpactFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "native_education_redesign",
+          "class": "com.whoop.education.view.EducationFragment",
+          "label": "EducationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "onboarding_story_fragment_redesign",
+          "class": "com.whoop.stories.OnboardingStoryFragment",
+          "label": "OnboardingStoryFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "core_details_sleep_details_fragment",
+          "class": "com.whoop.core.details.sleep.view.SleepDetailsFragment",
+          "label": "SleepDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "trends_redesign",
+          "class": "com.whoop.trends.view.TrendsFragment",
+          "label": "TrendsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "content_search",
+          "class": "com.whoop.contentsearch.view.ContentSearchFragment",
+          "label": "ContentSearch",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "home_auth_web_view_fragment",
+          "class": "com.whoop.ui.home.HomeAuthWebViewFragment",
+          "label": "HomeAuthWebViewFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "add_activity_fragment",
+          "class": "com.whoop.add.activity.view.AddActivityFragment",
+          "label": "AddActivityFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "edit_activity_fragment",
+          "class": "com.whoop.edit.view.EditActivityFragment",
+          "label": "EditActivityFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "weeklyPlan",
+          "class": "com.whoop.weeklyplan.weeklyplan.view.WeeklyPlanFragment",
+          "label": "WeeklyPlanFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "customizePlan",
+          "class": "com.whoop.weeklyplan.customizeplan.view.CustomizePlanFragment",
+          "label": "CustomizePlanFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "hubAndSpoke",
+          "class": "com.whoop.weeklyplan.hubandspoke.view.HubAndSpokeFragment",
+          "label": "HubAndSpokeFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "weeklyPlanSummary",
+          "class": "com.whoop.weeklyplan.weeklyplan.view.SummaryV2Fragment",
+          "label": "SummaryV2Fragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "mciOverview",
+          "class": "com.whoop.hormonalinsights.menstrualcycleinsights.view.MciOverviewFragment",
+          "label": "MciOverviewFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "hormonalInsightsOnboarding",
+          "class": "com.whoop.hormonalinsights.onboarding.view.MciOnboardingFragment",
+          "label": "MciOnboardingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "phaseCoaching",
+          "class": "com.whoop.hormonalinsights.menstrualcycleinsights.view.PhaseCoachingFragment",
+          "label": "PhaseCoachingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "logCalendar",
+          "class": "com.whoop.hormonalinsights.menstrualcycleinsights.view.LogCalendarFragment",
+          "label": "LogCalendarFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "mciCycles",
+          "class": "com.whoop.hormonalinsights.menstrualcycleinsights.view.MciCyclesFragment",
+          "label": "CycleFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "pregnancyInsights",
+          "class": "com.whoop.hormonalinsights.pregnancyinsights.view.PregnancyInsightsFragment",
+          "label": "PregnancyInsightsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "symptomPatterns",
+          "class": "com.whoop.hormonalinsights.symptompatterns.view.SymptomPatternsFragment",
+          "label": "SymptomPatternsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "postPartumOnboarding",
+          "class": "com.whoop.hormonalinsights.postpartum.view.PostPartumFragment",
+          "label": "PostPartumFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "mciOnboarding",
+          "class": "com.whoop.hormonalinsights.onboarding.view.MciOnboardingFragment",
+          "label": "MciOnboardingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "whoopLabsFragment",
+          "class": "com.whoop.whooplabs.feature.WhoopLabsFragment",
+          "label": "Whoop Labs",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "membershipAdjustmentFragment",
+          "class": "com.whoop.pairing.membershipAdjustment.MembershipAdjustmentFragment",
+          "label": "Membership Adjustment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "referAFriendFragment",
+          "class": "com.whoop.referafriend.ReferAFriendFragment",
+          "label": "Whoop Labs",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "giftHubFragment",
+          "class": "com.whoop.settings.gifthub.GiftHubFragment",
+          "label": "GiftHubFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "pregnancySettingsFragment",
+          "class": "com.whoop.pregnancy.view.PregnancySettingsFragment",
+          "label": "pregnancySettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "healthspanFragment",
+          "class": "com.whoop.healthspan.view.HealthspanFragment",
+          "label": "healthspanFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "composableHealthMonitorFragment",
+          "class": "com.whoop.healthmonitor.view.ComposableHealthMonitorFragment",
+          "label": "composableHealthMonitorFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "hormonalSettingsFragment",
+          "class": "com.whoop.hormonalinsights.settings.view.HormonalSettingsFragment",
+          "label": "hormonalSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "whoopBotFragment",
+          "class": "com.whoop.bot.view.AiConversationFragment",
+          "label": "WhoopBotFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "whoopCoachFragment",
+          "class": "com.whoop.bot.v3.WhoopCoachFragment",
+          "label": "WhoopCoachFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "turnoffAlarmWarningFragment",
+          "class": "com.whoop.sleep.coach.alarmWarning.view.TurnoffAlarmWarningFragment",
+          "label": "TurnOffAlarmWarningFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "tilt_graph_revamp",
+          "class": "com.whoop.tiltgraph.view.TiltGraphFragment",
+          "label": "TiltGraphRevamp",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "what_to_expect",
+          "class": "com.whoop.whattoexpect.view.WhatToExpectFragment",
+          "label": "WhatToExpect",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "challenge_details",
+          "class": "com.whoop.challengedetails.view.ChallengeDetailsFragment",
+          "label": "ChallengeDetails",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "challengeLanding",
+          "class": "com.whoop.weeklyplan.challengelanding.view.ChallengeLandingFragment",
+          "label": "ChallengeLandingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "reactivation_modal_fragment",
+          "class": "com.whoop.membership.reactivationmodal.ReactivationModalFragment",
+          "label": "ReactivationModal",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "dunning_bottom_sheet_fragment",
+          "class": "com.whoop.membership.dunning.DunningBottomSheetFragment",
+          "label": "DunningBottomSheetFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "upcycle_landing_fragment",
+          "class": "com.whoop.membership.view.upcycle.UpcycleLandingFragment",
+          "label": "UpcycleLanding",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "not_found_screen",
+          "class": "com.whoop.entitlements.ui.NotFoundFragment",
+          "label": "NotFoundFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "pairingFragment",
+          "class": "com.whoop.pairing.ui.view.PairingFragment",
+          "label": "PairingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "activation_fragment",
+          "class": "com.whoop.activation.view.ActivationFragment",
+          "label": "Activation",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "streaks_fragment",
+          "class": "com.whoop.streaks.view.StreaksFragment",
+          "label": "Streaks",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "experimentsDebugFragment",
+          "class": "com.whoop.debug.experiments.ExperimentsDebugFragment",
+          "label": "Experiments Debug",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "batteryDebugFragment",
+          "class": "com.whoop.debug.battery.BatteryDebugFragment",
+          "label": "Battery Debug",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shareDebugFragment",
+          "class": "com.whoop.debug.share.ShareDebugFragment",
+          "label": "Share Debug",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "returns_fragment",
+          "class": "com.whoop.membership.returns.view.ReturnsFragment",
+          "label": "Returns",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "amoeba_debug_fragment",
+          "class": "com.whoop.amoeba.debug.view.AmoebaDebugFragment",
+          "label": "AmoebaDebug",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "healthspan_fragment",
+          "class": "com.whoop.healthspan.view.HealthspanFragment",
+          "label": "HealthspanFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "deepDiveFragment",
+          "class": "com.whoop.deepdive.view.DeepDiveFragment",
+          "label": "DeepDiveFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "heartScreenerFragment",
+          "class": "com.whoop.health.monitor.view.HeartScreenerFragment",
+          "label": "HealthScreenerFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdOnboarding",
+          "class": "com.whoop.shepherd.fragment.ShepherdOnboardingFragment",
+          "label": "ShepherdOnboardingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdTermsOfUse",
+          "class": "com.whoop.shepherd.fragment.ShepherdTermsOfUseFragment",
+          "label": "ShepherdTermsOfUseFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdSubmitFragment",
+          "class": "com.whoop.shepherd.fragment.ShepherdSubmitTermsOfUseFragment",
+          "label": "ShepherdSubmitTermsOfUseFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdDetails",
+          "class": "com.whoop.shepherd.fragment.ShepherdDetailsFragment",
+          "label": "ShepherdDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdAboutFragment",
+          "class": "com.whoop.shepherd.fragment.ShepherdAboutFragment",
+          "label": "ShepherdAboutFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdRegistrationFragment",
+          "class": "com.whoop.shepherd.fragment.ShepherdRegistrationFragment",
+          "label": "ShepherdRegistrationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorDetailsFragment",
+          "class": "com.whoop.labrador.fragment.LabradorDetailsFragment",
+          "label": "LabradorDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "shepherdToggleSettingsFragment",
+          "class": "com.whoop.shepherd.fragment.ShepherdToggleSettingsFragment",
+          "label": "ShepherdToggleSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorResultsFragment",
+          "class": "com.whoop.labrador.LabradorResultsFragment",
+          "label": "LabradorResultsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorReadingFragment",
+          "class": "com.whoop.labrador.fragment.LabradorReadingFragment",
+          "label": "LabradorReadingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorEligibility",
+          "class": "com.whoop.labrador.fragment.LabradorEligibilityFragment",
+          "label": "LabradorEligibilityFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorSubmitEligibility",
+          "class": "com.whoop.labrador.fragment.LabradorSubmitEligibilityFragment",
+          "label": "LabradorSubmitEligibilityFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorAboutFragment",
+          "class": "com.whoop.labrador.fragment.LabradorAboutFragment",
+          "label": "LabradorAboutFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "labradorRegistrationFragment",
+          "class": "com.whoop.labrador.fragment.LabradorRegistrationFragment",
+          "label": "LabradorRegistrationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "sanguineFragment",
+          "class": "com.whoop.sanguine.view.SanguineWaitlistFragment",
+          "label": "SanguineFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "sanguineWaitlistBiomarkerListFragment",
+          "class": "com.whoop.sanguine.view.SanguineWaitlistBiomarkerListFragment",
+          "label": "SanguineWaitlistBiomarkerListFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "aiInsightsFragment",
+          "class": "com.whoop.aiinsights.AiInsightsFragment",
+          "label": "AiInsightsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "startActivityActivity",
+          "class": "com.whoop.ui.activities.realtime.StartActivityActivity",
+          "label": "activity_start_activity",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "healthReportFragment",
+          "class": "com.whoop.healthmonitor.view.ComposableHealthReportFragment",
+          "label": "ComposableHealthReportFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "healthReportFragmentLegacy",
+          "class": "com.whoop.coaching.healthmonitor.healthreport.HealthReportFragment",
+          "label": "HealthReportFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "videoCallFragment",
+          "class": "com.whoop.videocall.view.VideoCallFragment",
+          "label": "VideoCallFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "sleepCoachOnboardingFragment",
+          "class": "com.whoop.coaching.sleepcoach.wizard.onboarding.SleepCoachWizarOnboardingFragment",
+          "label": "SleepCoachWizarOnboardingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "sleepCoachWizardFragment",
+          "class": "com.whoop.coaching.sleepcoach.wizard.SleepCoachWizardConductorFragment",
+          "label": "SleepCoachWizardConductorFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "strength_trainer_fragment",
+          "class": "com.whoop.weightlifting.StrengthTrainerFragment",
+          "label": "StrengthTrainerFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "journalFragmentV2",
+          "class": "com.whoop.settings.journalv2.JournalSettingsFragmentV2",
+          "label": "JournalSettingsFragmentV2",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "settingsNotificationFragment",
+          "class": "com.whoop.settings.notification.SettingsNotificationFragment",
+          "label": "settingsNotificationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "advancedLabsJoin",
+          "class": "com.whoop.advancedlabsjoin.feature.join.view.AdvancedLabsJoinFragment",
+          "label": "AdvancedLabsJoinFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "universalCheckout",
+          "class": "com.whoop.universalcheckout.features.UniversalCheckoutFragment",
+          "label": "UniversalCheckoutFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "universalCheckoutDataFetch",
+          "class": "com.whoop.internal.checkout.UniversalCheckoutDataFetchFragment",
+          "label": "UniversalCheckoutDataFetchFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "advancedLabsManagement",
+          "class": "com.whoop.advancedlabsmanagement.view.AdvancedLabsManagementFragment",
+          "label": null,
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "start_activity_fragment",
+          "class": "com.whoop.startactivity.view.StartActivityFragment",
+          "label": "StartActivityFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "feedbacksurveyFragment",
+          "class": "com.whoop.feedbacksurvey.view.FeedbackSurveyFragment",
+          "label": "FeedbackSurvey",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "limitedtimeofferFragment",
+          "class": "com.whoop.limitedtimeoffer.view.LimitedTimeOfferFragment",
+          "label": "LimitedTimeOffer",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "mfaSetupFragment",
+          "class": "com.whoop.mfa.setup.view.MfaSetupFragment",
+          "label": "MfaSetupFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "smsSetupFragment",
+          "class": "com.whoop.sms.view.SmsSetupFragment",
+          "label": "SmsSetupFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "purchaseaddonsFragment",
+          "class": "com.whoop.advancedlabsjoin.feature.purchaseaddons.view.PurchaseAddOnsFragment",
+          "label": "PurchaseAddOnsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "updatetestsFragment",
+          "class": "com.whoop.advancedlabsjoin.feature.updatetests.view.UpdateTestsFragment",
+          "label": "UpdateTestsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "genericFragment",
+          "class": "com.whoop.archv2.feature.view.GenericFragment",
+          "label": "GenericFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "topLevelGenericFragment",
+          "class": "com.whoop.archv2.feature.view.TopLevelGenericFragment",
+          "label": "TopLevelGenericFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "archV2PlaygroundFragment",
+          "class": "com.whoop.archv2.feature.view.playground.PlaygroundFragment",
+          "label": "ArchV2PlaygroundFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "orderconfirmationFragment",
+          "class": "com.whoop.activation.feature.orderconfirmation.view.OrderConfirmationFragment",
+          "label": "OrderConfirmationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "logsymptomsFragment",
+          "class": "com.whoop.hormonalinsights.logsymptoms.view.LogSymptomsFragment",
+          "label": "LogSymptomsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "giftingFragment",
+          "class": "com.whoop.gifting.feature.gifting.view.GiftingFragment",
+          "label": "Gifting",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "giftedFragment",
+          "class": "com.whoop.gifting.feature.gifted.view.GiftedFragment",
+          "label": "GiftedFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "achievementsFragment",
+          "class": "com.whoop.achievements.view.AchievementsFragment",
+          "label": "Achievements",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "hormonalContextFragment",
+          "class": "com.whoop.advancedlabs.feature.hormonalcontext.view.HormonalContextFragment",
+          "label": "HormonalContextFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "achievementCelebrationDialogFragment",
+          "class": "com.whoop.achievements.celebration.AchievementCelebrationDialogFragment",
+          "label": "AchievementCelebrationDialogFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "clinicianVideoSchedulingIntakeFragment",
+          "class": "com.whoop.clinicianintheloop.view.ClinicianVideoSchedulingIntakeFragment",
+          "label": "ClinicianVideoSchedulingIntakeFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        },
+        {
+          "id": "whoopShareSheetFragment",
+          "class": "com.whoop.share.view.WhoopShareFragment",
+          "label": "WhoopShareSheetFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DashboardViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "memberdataexport_nav_graph",
+      "coverage": "native_local",
+      "implementation": "App/Views/MeasurementExportView.swift",
+      "note": "Saved-data JSON/CSV, full backups and raw tracker archives; requesting a vendor account archive is a separate service.",
+      "actions": 2,
+      "destinations": [
+        {
+          "id": "memberdataexport_mdeFragment",
+          "class": "com.whoop.memberdataexport.ui.MemberDataExportFragment",
+          "label": "DataExportFragment",
+          "coverage": "native_local",
+          "implementation": "App/Views/MeasurementExportView.swift"
+        },
+        {
+          "id": "memberdataexport_submitMdeFragment",
+          "class": "com.whoop.memberdataexport.ui.SubmitMemberDataExportFragment",
+          "label": "SubmitMemberDataExportFragment",
+          "coverage": "native_local",
+          "implementation": "App/Views/MeasurementExportView.swift"
+        },
+        {
+          "id": "memberdataexport_submissionCompleteFragment",
+          "class": "com.whoop.memberdataexport.ui.SubmissionCompleteFragment",
+          "label": "SubmitMemberDataExportFragment",
+          "coverage": "native_local",
+          "implementation": "App/Views/MeasurementExportView.swift"
+        }
+      ]
+    },
+    {
+      "graph": "new_journal_nav_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DetailViews.swift",
+      "note": "Local caffeine/alcohol/late-meal journal and notes; the remote behavior catalog and vendor impact model are absent.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "journalSurveyAnswerFragment",
+          "class": "com.whoop.journal.view.fragment.JournalSurveyAnswerFragment",
+          "label": "JournalSurveyAnswerFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "onboarding_stories_graph",
+      "coverage": "partial_native",
+      "implementation": "App/WHOOPApp.swift",
+      "note": "Single local setup, packaged loading motion and original intro video; vendor login/activation flows are not reproduced.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "onboarding_story_fragment",
+          "class": "com.whoop.stories.OnboardingStoryFragment",
+          "label": "OnboardingStoryFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WHOOPApp.swift"
+        }
+      ]
+    },
+    {
+      "graph": "profile_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Pulse/PulseHomePanels.swift",
+      "note": "Local profile, chosen age/streak, recorded highlights and exports; vendor achievement/ranking services are absent.",
+      "actions": 1,
+      "destinations": [
+        {
+          "id": "startActivityActivity",
+          "class": "com.whoop.ui.activities.realtime.StartActivityActivity",
+          "label": "activity_start_activity",
+          "coverage": "partial_native",
+          "implementation": "App/Pulse/PulseHomePanels.swift"
+        }
+      ]
+    },
+    {
+      "graph": "profile_levels_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Pulse/PulseHomePanels.swift",
+      "note": "Existing local presentation does not reproduce WHOOP level entitlements.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "memberLevelsFragment",
+          "class": "com.whoop.profile.view.memberlevels.MemberLevelsFragment",
+          "label": "MemberLevelsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Pulse/PulseHomePanels.swift"
+        }
+      ]
+    },
+    {
+      "graph": "proper_fit_nav_graph",
+      "coverage": "not_implemented",
+      "implementation": null,
+      "note": "The original fit-education flow has not been rebuilt.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "proper_fit_fragment",
+          "class": "com.whoop.properfit.view.ProperFitFragment",
+          "label": "ProperFitFragment",
+          "coverage": "not_implemented",
+          "implementation": null
+        }
+      ]
+    },
+    {
+      "graph": "sage_graph",
+      "coverage": "service_gap",
+      "implementation": "App/Views/ReferenceComponents.swift",
+      "note": "Recorded-day review is not WHOOP\u2019s proprietary Coach chat service.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "sageFragment",
+          "class": "com.whoop.sage.view.SageFragment",
+          "label": "sageFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/ReferenceComponents.swift"
+        },
+        {
+          "id": "sageOnboardingFragment",
+          "class": "com.whoop.sage.onboarding.view.SageOnboardingFragment",
+          "label": "SageOnboardingFragment",
+          "coverage": "service_gap",
+          "implementation": "App/Views/ReferenceComponents.swift"
+        }
+      ]
+    },
+    {
+      "graph": "settings_graph_redesign",
+      "coverage": "partial_native",
+      "implementation": "App/Views/SecondaryViews.swift",
+      "note": "Local preferences, language, device, data and account-bridge settings; billing and account administration remain provider services.",
+      "actions": 36,
+      "destinations": [
+        {
+          "id": "settingsLandingFragment",
+          "class": "com.whoop.settings.SettingsLandingFragment",
+          "label": "SettingsLandingFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "newStrapSettings",
+          "class": "com.whoop.settings.strap.StrapSettingsFragment",
+          "label": "New Strap Settings",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "newAdvancedStrapSettings",
+          "class": "com.whoop.ui.drawer.strapsettings.advancedsettings.AdvancedStrapFragment",
+          "label": "New Advanced Strap Settings",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "featureSettings",
+          "class": "com.whoop.ui.drawer.debug.DebugFeatureFlagSettingsFragment",
+          "label": "Feature Flag Settings",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "testItems",
+          "class": "com.whoop.ui.debug.WhoopStrapTestFragment",
+          "label": "Whoop Strap Test",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "paymentsFragment",
+          "class": "com.whoop.payments.paymentMethodSelection.PaymentsFragment",
+          "label": "Native Payments",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "paymentmethodmanagementFragment",
+          "class": "com.whoop.payments.feature.paymentmethodmanagement.view.PaymentMethodManagementFragment",
+          "label": "Payment Method Management",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "myAccountFragment",
+          "class": "com.whoop.settings.myaccount.MyAccountFragment",
+          "label": "MyAccountFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "aboutFragment",
+          "class": "com.whoop.settings.about.AboutFragment",
+          "label": "AboutFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "debugFragment",
+          "class": "com.whoop.settings.DebugFragment",
+          "label": "Debug Fragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "pushDebugFragment",
+          "class": "com.whoop.ui.debug.PushDebugFragment",
+          "label": "Push Debug",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "debugIterablesFragment",
+          "class": "com.whoop.ui.debug.DebugIterablesFragment",
+          "label": "DebugIterablesFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "debugIterableToolFragment",
+          "class": "com.whoop.ui.debug.IterableToolDebugFragment",
+          "label": "IterableToolDebugFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "mainConsole",
+          "class": "com.whoop.ui.debug.MainConsoleFragment",
+          "label": "Main Console",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "tutorialsFragment",
+          "class": "com.whoop.settings.TutorialsFragment",
+          "label": "TutorialsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "stravaRevampSettingsFragment",
+          "class": "com.whoop.strava.view.StravaFragment",
+          "label": "Strava Revamp",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "activityDetectionFragment",
+          "class": "com.whoop.training.activitydetection.ActivityDetectionFragment",
+          "label": "ActivityDetectionFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "privacyConsentFragment",
+          "class": "com.whoop.privacyconsent.view.PrivacyConsentFragment",
+          "label": "PrivacyConsentFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "healthConnectFragment",
+          "class": "com.whoop.healthconnect.view.HealthConnectFragment",
+          "label": "Health Connect",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "giftWhoopFragment",
+          "class": "com.whoop.settings.GiftWhoopFragment",
+          "label": "GiftWhoopFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "debugOnboardingStoriesFragment",
+          "class": "com.whoop.stories.OnboardingStoriesDebugFragment",
+          "label": "OnboardingStoriesDebugFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "featureEducationDebugFragment",
+          "class": "com.whoop.education.FeatureEducationDebugFragment",
+          "label": "FeatureEducationDebugFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "onboardingStatusDebugFragment",
+          "class": "com.whoop.settings.OnboardingStatusDebugFragment",
+          "label": "OnboardingStatusDebugFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "help_center",
+          "class": "com.whoop.helpcenter.view.fragment.HelpCenterFragment",
+          "label": "HelpCenterFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "pregnancySettingsFragment",
+          "class": "com.whoop.pregnancy.view.PregnancySettingsFragment",
+          "label": "pregnancySettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "stealthModeFragment",
+          "class": "com.whoop.stealthmode.view.StealthModeFragment",
+          "label": "StealthModeFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "shepherdNotificationHistoryFragment",
+          "class": "com.whoop.shepherd.fragment.ShepherdNotificationHistoryFragment",
+          "label": "shepherdSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "labradorDeviceLocationFragment",
+          "class": "com.whoop.labrador.fragment.LabradorDeviceLocationFragment",
+          "label": "LabradorDeviceLocationFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "regulatoryLabelsFragment",
+          "class": "com.whoop.settings.regulatorylabels.SettingsRegulatoryLabelsFragment",
+          "label": "RegulatoryLabelsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "openSourceLicensesActivity",
+          "class": "com.google.android.gms.oss.licenses.OssLicensesMenuActivity",
+          "label": "Open source licenses",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "editDeviceName",
+          "class": "com.whoop.settings.strap.EditDeviceNameActivity",
+          "label": "EditDeviceNameActivity",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "whoopCoachSettingsFragment",
+          "class": "com.whoop.bot.settings.CoachSettingsFragment",
+          "label": "CoachSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "integrationsFragment",
+          "class": "com.whoop.integrations.view.IntegrationsFragment",
+          "label": "Integrations",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "MembershipManagementFragment",
+          "class": "com.whoop.membership.management.MembershipManagementFragment",
+          "label": "MembershipManagementFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "FamilyPlanHubFragment",
+          "class": "com.whoop.membership.familyPlan.FamilyPlanHubFragment",
+          "label": "FamilyPlanFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "ExtensionsFragment",
+          "class": "com.whoop.membership.extensions.view.MembershipExtensionsFragment",
+          "label": "ExtensionsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "switchPlanDialogFragment",
+          "class": "com.whoop.settings.switchPlan.SwitchPlanDialogFragment",
+          "label": "SwitchPlanModal",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "chooseLanguage",
+          "class": "com.whoop.settings.language.LanguagePrefsFragment",
+          "label": "LanguagePrefsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        },
+        {
+          "id": "editEmailFragment",
+          "class": "com.whoop.settings.email.EditEmailFragment",
+          "label": "EditEmailFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/SecondaryViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "sleep_coach_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DetailViews.swift",
+      "note": "Reported sleep need/debt and history are displayed; band alarm scheduling and vendor coaching are not implemented.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "sleep_coach_wake_time_schedule_list_fragment",
+          "class": "com.whoop.sleep.coach.view.scheduleList.SleepWakeTimeScheduleListFragment",
+          "label": "SleepWakeTimeScheduleList",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "strength_trainer_graph",
+      "coverage": "partial_native",
+      "implementation": "App/WorkoutRecorder.swift",
+      "note": "Real HR workout recording and optional labeled local estimates; muscular load, set recognition and native MSK model are not implemented.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "strength_trainer",
+          "class": "com.whoop.weightlifting.StrengthTrainerFragment",
+          "label": "StrengthTrainerFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        }
+      ]
+    },
+    {
+      "graph": "stress_monitor_graph",
+      "coverage": "service_gap",
+      "implementation": "App/Views/ReferenceComponents.swift",
+      "note": "Presentation exists; proprietary stress scores/time series are not inferred from HR.",
+      "actions": 1,
+      "destinations": [
+        {
+          "id": "stressMonitorFragment",
+          "class": "com.whoop.stress.view.StressMonitorFragment",
+          "label": null,
+          "coverage": "service_gap",
+          "implementation": "App/Views/ReferenceComponents.swift"
+        }
+      ]
+    },
+    {
+      "graph": "stress_session_graph",
+      "coverage": "not_implemented",
+      "implementation": null,
+      "note": "Guided stress sessions and vendor stress scoring are not implemented.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "stressSessionFragment",
+          "class": "com.whoop.stress.view.StressSessionFragment",
+          "label": "StressSessionFragment",
+          "coverage": "not_implemented",
+          "implementation": null
+        }
+      ]
+    },
+    {
+      "graph": "training_activity_settings_graph",
+      "coverage": "partial_native",
+      "implementation": "App/Views/DetailViews.swift",
+      "note": "Local activity names/durations and HR limits; not all sport-specific device settings.",
+      "actions": 1,
+      "destinations": [
+        {
+          "id": "activitySettingsFragment",
+          "class": "com.whoop.training.ui.activitysettings.ActivitySettingsFragment",
+          "label": "ActivitySettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        },
+        {
+          "id": "trainingHrSettingsFragment",
+          "class": "com.whoop.training.hrsettings.view.fragment.HrSettingsFragment",
+          "label": "HrSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        },
+        {
+          "id": "locationSettingsFragment",
+          "class": "com.whoop.training.locationsettings.view.LocationSettingsFragment",
+          "label": "LocationSettingsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/Views/DetailViews.swift"
+        }
+      ]
+    },
+    {
+      "graph": "user_journey_graph",
+      "coverage": "partial_native",
+      "implementation": "App/WHOOPApp.swift",
+      "note": "Local setup and optional public-account bridge; remote activation/membership routing remains unavailable.",
+      "actions": 0,
+      "destinations": [
+        {
+          "id": "user_journey_fragment",
+          "class": "com.whoop.user.journey.view.UserJourneyFragment",
+          "label": "UserJourneyFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WHOOPApp.swift"
+        },
+        {
+          "id": "year_in_review_raf_fragment",
+          "class": "com.whoop.user.journey.yearinreviewraf.YirRafFragment",
+          "label": "YirRafFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WHOOPApp.swift"
+        }
+      ]
+    },
+    {
+      "graph": "weightlifting_nav_graph",
+      "coverage": "partial_native",
+      "implementation": "App/WorkoutRecorder.swift",
+      "note": "Same strength boundary; no invented rep/set metrics.",
+      "actions": 7,
+      "destinations": [
+        {
+          "id": "weightliftingExerciseSelectFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingExerciseSelectFragment",
+          "label": "WeightliftingExerciseSelectFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        },
+        {
+          "id": "weightliftingLoadEntryFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingLoadEntryFragment",
+          "label": "WeightliftingLoadEntryFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        },
+        {
+          "id": "weightliftingActiveSetFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingActiveSetFragment",
+          "label": "WeightliftingActiveSetFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        },
+        {
+          "id": "weightliftingPostSetFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingPostSetFragment",
+          "label": "WeightliftingPostSetFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        },
+        {
+          "id": "weightliftingExerciseListFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingExerciseListFragment",
+          "label": "WeightliftingExerciseListFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        },
+        {
+          "id": "weightliftingExerciseDetailsFragment",
+          "class": "com.whoop.weightlifting.poc.view.fragment.WeightliftingExerciseDetailsFragment",
+          "label": "WeightliftingExerciseDetailsFragment",
+          "coverage": "partial_native",
+          "implementation": "App/WorkoutRecorder.swift"
+        }
+      ]
+    }
+  ],
+  "apk_sha256": "f2f84ab1b49fb69e5298ecab5acda706a47cd556df726662792f1cfd6a512c9a"
+}

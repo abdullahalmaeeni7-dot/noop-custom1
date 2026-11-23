@@ -473,7 +473,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
                         guard store.trackerDataGeneration == self.historyStoreGeneration else {
                             self.failHistory(WhoopHistoryTransferError.notReady); return
                         }
-                        do { try store.mergeMeasurements(saved.days, selectLatest: false) }
+                        do { try store.mergeMeasurements(saved.days, selectToday: false) }
                         catch { self.historyPreviewError = error.localizedDescription }
                         // The complete lossless raw batch is durable even if the bounded
                         // dashboard preview cannot be indexed. Never lose the raw transfer.

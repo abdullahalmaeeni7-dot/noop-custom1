@@ -1,0 +1,12 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:orientation="1" android:layout_width="-1" android:layout_height="-1">
+  <LinearLayout android:gravity="0x00000010" android:orientation="0" android:id="@7F0A0216" android:layout_width="-1" android:layout_height="32.000000dip" android:layout_marginBottom="5.000000dip" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toTopOf="0">
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F14089F" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F1410B5" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F141116" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F141028" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F14050E" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F140AEB" android:layout_weight="1.000000"/>
+    <TextView android:textStyle="0x00000001" android:textColor="@7F060099" android:gravity="0x00000001" android:layout_width="0.000000dip" android:layout_height="-2" android:text="@7F140FB7" android:layout_weight="1.000000"/>
+  </LinearLayout>
+  <androidx.recyclerview.widget.RecyclerView android:id="@7F0A0215" android:layout_width="-1" android:layout_height="-2" android:numColumns="7" app:layout_constraintEnd_toEndOf="0" app:layout_constraintStart_toStartOf="0" app:layout_constraintTop_toBottomOf="@7F0A0216"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

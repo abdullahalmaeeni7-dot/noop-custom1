@@ -413,14 +413,14 @@ struct HealthMonitorView: View {
             }
             HStack(spacing: 10) {
                 healthTile("RESPIRATORY RATE", value: decimalText(day.respiratoryRate), unit: "rpm", symbol: "lungs", available: day.respiratoryRate != nil)
-                healthTile("BLOOD OXYGEN", value: "—", unit: "%", symbol: "drop", available: false)
+                healthTile("BLOOD OXYGEN", value: decimalText(day.oxygenSaturation, places: 0), unit: "%", symbol: "drop", available: day.oxygenSaturation != nil)
             }
             HStack(spacing: 10) {
                 healthTile("RHR", value: decimalText(day.restingHeartRate, places: 0), unit: "bpm", symbol: "heart", available: day.restingHeartRate != nil)
                 healthTile("HRV", value: decimalText(day.hrv, places: 0), unit: "ms", symbol: "waveform.path.ecg", available: day.hrv != nil)
             }
             HStack(spacing: 10) {
-                healthTile("SKIN TEMP", value: "—", unit: "°C", symbol: "thermometer.medium", available: false)
+                healthTile("SKIN TEMP", value: decimalText(day.skinTemperatureCelsius), unit: "°C", symbol: "thermometer.medium", available: day.skinTemperatureCelsius != nil)
                 healthTile("SLEEP", value: day.sleepMinutes > 0 ? durationText(day.sleepMinutes) : "—", unit: "", symbol: "moon", available: day.sleepMinutes > 0)
             }
             if showImportActions {
@@ -544,10 +544,10 @@ struct HealthView: View {
                         HStack { Text(L10n.text("HEALTH MONITOR")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.forward").foregroundStyle(WColor.muted) }
                         HStack(spacing: 0) {
                             healthStatus("RESP", symbol: "lungs", available: store.selectedDay.respiratoryRate != nil)
-                            healthStatus("SpO₂", symbol: "drop", available: false)
+                            healthStatus("SpO₂", symbol: "drop", available: store.selectedDay.oxygenSaturation != nil)
                             healthStatus("RHR", symbol: "heart", available: store.selectedDay.restingHeartRate != nil)
                             healthStatus("HRV", symbol: "waveform.path.ecg", available: store.selectedDay.hrv != nil)
-                            healthStatus("TEMP", symbol: "thermometer.medium", available: false)
+                            healthStatus("TEMP", symbol: "thermometer.medium", available: store.selectedDay.skinTemperatureCelsius != nil)
                         }
                         Text(L10n.text("Indicators show available measurements, not a medical range assessment.")).font(WFont.body(12)).foregroundStyle(WColor.muted)
                     }

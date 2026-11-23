@@ -82,14 +82,18 @@ public enum MeasurementExport {
             data = try ImportReader.jsonEncoder().encode(PersonalizedMeasurementArchive(days: validated, profile: personal, highlights: highlights, metadata: metadata))
         case .dailyCSV:
             prefix = "WHOOP-daily-measurements"
-            var rows = ["date_utc,recovery_percent,strain,sleep_performance_percent,sleep_minutes,sleep_needed_minutes,resting_heart_rate_bpm,hrv_rmssd_ms,respiratory_rate_rpm,steps,energy_kcal,heart_rate_sample_count,data_source"]
+            var rows = ["date_utc,recovery_percent,strain,sleep_performance_percent,sleep_minutes,sleep_needed_minutes,resting_heart_rate_bpm,hrv_rmssd_ms,respiratory_rate_rpm,steps,energy_kcal,heart_rate_sample_count,data_source,spo2_percent,skin_temperature_celsius,awake_minutes,light_sleep_minutes,deep_sleep_minutes,rem_sleep_minutes,time_in_bed_minutes,sleep_efficiency_percent,sleep_consistency_percent,sleep_debt_minutes"]
             for day in validated {
                 try Task.checkCancellation()
                 rows.append([
                     String(formatter.string(from: day.date).prefix(10)), number(day.recovery), number(day.strain),
                     number(day.sleepPerformance), String(day.sleepMinutes), String(day.sleepNeededMinutes),
                     number(day.restingHeartRate), number(day.hrv), number(day.respiratoryRate),
-                    String(day.steps), String(day.energyKcal), String(day.heartRates.count), day.source.rawValue
+                    String(day.steps), String(day.energyKcal), String(day.heartRates.count), day.source.rawValue,
+                    number(day.oxygenSaturation), number(day.skinTemperatureCelsius), number(day.sleepBreakdown?.awakeMinutes),
+                    number(day.sleepBreakdown?.lightMinutes), number(day.sleepBreakdown?.deepMinutes), number(day.sleepBreakdown?.remMinutes),
+                    number(day.sleepBreakdown?.inBedMinutes), number(day.sleepBreakdown?.efficiencyPercent),
+                    number(day.sleepBreakdown?.consistencyPercent), number(day.sleepBreakdown?.debtMinutes)
                 ].joined(separator: ","))
             }
             data = Data((rows.joined(separator: "\r\n") + "\r\n").utf8)

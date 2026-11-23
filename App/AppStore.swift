@@ -31,6 +31,7 @@ final class AppStore: ObservableObject {
         didSet { dayIndex = days.enumerated().reduce(into: [:]) { $0[DayCalendar.start(of: $1.element.date)] = $1.offset } }
     }
     private var dayIndex: [Date: Int] = [:]
+    private var lastKnownToday = DashboardDatePolicy.today()
     @Published private(set) var isLoadingSavedData = false
     @Published private(set) var activities: [ActivityRecord]
     @Published private(set) var nutrition = NutritionData()
@@ -118,6 +119,12 @@ final class AppStore: ObservableObject {
         activities.filter { Self.utc.isDate($0.start, inSameDayAs: selectedDate) }.sorted { $0.start > $1.start }
     }
 
+    func refreshCurrentDay(now: Date = Date()) {
+        let current = DashboardDatePolicy.today(now: now)
+        guard current != lastKnownToday else { return }
+        selectedDate = DashboardDatePolicy.onRollover(selected: selectedDate, previousToday: lastKnownToday, now: now)
+        lastKnownToday = current
+    }
     func moveDay(_ offset: Int) {
         if let date = Self.utc.date(byAdding: .day, value: offset, to: selectedDate) {
             selectedDate = date
@@ -169,6 +176,9 @@ final class AppStore: ObservableObject {
                     if day.recovery == nil { day.recovery = existing.recovery }
                     if day.strain == nil { day.strain = existing.strain }
                     if day.hrv == nil { day.hrv = existing.hrv }
+                    if day.oxygenSaturation == nil { day.oxygenSaturation = existing.oxygenSaturation }
+                    if day.skinTemperatureCelsius == nil { day.skinTemperatureCelsius = existing.skinTemperatureCelsius }
+                    if day.sleepBreakdown == nil { day.sleepBreakdown = existing.sleepBreakdown }
                     if day.restingHeartRate == nil { day.restingHeartRate = existing.restingHeartRate }
                     if day.sleepPerformance == nil { day.sleepPerformance = existing.sleepPerformance }
                     if day.respiratoryRate == nil { day.respiratoryRate = existing.respiratoryRate }
@@ -179,20 +189,20 @@ final class AppStore: ObservableObject {
                 merged[day.date] = day
             }
             days = merged.values.sorted { $0.date < $1.date }
-            if let latest = imported.days.map(\.date).max() { selectedDate = latest }
+
         }
         for activity in imported.activities {
             if let index = activities.firstIndex(where: { $0.id == activity.id }) { activities[index] = activity }
             else { activities.append(activity) }
         }
-        if imported.days.isEmpty, let latest = imported.activities.map(\.start).max() { selectedDate = Self.utc.startOfDay(for: latest) }
+        selectedDate = DashboardDatePolicy.afterImport()
         if let personalized = imported.profile { profile = personalized }
         do { try writeState() } catch { restoreState(before); throw error }
         lastImportSummary = (["Imported \(imported.days.count) days and \(imported.activities.count) workouts."] + (imported.profile == nil ? [] : ["Profile preferences included."]) + imported.notices).joined(separator: " ")
     }
 
     /// Merge measurements without replacing supplied WHOOP day scores with local estimates.
-    func mergeMeasurements(_ incoming: [DailySnapshot], selectLatest: Bool = true) throws {
+    func mergeMeasurements(_ incoming: [DailySnapshot], selectToday: Bool = true) throws {
         let before = stateSnapshot()
         var merged = days.filter { $0.source != .example }
         for incomingDay in incoming {
@@ -204,6 +214,9 @@ final class AppStore: ObservableObject {
                 if let value = day.restingHeartRate { previous.restingHeartRate = value }
                 if let value = day.hrv { previous.hrv = value }
                 if let value = day.respiratoryRate { previous.respiratoryRate = value }
+                if let value = day.oxygenSaturation { previous.oxygenSaturation = value }
+                if let value = day.skinTemperatureCelsius { previous.skinTemperatureCelsius = value }
+                if let value = day.sleepBreakdown { previous.sleepBreakdown = value }
                 if day.steps > 0 { previous.steps = day.steps }
                 if day.energyKcal > 0 { previous.energyKcal = day.energyKcal }
                 if day.sleepMinutes > 0 { previous.sleepMinutes = day.sleepMinutes }
@@ -214,7 +227,7 @@ final class AppStore: ObservableObject {
             } else { merged.append(day) }
         }
         days = merged.sorted { $0.date < $1.date }
-        if selectLatest, let latest = incoming.map(\.date).max() { selectedDate = Self.utc.startOfDay(for: latest) }
+        if selectToday { selectedDate = DashboardDatePolicy.today() }
         do { try writeState() } catch { restoreState(before); throw error }
     }
 
@@ -243,7 +256,7 @@ final class AppStore: ObservableObject {
             else { activities.append(activity) }
         }
         whoopAccountUserID = account.userID
-        if let latest = account.days.map(\.date).max() { selectedDate = latest }
+        selectedDate = DashboardDatePolicy.afterImport()
         do { try writeState() } catch { restoreState(before); throw error }
     }
 
@@ -292,7 +305,7 @@ final class AppStore: ObservableObject {
         let before = stateSnapshot()
         days = backup.days.sorted { $0.date < $1.date }
         journal = backup.journal; activities = backup.activities
-        selectedDate = backup.selectedDate
+        selectedDate = DashboardDatePolicy.afterImport()
         whoopAccountUserID = backup.whoopAccountUserID
         nutrition = backup.nutrition ?? NutritionData()
         profile = restoredProfile

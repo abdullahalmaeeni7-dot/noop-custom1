@@ -172,7 +172,7 @@ final class LaunchDayDataTests: XCTestCase {
         XCTAssertEqual(initial.selectedDate, DayCalendar.start(of: now))
     }
 
-    func testMigrationPreservesEveryRealMeasurementAndSelectedDay() {
+    func testMigrationPreservesEveryRealMeasurementButOpensToday() {
         var recorded = DailySnapshot.empty(on: now)
         recorded.recovery = 74
         recorded.strain = 9.4
@@ -181,7 +181,7 @@ final class LaunchDayDataTests: XCTestCase {
         earlier.sleepMinutes = 431
         let initial = LaunchDayData(savedDays: ExampleData.days() + [recorded, earlier], selectedDate: earlier.date, now: now)
         XCTAssertEqual(initial.days, [earlier, recorded])
-        XCTAssertEqual(initial.selectedDate, earlier.date)
+        XCTAssertEqual(initial.selectedDate, DayCalendar.start(of: now))
     }
 }
 
