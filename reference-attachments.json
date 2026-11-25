@@ -1,0 +1,311 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "BA8EC235-DC58-4208-8868-C28421A09188.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10-health-measurements_0_0487ABA7-0318-4CAC-84B5-CDBBA74D900E.png",
+        "timestamp" : 1795631067.678
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "1BD1A546-EBFA-4C32-97C3-4AD20A144E47.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "09-sleep-stages_0_4356D4C0-306C-4B8B-95CA-2335346B9420.png",
+        "timestamp" : 1795631048.11
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "836D7AF6-BD52-43CB-8B8A-18B61EF0BD66.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "08-colored-recovery-calendar_0_7DB821DB-0FF7-439E-9FDF-A3FE6609D60A.png",
+        "timestamp" : 1795631034.936
+      }
+    ],
+    "testIdentifier" : "ReferenceFeatureTests/testRecoveryCalendarSleepStagesAndHealthMeasurements()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/ReferenceFeatureTests/testRecoveryCalendarSleepStagesAndHealthMeasurements"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "DA5C517A-9D5F-4240-8BDA-3AC50F36C388",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.55 PM",
+        "timestamp" : 1795631155.327
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "9002C2BC-1BA0-405B-9603-0D998A33EC9E",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.53 PM",
+        "timestamp" : 1795631153.093
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "64025B23-91B6-4032-A889-FDAC646F2E6E",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.50 PM",
+        "timestamp" : 1795631150.969
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "12F51D08-3F42-4858-9C47-973BB245BF79.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for local.whoop_0_B228BF0C-5776-4CAA-A5D2-B292908098EF.reconstruction",
+        "timestamp" : 1795631148.913
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "801B0015-46E9-47D2-A285-F5DD3A740E5F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.48 PM",
+        "timestamp" : 1795631148.914
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "A6B36FE4-6C94-417A-9071-1C06A4AA6971.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Cell (First Match)`_0_5E7FC890-B5F2-42CA-8636-6241C829BD01.txt",
+        "timestamp" : 1795631132.021
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "E5590A2C-9E33-4F71-BE00-567E9A700D8B.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Cell (First Match)`_0_01D0F5B5-2C1F-47ED-96A7-9FAE3FA07680.txt",
+        "timestamp" : 1795631130.904
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "6FA91CAE-4B19-49F6-BAC4-0FFB44B3966A.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for local.whoop_0_39801902-1B33-453D-A5DD-7C473485B460.reconstruction",
+        "timestamp" : 1795631126.662
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "1DC4E0C8-CBF8-4644-AC03-204756503654",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.26 PM",
+        "timestamp" : 1795631126.663
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "853624D3-983C-42C1-9647-258E08B08793.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Any (First Match)`_0_1D676201-2563-410D-A9C1-9F9B5CBBB7BD.txt",
+        "timestamp" : 1795631122.907
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "E9E85F85-9A07-4CFA-8047-E9201059E593",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.17 PM",
+        "timestamp" : 1795631117.352
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "3E5CCA5C-26D8-4788-9923-EEDD08E3C263",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.25.17 PM",
+        "timestamp" : 1795631117.684
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "698512BB-B06E-4779-A306-D391C1019649",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.25.14 PM",
+        "timestamp" : 1795631114.247
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "73DA9FA6-85A4-466A-A333-5AD784B40C54.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Alert (First Match)`_0_9F044727-2247-4BFA-880B-5F41FE8BC500.txt",
+        "timestamp" : 1795631111.906
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "990E5596-CEE2-4082-BC5A-52B8ACB0B899.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Alert (First Match)`_0_8938C8E0-42AF-4FB1-A0B1-8926EA6E2B55.txt",
+        "timestamp" : 1795631111.479
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "01753774-3764-49D0-A2FB-9D9881A05130",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.08 PM",
+        "timestamp" : 1795631108.631
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "C820E24A-C019-4985-8336-7C943960C4E3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.25.08 PM",
+        "timestamp" : 1795631108.966
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "1FFC147A-ADC3-4F03-BBD2-2C4CF202F64D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "17-more_0_48B7FB57-D67D-4307-95DB-CBFB6A973378.png",
+        "timestamp" : 1795631106.056
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "6568B131-538F-44FA-8669-86013F20692B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.03 PM",
+        "timestamp" : 1795631103.285
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "47A7F703-45D8-4AE1-A8A8-41A9FAFBC9B4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.01 PM",
+        "timestamp" : 1795631101.219
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "F04655A5-720A-4165-A25F-3FDAA6AE17A4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.25.01 PM",
+        "timestamp" : 1795631101.542
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "E0CA8C79-6CC1-49C5-A8E3-704205F2F3CC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "16-community_0_2A607323-F828-4B32-B195-50B5563C4FC9.png",
+        "timestamp" : 1795631101.011
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "2D0195B8-1BD0-408A-8E5A-62D6E10D4768",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.24.59 PM",
+        "timestamp" : 1795631099.439
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "F626181C-92BE-499C-AE6D-2ECA4F7F4A3E",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.24.57 PM",
+        "timestamp" : 1795631097.892
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "ACBA8A3C-0353-4B04-8D23-69A0631DAAEF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.24.58 PM",
+        "timestamp" : 1795631098.217
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "6C553D30-C70D-40B2-BDE0-4992C7BE47A6.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "15-health_0_ADA3004B-EF20-4087-82D0-37858DCE090A.png",
+        "timestamp" : 1795631097.598
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "A937E1C6-DC6B-427F-9C4C-C6F20374AE16",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-25 at 06.24.53 PM",
+        "timestamp" : 1795631093.929
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "7C84C14C-F58A-4C51-9FBC-C36E066FD3D1.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-25 at 06.24.31 PM.mp4",
+        "timestamp" : 1795631071.799
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "1BE7BB92-67BC-4C0B-AF3D-EDF68D0BEEFB.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for local.whoop_0_CC9C4D0E-FBC7-4001-8525-A65825A3E1F6.reconstruction",
+        "timestamp" : 1795631157.702
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "10BF5977-E16A-4D54-8CF3-1A369A1B815D",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "F475C1C6-F1FE-42E7-9E80-5D82AEF53118",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-25 at 06.25.57 PM",
+        "timestamp" : 1795631157.702
+      }
+    ],
+    "testIdentifier" : "ReferenceFeatureTests/testSavedPhotoOverlaysAndPrimaryTabs()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/ReferenceFeatureTests/testSavedPhotoOverlaysAndPrimaryTabs"
+  }
+]
