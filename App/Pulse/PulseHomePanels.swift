@@ -173,7 +173,7 @@ struct WHOOPProfileView: View {
     @State private var error: String?
     private var range: ClosedRange<Date>? {
         guard period != "ALL TIME" else { return nil }
-        let end = DayCalendar.start(of: Date())
+        let end = DashboardDatePolicy.today()
         let start = DayCalendar.utc.date(byAdding: .month, value: period == "1M" ? -1 : -3, to: end) ?? end
         return start...end
     }

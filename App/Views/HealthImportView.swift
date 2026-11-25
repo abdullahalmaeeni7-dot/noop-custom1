@@ -24,6 +24,21 @@ struct HealthImportView: View {
                 }
                 WCard {
                     VStack(alignment: .leading, spacing: 15) {
+                        Toggle(L10n.text("Automatically sync sleep"), isOn: Binding(
+                            get: { health.automaticSleepEnabled },
+                            set: { enabled in Task { await health.setAutomaticSleep(enabled, store: store) } }
+                        )).disabled(!health.isAvailable || health.requestingSleepAccess)
+                            .tint(WColor.green).accessibilityIdentifier("automaticSleepSync")
+                        Text(L10n.text("Read sleep recorded in Apple Health for the past seven days, grouped by wake date. Allow Sleep access when prompted."))
+                            .font(WFont.body(14)).foregroundStyle(WColor.muted)
+                        if let syncStatus = health.sleepSyncStatus {
+                            Text(L10n.text(syncStatus)).font(WFont.body(14)).foregroundStyle(WColor.muted)
+                        }
+                        if health.automaticSleepEnabled && health.backgroundSleepAvailable == false {
+                            Text(L10n.text("Background delivery is unavailable. Sleep refreshes when you open the app."))
+                                .font(WFont.body(14)).foregroundStyle(WColor.muted)
+                        }
+                        Divider()
                         SectionHeading(title: "Choose your days", subtitle: "Today so far and your recent days")
                         Picker(L10n.text("Date range"), selection: $days) {
                             Text(L10n.text("14 days")).tag(14)
@@ -33,7 +48,7 @@ struct HealthImportView: View {
                         .disabled(health.isLoading || !pendingDays.isEmpty)
                         Text(L10n.text("Includes steps, active energy, resting heart rate, respiratory rate, heart rate, and time asleep when available."))
                             .font(WFont.body(15)).foregroundStyle(WColor.muted)
-                        Text(L10n.text("Days run midnight to midnight UTC. Sleep is split across those days, so totals can differ from a night shown in Apple Health."))
+                        Text(L10n.text("Sleep uses the local wake date. Other measurements use UTC days."))
                             .font(WFont.body(14)).foregroundStyle(WColor.muted)
                     }
                 }

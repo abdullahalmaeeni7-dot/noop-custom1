@@ -120,6 +120,10 @@ struct WButton: ButtonStyle {
     }
 }
 
+func clockDuration(_ minutes: Int) -> String {
+    String(format: "%d:%02d", minutes / 60, minutes % 60)
+}
+
 func durationText(_ minutes: Int) -> String {
     let value = max(0, minutes)
     return AppLanguage.isArabic ? "\(value / 60) س \(value % 60) د" : "\(value / 60)h \(value % 60)m"
@@ -238,21 +242,23 @@ func selectedDayExists(in store: AppStore) -> Bool {
 
 struct WhoopNavigationIcon: View {
     let tab: AppTab
+    private var asset: String? {
+        switch tab {
+        case .home: return "NavigationHome"
+        case .health: return "NavigationHealth"
+        case .community: return "NavigationCommunity"
+        case .menu: return "NavigationMore"
+        default: return nil
+        }
+    }
+
     var body: some View {
         Group {
-            switch tab {
-            case .home:
-                PulseHomeTabShape().stroke(style: StrokeStyle(lineWidth: 1.25, lineCap: .round, lineJoin: .round)).frame(width: 22, height: 22)
-            case .health:
-                ZStack {
-                    Image(systemName: "heart").font(.system(size: 24, weight: .light))
-                    Image(systemName: "waveform.path.ecg").font(.system(size: 12, weight: .light)).offset(y: -1)
-                }.frame(width: 24, height: 24)
-            case .community:
-                Image(systemName: "person.3").font(.system(size: 21, weight: .light))
-            default:
-                Image(systemName: tab.symbol).font(.system(size: 21, weight: .light))
+            if let asset {
+                Image(asset).renderingMode(.template).resizable().scaledToFit()
+            } else {
+                Image(systemName: tab.symbol).resizable().scaledToFit()
             }
-        }.frame(width: 26, height: 26).accessibilityHidden(true)
+        }.frame(width: 22, height: 22).accessibilityHidden(true)
     }
 }

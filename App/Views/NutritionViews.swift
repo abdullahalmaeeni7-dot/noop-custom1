@@ -46,7 +46,7 @@ struct NutritionRootView: View {
                 case .settings: NutritionSettingsView()
                 case .calendar:
                     NPage(title: "Nutrition date") {
-                        DatePicker("Day", selection: $store.selectedDate, in: ...Date(), displayedComponents: .date)
+                        DatePicker("Day", selection: $store.selectedDate, in: ...DashboardDatePolicy.today(), displayedComponents: .date)
                             .datePickerStyle(.graphical).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).environment(\.calendar, DayCalendar.utc)
                     }
                 }
@@ -63,7 +63,7 @@ struct NutritionRootView: View {
                 Spacer()
                 Button { route = .calendar } label: { Text(L10n.text(utcDateText(store.selectedDate, style: .dateTime.weekday(.abbreviated).month(.abbreviated).day()))).font(NFont.label(12)).frame(minHeight: 44) }.accessibilityLabel(L10n.text("Choose nutrition date"))
                 Spacer()
-                Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }.disabled(DayCalendar.utc.isDateInToday(store.selectedDate)).accessibilityLabel(L10n.text("Next nutrition day"))
+                Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }.disabled(DashboardDatePolicy.isToday(store.selectedDate)).accessibilityLabel(L10n.text("Next nutrition day"))
             }
             HStack(spacing: 4) {
                 ForEach(-3...3, id: \.self) { offset in
@@ -75,7 +75,7 @@ struct NutritionRootView: View {
                             }.frame(maxWidth: .infinity, minHeight: 46)
                                 .background(offset == 0 ? NColor.cyan.opacity(0.14) : NColor.card, in: RoundedRectangle(cornerRadius: 12))
                                 .foregroundStyle(offset == 0 ? NColor.cyan : NColor.muted)
-                        }.disabled(DayCalendar.start(of: date) > DayCalendar.start(of: Date()))
+                        }.disabled(DayCalendar.start(of: date) > DashboardDatePolicy.today())
                             .accessibilityLabel(utcDateText(date, style: .dateTime.month().day())).accessibilityAddTraits(offset == 0 ? .isSelected : [])
                     }
                 }
@@ -192,7 +192,7 @@ struct NutritionRootView: View {
         Task { do { try await model.commit(store, edit: edit) } catch { model.error = error.localizedDescription } }
     }
     private func move(_ offset: Int) {
-        guard let next = DayCalendar.utc.date(byAdding: .day, value: offset, to: store.selectedDate), DayCalendar.start(of: next) <= DayCalendar.start(of: Date()) else { return }
+        guard let next = DayCalendar.utc.date(byAdding: .day, value: offset, to: store.selectedDate), DayCalendar.start(of: next) <= DashboardDatePolicy.today() else { return }
         store.selectedDate = next
     }
 }

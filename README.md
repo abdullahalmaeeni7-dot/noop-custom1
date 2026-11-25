@@ -1,10 +1,18 @@
+# Tracker updates
+
+Home shows supported wrist-removal events and sustained activity from live readings. For overnight sleep, enable Apple Health sleep sync, refresh a linked WHOOP account, or review a resting interval recorded by your band. [Overnight setup and activity detection](Docs/OVERNIGHT-TRACKING.md)
+
+Previous interface revision: [Live resizing, colored Recovery history and preserved sleep/health details](Docs/LIVE-CALENDAR-AND-DATA.md). Live supports independently sized/positioned overlays, full/condensed output, photo adjustment and an actual heart-rate graph. Importing older data opens Home on Today and preserves the original measurement dates. The date picker shows reported red/yellow/green Recovery scores. The supplied APK's loading and welcome motion assets are bundled locally; [provenance](App/Resources/apk-motion-provenance.json) distinguishes the original intro from the converted loading movie.
+
+Feature scope: the [APK coverage ledger](design/apk/COVERAGE.md) audits 24 packaged navigation graphs and 209 declared destinations. It records implemented controls, partial areas and missing services. These counts do not mean 209 features are complete. Full official-app parity, physical camera behavior and tracker compatibility remain unverified.
+
 Latest setup revision: [one welcome flow and simpler tracker status](Docs/SETUP-AND-TRACKER.md), with [actual native screenshots and passing interaction checks](design/home/native-review-07/REVIEW.md). Get Started leads through profile, pairing, sync/import and export before Home. Device Settings shares this pairing flow and keeps technical details under Advanced. Only fresh received readings verify a live stream.
 
 Latest tracker revision: [direct stored-data download](Docs/DEVICE-HISTORY-TRANSFER.md). Tracker → Download from tracker requests real stored packets, saves full batches before acknowledging them, and provides a raw ZIP plus decoded HR/R-R CSV. Home and Live show supplied WHOOP scores by default; local Strain estimates are opt-in. The current device build passed; physical-band transfer remains unverified.
 
 Latest tracker change: [automatic recording and local daily Strain](Docs/ReleaseNotes/2026-11-17-automatic-tracking.md). Incoming BLE readings now save without starting a workout. The updated iPhone build passed Apple SDK compilation and device packaging; its direct download is below. Official Recovery still requires supported WHOOP data.
 
-Current iPhone build: [download the unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/aefbbaf7d21f05f6247c854d68c2ffe6e399408b/WHOOP-unsigned.ipa), built from `aefbbaf` with the iOS device SDK (4.60 MB). Sign it with Sideloadly using the same account/app identifier to retain your data. The Mac tests, Apple SDK build and device package checks passed. The published IPA checksum, new setup/status code markers and launch-screen configuration were independently checked.
+Earlier interface build: [download its unsigned IPA directly](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/f55d7e837ad0c08cbc8efe5ed2f5c8270913720b/WHOOP-unsigned.ipa), built from `f55d7e8` with the iOS device SDK (5,376,997 bytes). Sign it with Sideloadly using the same account/app identifier to retain your data. The Mac tests, Apple SDK build and device package checks passed. The published checksum, new code markers and bundled motion files were independently verified. SHA-256: `23e041f63c9b71057d9878881166802220bb70fa1d2a6875aec8cef3014c6afb`.
 
 Reference-screen status: [screen-by-screen audit and shared visual corrections](design/reviews/2026-11-16-reference-audit.md).
 
@@ -20,7 +28,7 @@ Home now follows the supplied reference hierarchy, with three animated score rin
 
 Nutrition includes a real Take Photo capture flow, photo-library selection, preview and editable AI estimates. Capture works independently of the server. **AI photo/text analysis requires a configured HTTPS account bridge with server-only `AI_API_KEY`, `AI_API_URL` and a vision-capable `AI_MODEL`.** No credentials or production service are bundled. Connection settings and manual-entry recovery are available directly from the food form.
 
-See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). The [current iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45193379535). Use the direct IPA link at the top of this file, then sign/install with Sideloadly. This binary includes direct historical tracker reads, synchronized raw storage, CSV/ZIP export, opt-in local Strain, and the existing Home/camera/import fixes. See the [actual native preview and before/after review](design/home/native-review-07/REVIEW.md). Physical camera capture and a production AI provider remain untested.
+See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). The [current iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45209840245). Use the direct IPA link at the top of this file, then sign/install with Sideloadly. This binary includes direct historical tracker reads, synchronized raw storage, CSV/ZIP export, opt-in local Strain, and the existing Home/camera/import fixes. See the [native interface captures from the f55d7e8 build](design/home/native-review-08/REVIEW.md). Physical camera capture and a production AI provider remain untested.
 
 ---
 
@@ -58,7 +66,7 @@ The latter packages the actual device build. Installation requires device signin
 
 - **Screenshot-guided interface:** compact overview with three rings, Health/Stress shortcuts, activities, sleep, journal and customizable dashboard rows; Home/Health/Community/More tabs, secondary Sleep/Recovery/Strain/Nutrition/Profile destinations, and full-screen Sleep/Recovery/Strain gauges. See [visual-reference notes](Docs/REFERENCE-UI.md). Day history, charts, UTC dates and example/imported/empty states remain connected.
 - **WHOOP account:** browser OAuth through the included personal HTTPS bridge; imports account-supplied cycle, Recovery, sleep and workout records over selected 14/30-day UTC windows. Setup is required; no live account exchange has been tested.
-- **Apple Health:** explicit read-only import of steps, active energy, resting heart rate, respiratory rate, heart rate and unioned time asleep over 14 or 30 UTC days. It does not write to Health. SDNN is not substituted for WHOOP's RMSSD HRV.
+- **Apple Health:** explicit read-only import of steps, active energy, resting heart rate, respiratory rate, heart rate and time asleep. Sleep is grouped by local wake date. Optional automatic sleep sync checks the past seven days. It does not write to Health. SDNN is not substituted for WHOOP's RMSSD HRV.
 - **Local records:** journal creation/edit/deletion, manual activity logs, activity editing/deletion, foreground workout recording with actual received heart rate and separately labelled local strain estimates.
 - **Files:** validated CSV/JSON day import, day export with millisecond timestamps, and full versioned backups that include journal notes and activities. Restore validates the whole backup before replacement.
 - **Devices:** standard heart-rate broadcasts; recovered GEN4/MAVERICK/GOOSE frame decoding with CRC checks; opt-in experimental Hello → matched success → live-HR request handling, with pending/error/timeout states.
@@ -79,7 +87,7 @@ First launch displays setup with no seeded measurements. **More → WHOOP accoun
 | Personalized Home, online teams/coaching/payments | Private services unresolved |
 | Daily Recovery/sleep scoring and native MSK formulas | Unrecovered; not replaced with fake measurements |
 | Full history sync, exact visuals and official-app parity | Not established |
-| Xcode device build and signed IPA | Still required on a Mac |
+| Xcode device build and signed IPA | Unsigned arm64 build passed on Mac CI; personal signing and device installation remain required |
 
 The app explains its local-reconstruction status in **Menu → About this edition**. It does not collect WHOOP passwords or claim affiliation. No private WHOOP service, firmware operation or physical sensor was used during development.
 
@@ -89,11 +97,11 @@ Follow [account setup](Docs/ACCOUNT-SYNC.md) and [server setup](Docs/AccountAPI/
 
 ## Verification
 
-**104 Swift core tests and 33 Node server tests pass.** Server tests use local HTTP handlers and synthetic upstream records, without contacting WHOOP.
+**The current revision passes 198 Swift core tests and 13 packaging tests.** The previously recorded server suite passes 33 Node tests using local HTTP handlers and synthetic upstream records, without contacting WHOOP; this client-focused revision does not change the server.
 
 The portable Swift suite covers imports, provenance, timestamp roundtrips, complete backups, sleep-interval union, standard BLE bytes, recovered frame/command golden fixtures, malformed/fragmented streams, bounded live strain and reply-state handling. Exact results are in [VALIDATION.json](VALIDATION.json) and [Validation/core-tests.log](Validation/core-tests.log).
 
-Application Swift files pass frontend parsing and the Xcode project passes structural checks. **Those checks are not an Apple SDK typecheck, an Xcode build, a simulator run or a device test.**
+Application Swift files pass frontend parsing and the Xcode project passes structural checks. The current revision also passed an Apple SDK build and unsigned arm64 IPA validation on the Mac CI runner. These checks do not establish physical camera or tracker behavior. Native interaction outcomes are recorded separately in VALIDATION.json.
 
 See [STATUS.md](STATUS.md), [CORE-NOTES.md](CORE-NOTES.md), [Apple Health](Docs/APPLE-HEALTH.md), [backups](Docs/BACKUP-FORMAT.md), [live strain](Docs/LIVE-STRAIN.md), [device stream](Docs/DEVICE-STREAM.md), [packet decoding](Docs/WHOOP-PROTOCOL.md), [device history](Docs/DEVICE-HISTORY.md), [device time](Docs/DEVICE-TIME.md) and [reconstruction evidence](Docs/RECONSTRUCTION.md). [Examples](Examples) contains sample import files. The full REA records are delivered separately as `WHOOP-analysis-report.zip`.
 

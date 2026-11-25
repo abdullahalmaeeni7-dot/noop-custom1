@@ -1,0 +1,26 @@
+[
+  {
+    "resource": "res/drawable/design_ic_home.xml",
+    "source_sha256": "36df65482412aed62d8c549450e5a4e6f5785d3d1a2c0e196ff51ec4504863d9",
+    "asset": "NavigationHome.imageset",
+    "paths": 3
+  },
+  {
+    "resource": "res/drawable/design_ic_health_tab.xml",
+    "source_sha256": "7bbea6ee9156e145dab3364fc8bac2a737e52ea42942eb64bbb4224c85503ce4",
+    "asset": "NavigationHealth.imageset",
+    "paths": 4
+  },
+  {
+    "resource": "res/drawable/design_ic_community.xml",
+    "source_sha256": "01c1c32c3bf494f967fd2629fa073fa3b8beb99b318fa5406b3f700031057012",
+    "asset": "NavigationCommunity.imageset",
+    "paths": 6
+  },
+  {
+    "resource": "res/drawable/design_ic_menu.xml",
+    "source_sha256": "5a8809d1d29471107df1669afe33c725d9e48d9c1c254918b734d5e87839f23a",
+    "asset": "NavigationMore.imageset",
+    "paths": 3
+  }
+]

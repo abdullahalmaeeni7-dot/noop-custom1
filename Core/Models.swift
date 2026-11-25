@@ -19,17 +19,21 @@ public enum DayCalendar {
 public struct LaunchDayData: Equatable, Sendable {
     public let days: [DailySnapshot]
     public let selectedDate: Date
-    public init(savedDays: [DailySnapshot] = [], selectedDate: Date? = nil, now: Date = Date()) {
+    public init(savedDays: [DailySnapshot] = [], selectedDate: Date? = nil, now: Date = Date(), timeZone: TimeZone = .autoupdatingCurrent) {
         days = savedDays.filter { $0.source != .example }.sorted { $0.date < $1.date }
-        self.selectedDate = DashboardDatePolicy.today(now: now)
+        self.selectedDate = DashboardDatePolicy.today(now: now, timeZone: timeZone)
     }
 }
 
 public struct HeartRateSample: Codable, Identifiable, Equatable, Sendable {
     public var timestamp: Date
     public var bpm: Double
+    /// Only live tracker samples delivered with positive wrist-contact evidence set this flag.
+    public var trackerContactReading: Bool?
     public var id: Date { timestamp }
-    public init(timestamp: Date, bpm: Double) { self.timestamp = timestamp; self.bpm = bpm }
+    public init(timestamp: Date, bpm: Double, trackerContactReading: Bool? = nil) {
+        self.timestamp = timestamp; self.bpm = bpm; self.trackerContactReading = trackerContactReading
+    }
 }
 
 public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
@@ -38,6 +42,10 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public var strain: Double?
     public var sleepPerformance: Int?
     public var sleepMinutes: Int
+    public var sleepFromAppleHealth: Bool?
+    public var confirmedSleep: ConfirmedSleep?
+    public var usesConfirmedSleep: Bool { sleepMinutes == 0 && confirmedSleep != nil }
+    public var displayedSleepMinutes: Int { sleepMinutes > 0 ? sleepMinutes : confirmedSleep?.minutes ?? 0 }
     public var sleepNeededMinutes: Int
     public var restingHeartRate: Double?
     public var hrv: Double?
@@ -75,16 +83,19 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case date, recovery, strain, sleepPerformance, sleepMinutes, sleepNeededMinutes
+        case date, recovery, strain, sleepPerformance, sleepMinutes, sleepNeededMinutes, sleepFromAppleHealth, confirmedSleep
         case restingHeartRate, hrv, respiratoryRate, steps, energyKcal, heartRates, source, cycleRecords, trackerRecording, oxygenSaturation, skinTemperatureCelsius, sleepBreakdown
     }
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         date = try values.decode(Date.self, forKey: .date)
+        confirmedSleep = try values.decodeIfPresent(ConfirmedSleep.self, forKey: .confirmedSleep)
+        try confirmedSleep?.validate(on: date)
         recovery = try values.decodeIfPresent(Int.self, forKey: .recovery)
         strain = try values.decodeIfPresent(Double.self, forKey: .strain)
         sleepPerformance = try values.decodeIfPresent(Int.self, forKey: .sleepPerformance)
+        sleepFromAppleHealth = try values.decodeIfPresent(Bool.self, forKey: .sleepFromAppleHealth)
         sleepMinutes = try values.decodeIfPresent(Int.self, forKey: .sleepMinutes) ?? 0
         sleepNeededMinutes = try values.decodeIfPresent(Int.self, forKey: .sleepNeededMinutes) ?? 0
         restingHeartRate = try values.decodeIfPresent(Double.self, forKey: .restingHeartRate)
@@ -142,9 +153,12 @@ public struct ActivityRecord: Codable, Identifiable, Equatable, Sendable {
     public var strain: Double?
     /// True only for a local reference estimate, never an imported official score.
     public var strainIsEstimate: Bool?
-    public init(id: UUID = UUID(), start: Date, durationMinutes: Int, name: String, strain: Double? = nil, strainIsEstimate: Bool? = nil) {
+    /// True for a local, HR-only possible activity. Unset in older backups.
+    public var automaticallyDetected: Bool?
+    public init(id: UUID = UUID(), start: Date, durationMinutes: Int, name: String, strain: Double? = nil, strainIsEstimate: Bool? = nil, automaticallyDetected: Bool? = nil) {
         self.id = id; self.start = start; self.durationMinutes = durationMinutes
         self.name = name; self.strain = strain; self.strainIsEstimate = strainIsEstimate
+        self.automaticallyDetected = automaticallyDetected
     }
 }
 

@@ -4,17 +4,43 @@ import UIKit
 import UniformTypeIdentifiers
 import WHOOPCore
 
+/// CoreBluetooth may relaunch the process to restore a saved connection before a
+/// scene appears. Attach persistence before recreating the central manager.
+@MainActor
+final class TrackerAppDelegate: NSObject, UIApplicationDelegate {
+    let tracker = DeviceModel()
+    let store = AppStore()
+    let recorder = WorkoutRecorder()
+    let dailyTracker = DailyTrackerRecorder()
+    let health = HealthDataModel()
+
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        recorder.bind(tracker)
+        dailyTracker.bind(tracker, to: store, manualRecorder: recorder)
+        tracker.bindHistory(to: store)
+        tracker.reconnectSavedDevice()
+        health.restoreSleepObserver(store: store)
+        return true
+    }
+
+    func applicationProtectedDataDidBecomeAvailable(_ application: UIApplication) {
+        store.retryProtectedRestore()
+    }
+}
+
 @main
 @MainActor
 struct WHOOPApp: App {
-    @StateObject private var tracker = DeviceModel()
-    @StateObject private var store = AppStore()
+    @UIApplicationDelegateAdaptor(TrackerAppDelegate.self) private var tracking
+    private var tracker: DeviceModel { tracking.tracker }
+    private var store: AppStore { tracking.store }
     @StateObject private var account = AccountModel()
-    @StateObject private var recorder = WorkoutRecorder()
-    @StateObject private var dailyTracker = DailyTrackerRecorder()
+    private var recorder: WorkoutRecorder { tracking.recorder }
+    private var dailyTracker: DailyTrackerRecorder { tracking.dailyTracker }
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var liveActivity = LiveActivityDriver()
-    @StateObject private var health = HealthDataModel()
+    private var health: HealthDataModel { tracking.health }
     @StateObject private var nutrition = NutritionViewModel()
     @State private var launchAnimationFinished = UIAccessibility.isReduceMotionEnabled
     @AppStorage(AppLanguage.preferenceKey) private var languageChoice = AppLanguage.system.rawValue
@@ -23,16 +49,38 @@ struct WHOOPApp: App {
             AppLaunchView(launchAnimationFinished: $launchAnimationFinished).environmentObject(tracker).environmentObject(store).environmentObject(account)
                 .environmentObject(recorder).environmentObject(dailyTracker).environmentObject(liveActivity)
                 .environmentObject(health).environmentObject(nutrition)
-                .task { recorder.bind(tracker); dailyTracker.bind(tracker, to: store); tracker.bindHistory(to: store); liveActivity.bind(recorder) }
+                .task { liveActivity.bind(recorder) }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase != .active { dailyTracker.flush() } else { store.refreshCurrentDay() }
+                    if phase != .active { dailyTracker.flush() } else { store.refreshCurrentDay(); tracker.reconnectSavedDevice(); tracker.syncStoredReadingsIfDue() }
                 }
-                .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { date in store.refreshCurrentDay(now: date) }
+                .modifier(AutomaticHealthSync(store: store, health: health, account: account))
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in store.refreshCurrentDay() }
+                .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { date in store.refreshCurrentDay(now: date); tracker.syncStoredReadingsIfDue() }
                 .environment(\.locale, AppLanguage.current.locale)
                 .environment(\.layoutDirection, AppLanguage.isArabic ? .rightToLeft : .leftToRight)
                 .id(languageChoice)
                 .preferredColorScheme(.dark)
         }
+    }
+}
+
+/// Observe readiness directly: a restored Bluetooth/HealthKit launch can load
+/// the store before or after the first active scene appears.
+private struct AutomaticHealthSync: ViewModifier {
+    @ObservedObject var store: AppStore
+    @ObservedObject var health: HealthDataModel
+    @ObservedObject var account: AccountModel
+    @Environment(\.scenePhase) private var phase
+
+    func body(content: Content) -> some View {
+        let ready = phase == .active && !store.isLoadingSavedData && !store.isImporting
+        return content
+            .task(id: ready && health.automaticSleepEnabled) {
+                if ready && health.automaticSleepEnabled { await health.resumeSleepSync(store: store) }
+            }
+            .task(id: ready && account.isLinked && account.automaticSyncEnabled) {
+                if ready && account.isLinked && account.automaticSyncEnabled { await account.refreshLinkedAccount(store: store) }
+            }
     }
 }
 

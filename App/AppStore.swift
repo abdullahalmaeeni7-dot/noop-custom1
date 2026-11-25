@@ -62,7 +62,7 @@ final class AppStore: ObservableObject {
     init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         storageURL = documents.appendingPathComponent("whoop-local-data.json")
-        days = []; activities = []; journal = []; selectedDate = DayCalendar.start(of: Date())
+        days = []; activities = []; journal = []; selectedDate = DashboardDatePolicy.today()
         if FileManager.default.fileExists(atPath: storageURL.path) {
             isLoadingSavedData = true
             Task { await restoreFromDisk() }
@@ -103,6 +103,14 @@ final class AppStore: ObservableObject {
         storageWritable = restored.writable; persistenceError = restored.error; isLoadingSavedData = false
     }
 
+    /// A Bluetooth restoration launch can precede the first unlock after reboot.
+    /// Retry reading the original file before permitting new writes.
+    func retryProtectedRestore() {
+        guard !storageWritable, !isLoadingSavedData else { return }
+        isLoadingSavedData = true
+        Task { await restoreFromDisk() }
+    }
+
     var isExampleMode: Bool { !days.isEmpty && days.allSatisfy { $0.source == .example } }
     var selectedDay: DailySnapshot {
         dayIndex[Self.utc.startOfDay(for: selectedDate)].map { days[$0] } ??
@@ -116,7 +124,14 @@ final class AppStore: ObservableObject {
         journal.first { Self.utc.isDate($0.date, inSameDayAs: selectedDate) } ?? JournalEntry(date: selectedDate)
     }
     var dayActivities: [ActivityRecord] {
-        activities.filter { Self.utc.isDate($0.start, inSameDayAs: selectedDate) }.sorted { $0.start > $1.start }
+        activities.filter { activity in
+            // Device detections carry an absolute instant. Show them on the
+            // wearer's civil day while preserving the imported UTC day grouping.
+            let key = activity.automaticallyDetected == true
+                ? DashboardDatePolicy.today(now: activity.start)
+                : DayCalendar.start(of: activity.start)
+            return key == DayCalendar.start(of: selectedDate)
+        }.sorted { $0.start > $1.start }
     }
 
     func refreshCurrentDay(now: Date = Date()) {
@@ -126,7 +141,7 @@ final class AppStore: ObservableObject {
         lastKnownToday = current
     }
     func moveDay(_ offset: Int) {
-        if let date = Self.utc.date(byAdding: .day, value: offset, to: selectedDate) {
+        if let date = Self.utc.date(byAdding: .day, value: offset, to: selectedDate), date <= DashboardDatePolicy.today() {
             selectedDate = date
         }
     }
@@ -137,10 +152,26 @@ final class AppStore: ObservableObject {
         journal.append(limited)
         persist()
     }
+    func setConfirmedSleep(_ entry: ConfirmedSleep?, on wakeDay: Date) throws {
+        guard !isImporting, !isExampleMode else { throw ImportProblem.protectedFile }
+        try entry?.validate(on: wakeDay, now: Date())
+        let key = DayCalendar.start(of: wakeDay)
+        let before = days
+        if let index = days.firstIndex(where: { $0.date == key }) {
+            days[index].confirmedSleep = entry
+        } else if let entry {
+            var day = DailySnapshot.empty(on: key)
+            day.confirmedSleep = entry
+            days.append(day)
+            days.sort { $0.date < $1.date }
+        }
+        do { try writeState() } catch { days = before; throw error }
+    }
+
     func logActivity(name: String, minutes: Int) {
         let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
         let start = Self.utc.date(bySettingHour: 12, minute: 0, second: 0, of: selectedDate) ?? selectedDate
-        activities.append(ActivityRecord(start: start, durationMinutes: max(1, min(1440, minutes)),
+        activities.mergeSavedActivity(ActivityRecord(start: start, durationMinutes: max(1, min(1440, minutes)),
                                          name: trimmed.isEmpty ? "Activity" : trimmed, strain: nil))
         persist()
     }
@@ -169,6 +200,7 @@ final class AppStore: ObservableObject {
             for day in imported.days {
                 var day = day
                 if day.trackerRecording == nil { day.trackerRecording = merged[day.date]?.trackerRecording }
+                if day.confirmedSleep == nil { day.confirmedSleep = merged[day.date]?.confirmedSleep }
                 if let existing = merged[day.date],
                    URL(fileURLWithPath: url.lastPathComponent).pathExtension.lowercased() != "json" {
                     if day.heartRates.isEmpty { day.heartRates = existing.heartRates }
@@ -182,7 +214,7 @@ final class AppStore: ObservableObject {
                     if day.restingHeartRate == nil { day.restingHeartRate = existing.restingHeartRate }
                     if day.sleepPerformance == nil { day.sleepPerformance = existing.sleepPerformance }
                     if day.respiratoryRate == nil { day.respiratoryRate = existing.respiratoryRate }
-                    if day.sleepMinutes == 0 { day.sleepMinutes = existing.sleepMinutes }
+                    if day.sleepMinutes == 0 { day.sleepMinutes = existing.sleepMinutes; day.sleepFromAppleHealth = existing.sleepFromAppleHealth }
                     if day.sleepNeededMinutes == 0 { day.sleepNeededMinutes = existing.sleepNeededMinutes }
                     if day.energyKcal == 0 { day.energyKcal = existing.energyKcal }
                 }
@@ -192,8 +224,7 @@ final class AppStore: ObservableObject {
 
         }
         for activity in imported.activities {
-            if let index = activities.firstIndex(where: { $0.id == activity.id }) { activities[index] = activity }
-            else { activities.append(activity) }
+            activities.mergeSavedActivity(activity)
         }
         selectedDate = DashboardDatePolicy.afterImport()
         if let personalized = imported.profile { profile = personalized }
@@ -219,19 +250,21 @@ final class AppStore: ObservableObject {
                 if let value = day.sleepBreakdown { previous.sleepBreakdown = value }
                 if day.steps > 0 { previous.steps = day.steps }
                 if day.energyKcal > 0 { previous.energyKcal = day.energyKcal }
-                if day.sleepMinutes > 0 { previous.sleepMinutes = day.sleepMinutes }
+                previous.mergeReportedSleep(from: day)
                 var rates = Dictionary(uniqueKeysWithValues: previous.heartRates.map { ($0.timestamp, $0) })
                 for sample in day.heartRates { rates[sample.timestamp] = sample }
                 previous.heartRates = rates.values.sorted { $0.timestamp < $1.timestamp }
                 merged[index] = previous
             } else { merged.append(day) }
         }
-        days = merged.sorted { $0.date < $1.date }
+        let sorted = merged.sorted { $0.date < $1.date }
+        if !selectToday && days == sorted { return }
+        days = sorted
         if selectToday { selectedDate = DashboardDatePolicy.today() }
         do { try writeState() } catch { restoreState(before); throw error }
     }
 
-    func mergeAccount(_ account: WhoopAccountImport) throws {
+    func mergeAccount(_ account: WhoopAccountImport, selectToday: Bool = true) throws {
         guard !account.days.isEmpty || !account.activities.isEmpty else { return }
         guard account.userID > 0 else { throw WhoopAccountError.invalidData("the account identity is missing.") }
         if let stored = whoopAccountUserID, stored != account.userID {
@@ -244,19 +277,23 @@ final class AppStore: ObservableObject {
             if let previous = merged[supplied.date] {
                 // The API supplies authoritative score states. Keep the two measurements
                 // it does not provide, while allowing pending scores to clear stale ones.
+                if day.sleepMinutes == 0, previous.sleepFromAppleHealth == true {
+                    day.sleepMinutes = previous.sleepMinutes
+                    day.sleepFromAppleHealth = true
+                }
                 day.steps = previous.steps
                 day.heartRates = previous.heartRates
                 day.trackerRecording = previous.trackerRecording
+                day.confirmedSleep = previous.confirmedSleep
             }
             merged[day.date] = day
         }
         days = merged.values.sorted { $0.date < $1.date }
         for activity in account.activities {
-            if let index = activities.firstIndex(where: { $0.id == activity.id }) { activities[index] = activity }
-            else { activities.append(activity) }
+            activities.mergeSavedActivity(activity)
         }
         whoopAccountUserID = account.userID
-        selectedDate = DashboardDatePolicy.afterImport()
+        if selectToday { selectedDate = DashboardDatePolicy.afterImport() }
         do { try writeState() } catch { restoreState(before); throw error }
     }
 
@@ -324,6 +361,7 @@ final class AppStore: ObservableObject {
             activities[index].strain = nil; activities[index].strainIsEstimate = nil
         }
         activities[index].durationMinutes = duration
+        activities[index].automaticallyDetected = nil
         persist()
     }
     func deleteJournal() {
@@ -332,7 +370,7 @@ final class AppStore: ObservableObject {
     func saveRecordedWorkout(name: String, start: Date, durationSeconds: Int, heartRates: [HeartRateSample], localStrain: Double?) throws {
         let before = stateSnapshot()
         let title = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(80))
-        activities.append(ActivityRecord(start: start, durationMinutes: max(1, min(1440, Int(ceil(Double(durationSeconds) / 60)))),
+        activities.mergeSavedActivity(ActivityRecord(start: start, durationMinutes: max(1, min(1440, Int(ceil(Double(durationSeconds) / 60)))),
                                          name: title.isEmpty ? "Workout" : title,
                                          strain: localStrain, strainIsEstimate: localStrain == nil ? nil : true))
         let grouped = Dictionary(grouping: heartRates) { Self.utc.startOfDay(for: $0.timestamp) }
@@ -349,8 +387,8 @@ final class AppStore: ObservableObject {
         } catch { restoreState(before); throw error }
     }
     /// One atomic save for automatically received tracker data; provider scores are untouched.
-    func saveTrackerReadings(_ batches: [DailyTrackerBatch]) throws {
-        guard !batches.isEmpty else { return }
+    func saveTrackerReadings(_ batches: [DailyTrackerBatch], activities checkpoints: [TrackerActivityCheckpoint] = []) throws {
+        guard !batches.isEmpty || !checkpoints.isEmpty else { return }
         let before = stateSnapshot()
         var merged = days.filter { $0.source != .example }.reduce(into: [Date: DailySnapshot]()) { $0[$1.date] = $1 }
         for batch in batches {
@@ -358,6 +396,7 @@ final class AppStore: ObservableObject {
             merged[batch.date] = try day.applyingTrackerBatch(batch)
         }
         days = merged.values.sorted { $0.date < $1.date }
+        for checkpoint in checkpoints { activities.mergeTrackerActivity(checkpoint) }
         do { try writeState() } catch { restoreState(before); throw error }
     }
 
@@ -373,7 +412,7 @@ final class AppStore: ObservableObject {
 
     func restoreExamples() {
         days = ExampleData.days()
-        selectedDate = days.last?.date ?? Self.utc.startOfDay(for: Date())
+        selectedDate = days.last?.date ?? DashboardDatePolicy.today()
         activities = []
         journal = []
         whoopAccountUserID = nil
@@ -382,7 +421,7 @@ final class AppStore: ObservableObject {
     func clearData() throws {
         let previous = SavedState(version: 1, days: days, activities: activities, journal: journal, selectedDate: selectedDate, whoopAccountUserID: whoopAccountUserID, nutrition: nutrition, profile: profile)
         days = []; activities = []; journal = []; whoopAccountUserID = nil; nutrition = NutritionData(); profile = ProfilePersonalization()
-        selectedDate = Self.utc.startOfDay(for: Date())
+        selectedDate = DashboardDatePolicy.today()
         do { try writeState(); trackerDataGeneration = UUID() }
         catch {
             days = previous.days; activities = previous.activities; journal = previous.journal

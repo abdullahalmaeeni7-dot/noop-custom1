@@ -25,6 +25,13 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
     private var authID: UUID?
     private var authContinuation: CheckedContinuation<URL, Error>?
     private var authAnchor: UIWindow?
+    @Published var automaticSyncEnabled = UserDefaults.standard.bool(forKey: "whoop.account.autoSync") {
+        didSet {
+            UserDefaults.standard.set(automaticSyncEnabled, forKey: "whoop.account.autoSync")
+            if !automaticSyncEnabled { lastAutomaticAttempt = nil }
+        }
+    }
+    private var lastAutomaticAttempt: Date?
     private let defaultsKey = "whoop.account.bridgeURL"
     private let transport: URLSession
 
@@ -139,6 +146,24 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         } catch { report(error); throw error }
     }
 
+    func refreshLinkedAccount(store: AppStore) async {
+        guard automaticSyncEnabled, isLinked, !isBusy, !store.isLoadingSavedData, !store.isImporting, !store.isExampleMode else { return }
+        if let previous = lastAutomaticAttempt, Date().timeIntervalSince(previous) < 15 * 60 { return }
+        lastAutomaticAttempt = Date()
+        let generation = store.trackerDataGeneration
+        do {
+            let result = try await fetch(days: 14)
+            guard automaticSyncEnabled, isLinked, generation == store.trackerDataGeneration,
+                  !store.isImporting, !store.isExampleMode else { return }
+            try store.mergeAccount(result, selectToday: false)
+            status = result.days.isEmpty && result.activities.isEmpty ? "Your account returned no cycles or activities in this range." : "Recent account data synced."
+        } catch {
+            if Task.isCancelled {
+                lastAutomaticAttempt = nil
+            } else { report(error) }
+        }
+    }
+
     func disconnect() async {
         guard !isBusy else { return }
         isBusy = true; error = nil
@@ -149,6 +174,7 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
                 _ = try await rawRequest(base, path: "v1/session", method: "DELETE", token: bearer)
             }
             try AccountKeychain.delete(for: base)
+            automaticSyncEnabled = false
             bearer = nil; linkedBaseURL = nil; isLinked = false; displayName = nil
             status = "Disconnected. Previously saved days stay in Your Data Files."
         } catch { report(error) }
@@ -159,6 +185,7 @@ final class AccountModel: NSObject, ObservableObject, @preconcurrency ASWebAuthe
         let base = try linkedBaseURL ?? validatedBaseURL()
         let previousBearer = bearer
         try AccountKeychain.delete(for: base)
+        automaticSyncEnabled = false
         bearer = nil; linkedBaseURL = nil; isLinked = false; displayName = nil; error = nil
         status = "Connection forgotten on this iPhone. Saved measurements remain available."
         if let previousBearer {

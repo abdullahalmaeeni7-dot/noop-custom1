@@ -56,6 +56,21 @@ public struct WhoopFrame: Equatable, Sendable {
         return Double(value.heartRate)
     }
 
+    /// Live wear reports only. Historical packets never set the current wear state.
+    /// WRIST_ON/OFF event IDs and envelope follow the OpenStrap MIT reference
+    /// pinned in Docs/DEVICE-HISTORY-TRANSFER.md.
+    public func reportedWearState(isEventCharacteristic: Bool) -> TrackerWearState? {
+        if let offWrist = realtimeData?.isOffWrist { return offWrist ? .offBody : .onBody }
+        guard isEventCharacteristic, packetType == .event, payload.count >= 12 else { return nil }
+        let bytes = [UInt8](payload)
+        guard Int(littleEndian16(bytes, at: 10)) <= bytes.count - 12 else { return nil }
+        switch littleEndian16(bytes, at: 2) {
+        case 9: return .onBody
+        case 10: return .offBody
+        default: return nil
+        }
+    }
+
     fileprivate init(generation: WhoopGeneration, bytes: ArraySlice<UInt8>) {
         self.generation = generation
         self.bytes = Data(bytes)

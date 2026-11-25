@@ -155,6 +155,46 @@ final class WhoopFrameTests: XCTestCase {
         }
     }
 
+    func testWearStateFromCrcCheckedRealtimeAndLiveEvents() throws {
+        var decoder = WhoopFrameDecoder(generation: .gen4)
+        let live = try XCTUnwrap(decoder.append(gen4).first)
+        XCTAssertEqual(live.reportedWearState(isEventCharacteristic: false), .onBody)
+
+        func fixture(_ type: UInt8, event: UInt16, bodyLength: UInt8) throws -> WhoopFrame {
+            var bytes = [UInt8](gen4)
+            bytes[4] = type
+            bytes[6] = UInt8(truncatingIfNeeded: event)
+            bytes[7] = UInt8(event >> 8)
+            bytes[14] = bodyLength
+            bytes[15] = 0
+            updateTrailer(&bytes, headerSize: 4)
+            return try XCTUnwrap(decoder.append(Data(bytes)).first)
+        }
+
+        let off = try fixture(0x30, event: 10, bodyLength: 0)
+        XCTAssertEqual(off.reportedWearState(isEventCharacteristic: true), .offBody)
+        XCTAssertNil(off.reportedWearState(isEventCharacteristic: false))
+        XCTAssertEqual(try fixture(0x30, event: 9, bodyLength: 0).reportedWearState(isEventCharacteristic: true), .onBody)
+        for (type, event, length): (UInt8, UInt16, UInt8) in [(0x2F, 10, 0), (0x30, 266, 0), (0x30, 10, 22)] {
+            XCTAssertNil(try fixture(type, event: event, bodyLength: length).reportedWearState(isEventCharacteristic: true))
+        }
+    }
+
+    func testHeartRateContactWithAndWithoutValidBpm() {
+        for (flags, value, wear, bpm): (UInt8, UInt8, TrackerWearState, Double?) in [
+            (0x04, 0, .offBody, nil), (0x04, 72, .offBody, nil),
+            (0x06, 73, .onBody, 73), (0x06, 0, .onBody, nil),
+            (0x02, 74, .unknown, 74), (0x00, 75, .unknown, 75)
+        ] {
+            let report = HeartRateMeasurement.parse(Data([flags, value]))
+            XCTAssertEqual(report?.wearState, wear)
+            XCTAssertEqual(report?.bpm, bpm)
+        }
+        for malformed: [UInt8] in [[0x05, 0], [0x0C, 0, 0], [0x14, 0, 0], [0x84, 70]] {
+            XCTAssertNil(HeartRateMeasurement.parse(Data(malformed)))
+        }
+    }
+
     func testNotificationDataWithNonzeroStartIndex() {
         let backing = Data([1, 2, 3]) + gen4
         let slice = backing.dropFirst(3)

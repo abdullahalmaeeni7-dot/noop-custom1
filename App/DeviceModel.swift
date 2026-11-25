@@ -16,6 +16,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     @Published private(set) var devices: [NearbyDevice] = []
     @Published private(set) var status = "Find a nearby sensor to see live heart rate."
     let heartRateSamples = PassthroughSubject<HeartRateSample, Never>()
+    @Published private(set) var wearState: TrackerWearState = .unknown
     @Published private(set) var heartRate: Double?
     @Published private(set) var heartRateReceivedAt: Date?
     @Published private(set) var isScanning = false
@@ -32,6 +33,27 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     @Published private(set) var historyPreviewError: String?
     @Published private(set) var historyExportURL: URL?
     @Published private(set) var isExportingHistory = false
+    private var lastHistoryAttempt: (device: UUID, date: Date)?
+    var automaticHistoryEnabled: Bool {
+        guard let id = active?.identifier else { return false }
+        return UserDefaults.standard.bool(forKey: "whoop.tracker.autoHistory." + id.uuidString)
+    }
+
+    func setAutomaticHistory(_ enabled: Bool) {
+        guard let id = active?.identifier else { return }
+        objectWillChange.send()
+        UserDefaults.standard.set(enabled, forKey: "whoop.tracker.autoHistory." + id.uuidString)
+        if enabled { syncStoredReadingsIfDue() }
+    }
+
+    func syncStoredReadingsIfDue() {
+        guard canDownloadHistory, let id = active?.identifier, automaticHistoryEnabled,
+              let store = historyAppStore, !store.isLoadingSavedData, !store.isImporting, !store.isExampleMode else { return }
+        if let lastHistoryAttempt, lastHistoryAttempt.device == id,
+           Date().timeIntervalSince(lastHistoryAttempt.date) < 1800 { return }
+        downloadDeviceHistory()
+    }
+
     private var historyTransfer: WhoopHistoryTransfer?
     private weak var historyAppStore: AppStore?
     private var historyStoreGeneration: UUID?
@@ -56,7 +78,8 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     var isConnecting: Bool { active != nil && connectedName == nil }
     private var broadScan = false
     private var attemptedAutomaticStream = false
-    private var attemptedReconnectAfterLoss = false
+    private var reconnectDelay = 2.0
+    private var waitingForSavedDevice = false
     private var pendingScan = false
     private var pendingReconnectID: UUID?
     private var scanToken = UUID()
@@ -84,12 +107,13 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             status = "Search again to reconnect your tracker."; return
         }
         discovered[identifier] = peripheral
-        connect(NearbyDevice(id: identifier, name: peripheral.name ?? "Your tracker", rssi: 0))
+        beginConnection(peripheral, name: peripheral.name ?? "Your tracker", automatic: true)
     }
 
     func scan() {
         guard !isConnecting else { return }
-        attemptedReconnectAfterLoss = false
+        reconnectDelay = 2
+        connectionToken = UUID()
         pendingReconnectID = nil
         pendingScan = true
         switch central.state {
@@ -132,21 +156,35 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         guard central.state == .poweredOn, let peripheral = discovered[device.id] else {
             status = "Scan again to find this sensor."; return
         }
+        beginConnection(peripheral, name: device.name, automatic: false)
+    }
+
+    private func beginConnection(_ peripheral: CBPeripheral, name: String, automatic: Bool) {
         stop()
+        waitingForSavedDevice = automatic
         if let previous = active, previous.identifier != peripheral.identifier { central.cancelPeripheralConnection(previous) }
         active = peripheral
         heartRate = nil; heartRateReceivedAt = nil; connectedName = nil; validFrames = 0; historicalFrames = 0; lastHistoryRecord = nil; resetCustomState()
         peripheral.delegate = self
-        status = "Connecting to \(device.name)…"
+        status = automatic ? "Waiting for your saved tracker to come back in range…" : "Connecting to \(name)…"
         let token = UUID(); connectionToken = token
         central.connect(peripheral)
+        // CoreBluetooth holds this request while a saved strap is out of range,
+        // including while iOS suspends the app. Only a first-time pairing times out.
+        guard !automatic else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 20) { [weak self] in
             guard let self, self.connectionToken == token, self.connectedName == nil, self.active != nil else { return }
-            self.disconnect()
+            self.cancelConnection(forgetSaved: false)
             self.status = "Connection timed out. Keep the sensor nearby and try again."
         }
     }
-    func disconnect() {
+    func disconnect() { cancelConnection(forgetSaved: true) }
+
+    private func cancelConnection(forgetSaved: Bool) {
+        if forgetSaved, let active, UserDefaults.standard.string(forKey: "whoop.tracker.identifier") == active.identifier.uuidString {
+            UserDefaults.standard.removeObject(forKey: "whoop.tracker.identifier")
+        }
+        waitingForSavedDevice = false
         pendingReconnectID = nil
         connectionToken = UUID()
         if let active { central.cancelPeripheralConnection(active) }
@@ -158,29 +196,44 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         guard let peripherals = state[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
               let saved = UserDefaults.standard.string(forKey: "whoop.tracker.identifier"),
               let peripheral = peripherals.first(where: { $0.identifier.uuidString == saved }) else { return }
+        resetWearState()
         discovered[peripheral.identifier] = peripheral; active = peripheral
+        pendingReconnectID = nil
+        waitingForSavedDevice = true
         peripheral.delegate = self
         if peripheral.state == .connected {
             connectedName = peripheral.name ?? "Sensor"
             peripheral.discoverServices(scanServices)
             status = "Restored tracker connection. Waiting for fresh heart rate…"
-        } else { status = "Restoring tracker connection…" }
+        } else if peripheral.state == .connecting { status = "Restoring tracker connection…" }
+        else { active = nil; reconnectSavedDevice() }
     }
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
+        case .resetting, .poweredOff, .unauthorized, .unsupported:
+            // CoreBluetooth invalidates peripheral objects when the radio resets.
+            // Drop the old handle so the next powered-on event can restore it.
+            connectionToken = UUID()
+            scanToken = UUID()
+            isScanning = false
+            connectedName = nil
+            active = nil
+            discovered.removeAll()
+            resetCustomState()
+        default: break
+        }
+        switch central.state {
         case .poweredOn:
             if pendingScan { startScan() }
-            else { reconnectPendingDevice() }
+            else if active == nil { reconnectSavedDevice() }
         case .poweredOff:
-            isScanning = false; heartRate = nil; heartRateReceivedAt = nil; connectedName = nil; active = nil; resetCustomState()
             status = "Bluetooth is off. Turn it on to connect a sensor."
         case .unauthorized:
-            isScanning = false; heartRate = nil; heartRateReceivedAt = nil; connectedName = nil; active = nil; resetCustomState()
             status = "Bluetooth access is off. Allow access in Settings."
         case .unsupported:
             isScanning = false; pendingScan = false; status = "Bluetooth sensors aren’t supported on this device."
-        case .resetting: isScanning = false; status = "Bluetooth is restarting. Please try again."
+        case .resetting: status = "Bluetooth is restarting. Please try again."
         case .unknown: status = "Preparing Bluetooth…"
         @unknown default: status = "Bluetooth is unavailable."
         }
@@ -201,6 +254,8 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         guard active?.identifier == peripheral.identifier else { return }
         connectionToken = UUID()
+        reconnectDelay = 2
+        waitingForSavedDevice = true
         connectedName = peripheral.name ?? "Sensor"
         UserDefaults.standard.set(peripheral.identifier.uuidString, forKey: "whoop.tracker.identifier")
         status = "Connected. Checking for heart-rate broadcast…"
@@ -210,19 +265,29 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         guard active?.identifier == peripheral.identifier else { return }
         connectionToken = UUID(); active = nil; connectedName = nil; heartRate = nil; heartRateReceivedAt = nil; resetCustomState()
         status = "Couldn’t connect. \(error?.localizedDescription ?? "Keep the sensor nearby and try again.")"
+        if waitingForSavedDevice { queueSavedReconnect(peripheral) }
     }
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         guard active?.identifier == peripheral.identifier else { return }
         active = nil; connectedName = nil; heartRate = nil; heartRateReceivedAt = nil; resetCustomState()
         status = error == nil ? "Disconnected." : "Connection lost. Scan again to reconnect."
-        guard !attemptedReconnectAfterLoss, central.state == .poweredOn else { return }
-        attemptedReconnectAfterLoss = true
-        let token = UUID(); connectionToken = token
-        status = "Connection lost. Trying to reconnect…"
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
-            guard let self, self.connectionToken == token, self.active == nil,
-                  !self.isScanning, !self.pendingScan, self.central.state == .poweredOn else { return }
-            self.connect(NearbyDevice(id: peripheral.identifier, name: peripheral.name ?? "Sensor", rssi: 0))
+        queueSavedReconnect(peripheral)
+    }
+
+    private func queueSavedReconnect(_ peripheral: CBPeripheral) {
+        guard central.state == .poweredOn,
+              UserDefaults.standard.string(forKey: "whoop.tracker.identifier") == peripheral.identifier.uuidString else { return }
+        let token = UUID()
+        connectionToken = token
+        let delay = reconnectDelay
+        reconnectDelay = min(60, delay * 2)
+        status = "Waiting for your saved tracker to come back in range…"
+        // Submit the first system-managed reconnect immediately, while the
+        // disconnect callback still has background execution time.
+        if delay == 2 { reconnectSavedDevice(); return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self, self.connectionToken == token, !self.isScanning, !self.pendingScan else { return }
+            self.reconnectSavedDevice()
         }
     }
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -267,11 +332,17 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
                     // GOOSE's framing constants are independently proven equal to MAVERICK;
                     // this selects a wire layout, not an inferred device model identity.
                     customDecoders[item.uuid] = WhoopFrameDecoder(generation: family == "6108" ? .gen4 : .maverick)
-                    peripheral.setNotifyValue(true, for: item); listening += 1
+                    if item.isNotifying {
+                        readyNotifications.insert(item.uuid)
+                    } else {
+                        readyNotifications.remove(item.uuid)
+                        peripheral.setNotifyValue(true, for: item)
+                    }
+                    listening += 1
                 }
             }
             status = listening > 0 ? "Listening for WHOOP device data…" : "Connected, but device notifications are unavailable."
-            updateCustomAvailability()
+            startStreamIfReady()
             return
         }
         guard let characteristic = service.characteristics?.first(where: { $0.uuid == heartMeasurement }) else {
@@ -293,12 +364,8 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
                     customSession?.transportFailed(); requestTimeoutToken = UUID()
                 }
             }
-            updateCustomAvailability()
             status = error == nil ? "Listening for WHOOP device data…" : "Device sharing couldn’t start: \(error!.localizedDescription)"
-            if canStartCustomStream && !attemptedAutomaticStream {
-                attemptedAutomaticStream = true
-                startCustomStream()
-            }
+            startStreamIfReady()
             return
         }
         guard characteristic.uuid == heartMeasurement else { return }
@@ -312,13 +379,21 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             let frames = decoder.append(data)
             customDecoders[characteristic.uuid] = decoder
             receivedFrameTotal += frames.count
+            let isEventCharacteristic = characteristic.uuid == customCharacteristic(4, family: "6108") ||
+                characteristic.uuid == customCharacteristic(4, family: "FD4B")
             for frame in frames {
                 if let history = WhoopHistoryRecord(frame: frame) {
                     receivedHistoryTotal += 1; latestHistoryRecord = history
                 }
                 handleHistoryFrame(frame)
                 handleCustomFrame(frame)
-                if let bpm = frame.realtimeHeartRate { publishHeartRate(bpm); status = "Receiving WHOOP live heart rate." }
+                if let wear = frame.reportedWearState(isEventCharacteristic: isEventCharacteristic) {
+                    applyWearState(wear)
+                }
+                if let bpm = frame.realtimeHeartRate, wearState != .offBody {
+                    publishHeartRate(bpm)
+                    status = "Receiving WHOOP live heart rate."
+                }
             }
             if Date().timeIntervalSince(lastStatsPublished) >= 0.5 {
                 validFrames = receivedFrameTotal; historicalFrames = receivedHistoryTotal; lastHistoryRecord = latestHistoryRecord; lastStatsPublished = Date()
@@ -327,19 +402,43 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         }
         guard characteristic.uuid == heartMeasurement else { return }
         if let error { status = "Couldn’t read heart rate: \(error.localizedDescription)"; return }
-        guard let data = characteristic.value, let bpm = HeartRateMeasurement.decode(data) else {
+        guard let data = characteristic.value, let reading = HeartRateMeasurement.parse(data) else {
             status = "Waiting for a valid heart-rate reading…"; return
         }
+        applyWearState(reading.wearState)
+        guard wearState != .offBody, let bpm = reading.bpm else { return }
         publishHeartRate(bpm)
         status = "Heart rate received."
     }
 
+    private func applyWearState(_ reported: TrackerWearState) {
+        // Unsupported contact flags and HR-only frames cannot override an explicit report.
+        guard reported != .unknown, wearState != reported else { return }
+        wearState = reported
+        if reported == .offBody {
+            invalidateLiveHeartRate()
+            status = "Tracker off body"
+        } else {
+            status = "Tracker on body"
+        }
+    }
+
+    private func invalidateLiveHeartRate() {
+        heartRateToken = UUID()
+        heartRate = nil
+        heartRateReceivedAt = nil
+    }
+
+    private func resetWearState() {
+        if wearState != .unknown { wearState = .unknown }
+        invalidateLiveHeartRate()
+    }
+
     private func publishHeartRate(_ bpm: Double) {
         let received = Date()
-        attemptedReconnectAfterLoss = false
         heartRate = bpm
         heartRateReceivedAt = received
-        heartRateSamples.send(HeartRateSample(timestamp: received, bpm: bpm))
+        heartRateSamples.send(HeartRateSample(timestamp: received, bpm: bpm, trackerContactReading: wearState == .onBody ? true : nil))
         let token = UUID(); heartRateToken = token
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self, self.heartRateToken == token, self.active != nil else { return }
@@ -374,7 +473,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         return true
     }
     private func handleCustomFrame(_ frame: WhoopFrame) {
-        guard var session = customSession else { return }
+        guard var session = customSession, session.isWaiting else { return }
         let previous = session.state
         do {
             let next = try session.receive(frame)
@@ -386,7 +485,9 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             } else if session.state != previous {
                 requestTimeoutToken = UUID()
                 switch session.state {
-                case .streaming: status = "The device accepted live heart rate. Waiting for readings…"
+                case .streaming:
+                    status = "The device accepted live heart rate. Waiting for readings…"
+                    syncStoredReadingsIfDue()
                 case .failed(.unsupported): status = "This device doesn’t support the request. Try heart-rate broadcasting instead."
                 case .failed: status = "The device declined the request. No further initialization commands were sent."
                 default: break
@@ -405,6 +506,12 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             self.status = "The device did not confirm the request. Try reconnecting or heart-rate broadcasting."
         }
     }
+    private func startStreamIfReady() {
+        updateCustomAvailability()
+        guard canStartCustomStream, !attemptedAutomaticStream else { return }
+        attemptedAutomaticStream = true
+        startCustomStream()
+    }
     private func updateCustomAvailability() {
         canDownloadHistory = !isDownloadingHistory && historyAppStore != nil && customSession?.state == .streaming &&
             customCommandCharacteristic?.properties.contains(.write) == true && requiredNotifications.isSubset(of: readyNotifications)
@@ -414,6 +521,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
             (customSession?.canBegin ?? false)
     }
     private func resetCustomState() {
+        resetWearState()
         historyOperation = UUID(); historyTimeout = UUID()
         receivedFrameTotal = 0; receivedHistoryTotal = 0; latestHistoryRecord = nil; lastStatsPublished = .distantPast
         if isDownloadingHistory { historyStatus = "History download interrupted. Saved batches remain available; unsaved batches were not acknowledged." }
@@ -433,7 +541,8 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         }
     }
     func downloadDeviceHistory() {
-        guard canDownloadHistory, let generation = customSession?.generation else { return }
+        guard canDownloadHistory, let id = active?.identifier, let generation = customSession?.generation else { return }
+        lastHistoryAttempt = (id, Date())
         historyOperation = UUID(); historyExportURL = nil; historyPreviewError = nil
         historyStoreGeneration = historyAppStore?.trackerDataGeneration
         var transfer = WhoopHistoryTransfer(generation: generation)

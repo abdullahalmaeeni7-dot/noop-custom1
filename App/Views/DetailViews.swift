@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import Combine
 import WHOOPCore
 
 struct MetricDetailView: View {
@@ -43,6 +44,9 @@ struct MetricDetailView: View {
                             Text(L10n.text("Counted minutes") + ": " + (recording.observedSeconds / 60).formatted(.number.precision(.fractionLength(1)))).font(WFont.body(14))
                             Text(L10n.text("Only received heart-rate intervals contribute to the local estimate. Disconnected time and intervals still waiting for smoothing are excluded. Official WHOOP scores take priority when imported.")).font(WFont.body(12)).foregroundStyle(WColor.muted)
                         }
+                    }
+                    if metric == .sleep, day.source != .example, day.sleepMinutes == 0 || day.confirmedSleep != nil {
+                        SleepReviewEntry(wakeDay: day.date, compact: false).id(day.date)
                     }
                     if metric == .sleep, let breakdown = day.sleepBreakdown { sleepStages(breakdown) }
                     WCard(padding: 16) { statistics }
@@ -212,7 +216,6 @@ struct MetricDetailView: View {
     private func delta(_ value: Double?, _ previous: Double?) -> Double? {
         guard let value, let previous else { return nil }; return value - previous
     }
-    private func clockDuration(_ minutes: Int) -> String { String(format: "%d:%02d", minutes / 60, minutes % 60) }
     private func legend(_ title: String, color: Color) -> some View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 1).fill(color).frame(width: 11, height: 3)
@@ -403,5 +406,118 @@ struct DeviceSheetView: View {
                 }
             }
         }
+    }
+}
+
+struct SleepReviewEntry: View {
+    @EnvironmentObject private var store: AppStore
+    let wakeDay: Date
+    let compact: Bool
+    @State private var suggestion: DateInterval?
+    @State private var editing = false
+    private var day: DailySnapshot { store.selectedDay }
+
+    var body: some View {
+        Group {
+            if day.source != .example && (!compact || (day.sleepMinutes == 0 && (suggestion != nil || day.confirmedSleep != nil))) {
+                Button { editing = true } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "bed.double").foregroundStyle(WColor.sleep)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(L10n.text(day.confirmedSleep != nil ? "Your confirmed sleep" : suggestion != nil ? "Review overnight rest" : "Log sleep"))
+                                .font(WFont.body(16).weight(.semibold))
+                            if let saved = day.confirmedSleep {
+                                Text(clockDuration(saved.minutes)).font(WFont.number(20, bold: true))
+                            } else if let suggestion {
+                                Text(suggestion.start.formatted(date: .omitted, time: .shortened) + " – " + suggestion.end.formatted(date: .omitted, time: .shortened))
+                                    .font(WFont.body(14)).foregroundStyle(WColor.muted)
+                            }
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
+                    }.padding(16).background(WColor.card, in: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius))
+                }.buttonStyle(.plain).accessibilityIdentifier("sleepReviewEntry")
+            }
+        }
+        .task(id: wakeDay) {
+            let key = DayCalendar.start(of: wakeDay)
+            for await (days, activities) in store.$days.combineLatest(store.$activities).values {
+                guard !Task.isCancelled else { return }
+                let selected = days.first { $0.date == key }
+                guard selected?.source != .example, selected?.confirmedSleep == nil,
+                      (selected?.sleepMinutes ?? 0) == 0 else {
+                    suggestion = nil
+                    continue
+                }
+                let next = await Task.detached(priority: .utility) {
+                    OvernightRest.candidate(wakeDay: key, days: days, activities: activities)
+                }.value
+                guard !Task.isCancelled else { return }
+                suggestion = next
+            }
+        }
+        .sheet(isPresented: $editing) {
+            SleepLogEditor(wakeDay: wakeDay, saved: day.confirmedSleep, suggestion: suggestion)
+        }
+    }
+}
+
+private struct SleepLogEditor: View {
+    @EnvironmentObject private var store: AppStore
+    @Environment(\.dismiss) private var dismiss
+    let wakeDay: Date
+    let saved: ConfirmedSleep?
+    let suggestion: DateInterval?
+    let timeZone: TimeZone
+    @State private var start: Date
+    @State private var end: Date
+    @State private var message: String?
+    @State private var confirmDelete = false
+
+    init(wakeDay: Date, saved: ConfirmedSleep?, suggestion: DateInterval?) {
+        self.wakeDay = wakeDay
+        self.saved = saved
+        self.suggestion = suggestion
+        let zone = saved.flatMap { TimeZone(identifier: $0.timeZoneID) } ?? .autoupdatingCurrent
+        timeZone = zone
+        var local = Calendar(identifier: .gregorian)
+        local.timeZone = zone
+        var parts = DayCalendar.utc.dateComponents([.year, .month, .day], from: wakeDay)
+        parts.hour = 7
+        let proposedWake = min(local.date(from: parts) ?? Date(), Date())
+        _end = State(initialValue: saved?.end ?? suggestion?.end ?? proposedWake)
+        _start = State(initialValue: saved?.start ?? suggestion?.start ?? proposedWake.addingTimeInterval(-8 * 3600))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                if suggestion != nil, saved == nil {
+                    Text(L10n.text("Your tracker recorded a resting period. Adjust the times and confirm only the time you were asleep."))
+                }
+                DatePicker(L10n.text("Fell asleep"), selection: $start, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                DatePicker(L10n.text("Woke up"), selection: $end, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                let entry = ConfirmedSleep(start: start, end: end, timeZone: timeZone)
+                let valid = (try? entry.validate(on: wakeDay, now: Date())) != nil
+                if valid { LabeledContent(L10n.text("Confirmed duration"), value: clockDuration(entry.minutes)) }
+                else { Text(L10n.text("Choose a sleep interval of 1 minute to 24 hours that ends on the selected day and has already finished.")) }
+                Button(L10n.text("I was asleep · Save")) { save(entry) }.disabled(!valid)
+                if saved != nil {
+                    Button(L10n.text("Remove confirmed sleep"), role: .destructive) { confirmDelete = true }
+                }
+                if let message { Text(L10n.text(message)).foregroundStyle(.orange) }
+            }
+            .navigationTitle(L10n.text("Sleep log")).navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L10n.text("Cancel")) { dismiss() } } }
+            .confirmationDialog(L10n.text("Remove confirmed sleep"), isPresented: $confirmDelete) {
+                Button(L10n.text("Delete"), role: .destructive) { save(nil) }
+            }
+        }
+        .environment(\.timeZone, timeZone)
+    }
+
+    private func save(_ value: ConfirmedSleep?) {
+        do { try store.setConfirmedSleep(value, on: wakeDay); dismiss() }
+        catch { message = error.localizedDescription }
     }
 }

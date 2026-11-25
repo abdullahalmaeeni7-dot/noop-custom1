@@ -8,8 +8,8 @@ struct MeasurementExportView: View {
     @EnvironmentObject private var account: AccountModel
     @Environment(\.dismiss) private var dismiss
     @State private var customRange = false
-    @State private var start = DayCalendar.start(of: Date())
-    @State private var end = DayCalendar.start(of: Date())
+    @State private var start = DashboardDatePolicy.today()
+    @State private var end = DashboardDatePolicy.today()
     @State private var showingAccount = false
     @State private var showingProfile = false
     @State private var importing = false
@@ -24,8 +24,8 @@ struct MeasurementExportView: View {
 
     init(initialRange: ClosedRange<Date>? = nil) {
         _customRange = State(initialValue: initialRange != nil)
-        _start = State(initialValue: initialRange?.lowerBound ?? DayCalendar.start(of: Date()))
-        _end = State(initialValue: initialRange?.upperBound ?? DayCalendar.start(of: Date()))
+        _start = State(initialValue: initialRange?.lowerBound ?? DashboardDatePolicy.today())
+        _end = State(initialValue: initialRange?.upperBound ?? DashboardDatePolicy.today())
     }
     private var highlights: ProfileHighlights { ProfileHighlightsCalculator.calculate(days: selected) }
     private var range: ClosedRange<Date>? { customRange ? start...max(start, end) : nil }

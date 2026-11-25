@@ -11,10 +11,23 @@ public enum RecoveryBand: String, Codable, Sendable {
 /// UTC archive dates stay immutable. Browsing and opening the app are separate
 /// from the date a historical measurement was taken.
 public enum DashboardDatePolicy {
-    public static func today(now: Date = Date()) -> Date { DayCalendar.start(of: now) }
-    public static func afterImport(now: Date = Date()) -> Date { today(now: now) }
-    public static func onRollover(selected: Date, previousToday: Date, now: Date) -> Date {
-        DayCalendar.start(of: selected) == DayCalendar.start(of: previousToday) ? today(now: now) : DayCalendar.start(of: selected)
+    /// Encode the device's civil day as a UTC date key, just like a calendar selection.
+    public static func today(now: Date = Date(), timeZone: TimeZone = .autoupdatingCurrent) -> Date {
+        let offset = TimeInterval(timeZone.secondsFromGMT(for: now))
+        return DayCalendar.start(of: now.addingTimeInterval(offset))
+    }
+
+    public static func isToday(_ archiveDate: Date, now: Date = Date(), timeZone: TimeZone = .autoupdatingCurrent) -> Bool {
+        DayCalendar.start(of: archiveDate) == today(now: now, timeZone: timeZone)
+    }
+
+    public static func afterImport(now: Date = Date(), timeZone: TimeZone = .autoupdatingCurrent) -> Date {
+        today(now: now, timeZone: timeZone)
+    }
+
+    public static func onRollover(selected: Date, previousToday: Date, now: Date, timeZone: TimeZone = .autoupdatingCurrent) -> Date {
+        let selectedDay = DayCalendar.start(of: selected)
+        return selectedDay == DayCalendar.start(of: previousToday) ? today(now: now, timeZone: timeZone) : selectedDay
     }
 }
 

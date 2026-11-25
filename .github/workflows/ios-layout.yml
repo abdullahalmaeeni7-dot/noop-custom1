@@ -104,7 +104,7 @@ jobs:
           import datetime, json, os, pathlib, plistlib
           container = pathlib.Path(os.environ['APP_CONTAINER'])
           days = []
-          today = datetime.datetime.now(datetime.timezone.utc).replace(hour=0,minute=0,second=0,microsecond=0)
+          today = datetime.datetime.combine(datetime.date.today(), datetime.time.min, tzinfo=datetime.timezone.utc)
           for i, (strain, recovery) in enumerate(zip([9.5,10.7,14.5,5.6,9.6,5.3,15.8], [43,29,44,29,82,50,38])):
               date = (today - datetime.timedelta(days=6-i)).isoformat().replace('+00:00','Z')
               days.append(dict(date=date,recovery=recovery,strain=strain,sleepPerformance=33 if i==6 else 75,sleepMinutes=224 if i==6 else 420,sleepNeededMinutes=680 if i==6 else 510,restingHeartRate=58,hrv=122,respiratoryRate=19.7,oxygenSaturation=98,skinTemperatureCelsius=33.7,sleepBreakdown=dict(awakeMinutes=25,lightMinutes=100,deepMinutes=70,remMinutes=54,inBedMinutes=249,efficiencyPercent=90,consistencyPercent=76,debtMinutes=60) if i==6 else None,steps=26783,energyKcal=2886,heartRates=[],source='imported'))
@@ -120,6 +120,21 @@ jobs:
           python3 Scripts/capture-stable-simulator.py "$SIM_DEVICE" "build/visual-review/02-home-$REVIEW_LANGUAGE.png"
           xcrun simctl terminate "$SIM_DEVICE" local.whoop.reconstruction
           if [[ "$REVIEW_LANGUAGE" == 'en' ]]; then
+            # Populate the real Photos picker without a camera or a network dependency.
+            xcrun --sdk macosx swift - App/Resources/whoop-intro.mp4 build/review-photo.jpg <<'SWIFT'
+          import AVFoundation
+          import ImageIO
+          import UniformTypeIdentifiers
+          let source = URL(fileURLWithPath: CommandLine.arguments[1])
+          let output = URL(fileURLWithPath: CommandLine.arguments[2])
+          let generator = AVAssetImageGenerator(asset: AVURLAsset(url: source))
+          generator.appliesPreferredTrackTransform = true
+          let frame = try generator.copyCGImage(at: CMTime(value: 1, timescale: 1), actualTime: nil)
+          guard let destination = CGImageDestinationCreateWithURL(output as CFURL, UTType.jpeg.identifier as CFString, 1, nil) else { exit(1) }
+          CGImageDestinationAddImage(destination, frame, nil)
+          guard CGImageDestinationFinalize(destination) else { exit(1) }
+          SWIFT
+            xcrun simctl addmedia "$SIM_DEVICE" build/review-photo.jpg
             xcodebuild test -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -destination "platform=iOS Simulator,id=$SIM_DEVICE" -derivedDataPath build/SimulatorReview -resultBundlePath build/visual-review/reference-features.xcresult -parallel-testing-enabled NO -only-testing:WHOOPUITests/ReferenceFeatureTests ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO > build/visual-review/reference-features.log 2>&1
           fi
           xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
@@ -144,10 +159,23 @@ jobs:
             echo '::error::Native setup interaction tests failed; see setup-flow.log and the result bundle.'
             exit 1
           fi
-          xcrun xcresulttool export attachments --path build/visual-review/setup-flow.xcresult --output-path build/visual-review/setup-attachments
-          xcrun xcresulttool export attachments --path build/visual-review/reference-features.xcresult --output-path build/visual-review/reference-attachments
+      - name: Publish simulator evidence and diagnostic status
+        if: always() && steps.project.outcome == 'success'
+        working-directory: ${{ steps.project.outputs.directory }}
+        env:
+          CAPTURE_OUTCOME: ${{ steps.visual.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/visual-review
+          for entry in "setup-flow:setup" "reference-features:reference"; do
+            result="build/visual-review/${entry%:*}.xcresult"
+            if [[ -d "$result" ]]; then
+              xcrun xcresulttool export attachments --path "$result" --output-path "build/visual-review/${entry#*:}-attachments"
+            fi
+          done
           python3 - <<'PYTHON'
-          import json, shutil
+          import json, re, shutil
           from pathlib import Path
           root = Path('build/visual-review')
           for folder in [root/'setup-attachments', root/'reference-attachments']:
@@ -160,28 +188,14 @@ jobs:
                       name = value.get('suggestedHumanReadableName', '')
                       if filename and str(filename).endswith('.png'):
                           source = folder/filename
-                          label = next((f'{i:02}' for i in range(1, 16) if f'{i:02}-' in name), None)
+                          prefix = re.match(r'^([0-9]{2})-', name)
+                          label = prefix.group(1) if prefix else None
                           if label and source.is_file(): shutil.copy2(source, root/f'flow-{label}.png')
                       for item in value.values(): entries(item)
                   elif isinstance(value, list):
                       for item in value: entries(item)
               entries(json.loads(manifest.read_text()))
           PYTHON
-          python3 - <<'PYTHON'
-          import json, os
-          from pathlib import Path
-          Path('build/visual-review/README.md').write_text('# Native iOS layout review\n\nRendered by the actual SwiftUI app in an isolated iPhone 15 Pro simulator. Home uses synthetic measurements seeded only into this disposable simulator. First launch is unseeded. No fixture is added to the production app. Camera hardware and AI provider were not exercised.\n')
-          Path('build/visual-review/run.json').write_text(json.dumps({'source':os.environ['GITHUB_SHA'],'run':os.environ['GITHUB_RUN_ID'],'device':'iPhone 15 Pro','synthetic_fixture':True},indent=2))
-          PYTHON
-      - name: Publish simulator evidence and diagnostic status
-        if: always() && steps.project.outcome == 'success'
-        working-directory: ${{ steps.project.outputs.directory }}
-        env:
-          CAPTURE_OUTCOME: ${{ steps.visual.outcome }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p build/visual-review
           python3 - <<'PYTHON'
           import json, os
           from pathlib import Path
@@ -194,7 +208,7 @@ jobs:
           errors = [line for line in lines if 'error:' in line or 'Undefined symbols' in line]
           root.joinpath('diagnostics.txt').write_text('\n'.join((errors or lines[-18:])[:24])[:20000] + '\n')
           root.joinpath('run.json').write_text(json.dumps({'source':os.environ['GITHUB_SHA'],'run':os.environ['GITHUB_RUN_ID'],'capture_outcome':os.environ['CAPTURE_OUTCOME'],'images':[p.name for p in root.glob('*.png')]},indent=2))
-          root.joinpath('README.md').write_text('# Native iOS layout review\n\nCapture outcome: ' + os.environ['CAPTURE_OUTCOME'] + '. Images, when present, are from the actual SwiftUI application in an isolated iPhone simulator. Home uses synthetic data seeded only into this disposable simulator. Camera hardware and a production AI provider are not exercised. See run.json and diagnostics.txt for the actual result.\n')
+          root.joinpath('README.md').write_text('# Native iOS layout review\n\nCapture outcome: ' + os.environ['CAPTURE_OUTCOME'] + '. Images, when present, are from the actual SwiftUI application in an isolated iPhone simulator. Review measurements are isolated simulator fixtures. Live photo captures use the system photo library, seeded with a still from the supplied intro video. Sensor and camera hardware were not exercised. See run.json and diagnostics.txt for the actual result.\n')
           PYTHON
           EVIDENCE_DIR=$(mktemp -d)
           cp build/visual-review/README.md build/visual-review/run.json build/visual-review/diagnostics.txt "$EVIDENCE_DIR/"

@@ -13,6 +13,7 @@ struct PulseTrackerView: View {
     @AppStorage(DailyTrackerRecorder.maximumKey) private var localMaximum = 190.0
     @Environment(\.dismiss) private var dismiss
     @State private var advanced = false
+    @State private var sleepSettings = false
     @State private var exporting = false
 
     var body: some View {
@@ -36,6 +37,10 @@ struct PulseTrackerView: View {
                     } else {
                         TrackerConnectionPanel()
                         TrackerSyncPanel()
+                        Button { sleepSettings = true } label: {
+                            Label(L10n.text("AUTOMATIC SLEEP"), systemImage: "moon.fill")
+                                .frame(maxWidth: .infinity)
+                        }.buttonStyle(WButton(filled: false))
                         Button { exporting = true } label: {
                             Label(L10n.text("EXPORT DATA"), systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity)
@@ -50,6 +55,7 @@ struct PulseTrackerView: View {
                 } }
                 .toolbarBackground(PulseColor.top, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.font(PulseFont.body(15)).foregroundStyle(PulseColor.text).tint(.white).preferredColorScheme(.dark)
+            .sheet(isPresented: $sleepSettings) { HealthImportView() }
             .sheet(isPresented: $exporting) { MeasurementExportView() }
             .onDisappear { tracker.stop() }
     }
@@ -100,7 +106,7 @@ struct PulseTrackerView: View {
                     Button(L10n.text("RETRY SAVE")) { dailyTracker.flush() }.frame(minHeight: 44)
                 }
                 Button(L10n.text("VIEW TODAY’S TRACKING")) {
-                    store.selectedDate = DayCalendar.start(of: Date()); store.tab = .home; dismiss()
+                    store.selectedDate = DashboardDatePolicy.today(); store.tab = .home; dismiss()
                 }.frame(minHeight: 44)
                 Toggle(L10n.text("Show local Strain estimates"), isOn: $showLocalEstimates).frame(minHeight: 44)
                 if showLocalEstimates {
@@ -177,12 +183,13 @@ struct TrackerConnectionPanel: View {
         TimelineView(.periodic(from: .now, by: 1)) { timeline in
             let evidence = TrackerConnectionEvidence(connected: tracker.connectedName != nil, connecting: tracker.isConnecting,
                                                      heartRate: tracker.heartRate, receivedAt: tracker.heartRateReceivedAt, now: timeline.date)
+            let offBody = tracker.wearState == .offBody
             PulseCard {
                 HStack(spacing: 16) {
                     Image(systemName: evidence.state == .receiving ? "heart.fill" : "waveform.path.ecg")
                         .font(.system(size: 26)).foregroundStyle(evidence.state == .receiving ? PulseColor.load : PulseColor.muted)
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(L10n.text(evidence.state == .receiving ? "RECEIVING DATA" : "WAITING FOR LIVE DATA"))
+                        Text(L10n.text(offBody ? "Tracker off body" : evidence.state == .receiving ? "RECEIVING DATA" : "WAITING FOR LIVE DATA"))
                             .font(PulseFont.label(11)).foregroundStyle(evidence.state == .receiving ? PulseColor.mint : PulseColor.muted)
                         if let bpm = evidence.liveHeartRate {
                             HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -190,11 +197,12 @@ struct TrackerConnectionPanel: View {
                                 Text(L10n.text("BPM")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
                             }
                         } else {
-                            Text(L10n.text("Keep your tracker on your wrist." )).font(PulseFont.body(15))
+                            Text(L10n.text(offBody ? "Put your strap back on to resume readings." : "Keep your tracker on your wrist.")).font(PulseFont.body(15))
                         }
                     }
                     Spacer(minLength: 0)
                     if evidence.state == .receiving { Image(systemName: "checkmark.circle.fill").foregroundStyle(PulseColor.mint) }
+                    else if offBody { Image(systemName: "exclamationmark.circle").foregroundStyle(WColor.yellow) }
                     else { ProgressView().tint(.white) }
                 }.frame(minHeight: 62).accessibilityElement(children: .combine).accessibilityIdentifier("trackerLiveCheck")
                 if evidence.state != .receiving {
@@ -221,7 +229,7 @@ struct TrackerSyncPanel: View {
             }
             if let recording = store.days.first(where: { $0.date == DayCalendar.start(of: Date()) })?.trackerRecording {
                 HStack {
-                    Text(L10n.text("Readings saved today")).font(PulseFont.body(15))
+                    Text(L10n.text("Readings saved today (UTC)")).font(PulseFont.body(15))
                     Spacer()
                     Text(recording.sampleCount.formatted()).font(PulseFont.number(24))
                 }
@@ -235,6 +243,13 @@ struct TrackerSyncPanel: View {
             Text(L10n.text(tracker.historyStatus)).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
             if let error = tracker.historyPreviewError {
                 Text(L10n.text("The full raw data is saved, but the chart preview could not update.") + " " + error).font(PulseFont.body(12)).foregroundStyle(.orange)
+            }
+            if tracker.canDownloadHistory || tracker.isDownloadingHistory {
+                Toggle(L10n.text("Automatically sync stored readings"), isOn: Binding(
+                    get: { tracker.automaticHistoryEnabled }, set: tracker.setAutomaticHistory
+                )).tint(PulseColor.mint)
+                Text(L10n.text("This iPhone saves each batch before confirming receipt to the strap. Stored readings can fill gaps after reconnection."))
+                    .font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
             }
             if tracker.isDownloadingHistory {
                 ProgressView(L10n.text("Downloading tracker records…")).tint(PulseColor.sleep).frame(minHeight: 44)

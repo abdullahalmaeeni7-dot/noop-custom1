@@ -1,0 +1,35 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "AA67C483-1CDB-4B1F-B0CD-0845C4EC26C3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10-health-measurements_0_4EF6F3B2-FD81-45F7-BF45-D466B3CA4B9F.png",
+        "timestamp" : 1795450420.529
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "92F17560-3DA6-4AEA-8C9C-2404382FA8C2.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "09-sleep-stages_0_17FCD5A8-FAFA-4FF1-95C5-FD7E2D7949C4.png",
+        "timestamp" : 1795450407.441
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "050E62CB-E497-437A-AA0F-E6FE33D652C6",
+        "deviceName" : "WHOOP isolated layout review",
+        "exportedFileName" : "B6FA98C7-21D8-4857-87D4-E62B16B51E71.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "08-colored-recovery-calendar_0_5CF0FEC8-4EE4-4067-805E-86C9D29FE2C7.png",
+        "timestamp" : 1795450399.836
+      }
+    ],
+    "testIdentifier" : "ReferenceFeatureTests/testRecoveryCalendarSleepStagesAndHealthMeasurements()",
+    "testIdentifierURL" : "test://com.apple.xcode/WHOOP/WHOOPUITests/ReferenceFeatureTests/testRecoveryCalendarSleepStagesAndHealthMeasurements"
+  }
+]

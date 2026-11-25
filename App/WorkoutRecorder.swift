@@ -111,47 +111,114 @@ final class DailyTrackerRecorder: ObservableObject {
     nonisolated static let restingKey = "whoop.tracking.resting.v1"
     nonisolated static let maximumKey = "whoop.tracking.maximum.v1"
     @Published private(set) var error: String?
+    @Published private(set) var detectedActivity: ActivityRecord?
     private var accumulator = DailyTrackerAccumulator()
-    private var subscription: AnyCancellable?
-    private var clock: AnyCancellable?
+    private var detector = TrackerActivityDetector()
+    private var checkpoints: [UUID: TrackerActivityCheckpoint] = [:]
+    private var subscriptions: Set<AnyCancellable> = []
     private weak var store: AppStore?
+    private weak var manual: WorkoutRecorder?
     private var generation: UUID?
-    private var lastSavedAt = Date.distantPast
+    private var firstPendingAt: Date?
+    private var lastSaveAttempt = Date.distantPast
+    private static let bufferWindow: TimeInterval = 7 * 24 * 60 * 60
 
-    func bind(_ device: DeviceModel, to store: AppStore) {
-        guard subscription == nil else { return }
-        self.store = store; generation = store.trackerDataGeneration
-        subscription = device.heartRateSamples.sink { [weak self] sample in
-            Task { @MainActor in self?.receive(sample) }
-        }
-        clock = Timer.publish(every: 15, on: .main, in: .common).autoconnect().sink { [weak self] _ in
-            Task { @MainActor in self?.flush() }
-        }
+    func bind(_ device: DeviceModel, to store: AppStore, manualRecorder: WorkoutRecorder) {
+        guard subscriptions.isEmpty else { return }
+        self.store = store
+        manual = manualRecorder
+        generation = store.trackerDataGeneration
+
+        // These publishers and the CoreBluetooth delegate run on the main queue.
+        // Process them in delivery order, including contact changes between samples.
+        device.heartRateSamples.sink { [weak self] in self?.receive($0) }.store(in: &subscriptions)
+        device.$wearState.removeDuplicates().sink { [weak self] state in
+            if state == .offBody { self?.interrupt() }
+        }.store(in: &subscriptions)
+        device.$connectedName.dropFirst().sink { [weak self] name in
+            if name == nil { self?.interrupt() }
+        }.store(in: &subscriptions)
+        manualRecorder.$isRecording.sink { [weak self] recording in
+            if recording { self?.interruptDetection() }
+        }.store(in: &subscriptions)
+        Timer.publish(every: 15, on: .main, in: .common).autoconnect().sink { [weak self] now in
+            self?.detector.expire(at: now)
+            if self?.detector.activity == nil, self?.detectedActivity != nil { self?.detectedActivity = nil }
+            self?.flush()
+        }.store(in: &subscriptions)
     }
+
+    private func interruptDetection() {
+        detector.interrupt()
+        if detectedActivity != nil { detectedActivity = nil }
+    }
+
+    private func interrupt() {
+        interruptDetection()
+        accumulator.interruptStream()
+        flush()
+    }
+
     private func synchronizeGeneration() {
         if generation != store?.trackerDataGeneration {
-            accumulator.reset(); error = nil; generation = store?.trackerDataGeneration
+            accumulator.reset()
+            interruptDetection()
+            checkpoints.removeAll()
+            error = nil
+            firstPendingAt = nil
+            generation = store?.trackerDataGeneration
         }
     }
+
     private func receive(_ sample: HeartRateSample) {
         synchronizeGeneration()
-        guard let store, !store.isLoadingSavedData, error == nil else { return }
+        guard store != nil else { return }
+        let now = Date()
+        if let firstPendingAt, sample.timestamp.timeIntervalSince(firstPendingAt) >= Self.bufferWindow {
+            if now.timeIntervalSince(lastSaveAttempt) >= 15 { flush() }
+            // Preserve the oldest unsaved batch. Continue retrying from BLE events
+            // when iOS suspends the timer after a write failure.
+            if self.firstPendingAt != nil {
+                interruptDetection()
+                accumulator.interruptStream()
+                error = "Tracker storage is full or unavailable. New readings are paused until the buffered data can be saved."
+                return
+            }
+        }
         let savedResting = UserDefaults.standard.double(forKey: Self.restingKey)
         let savedMaximum = UserDefaults.standard.double(forKey: Self.maximumKey)
         let resting = (30...110).contains(savedResting) ? savedResting : 55
         let maximum = (120...230).contains(savedMaximum) ? savedMaximum : 190
         do {
             try accumulator.append(sample, resting: resting, maximum: maximum)
-            // Also flush from incoming events when a foreground timer is suspended.
-            if sample.timestamp.timeIntervalSince(lastSavedAt) >= 15 { flush() }
-        } catch { /* Invalid or out-of-order readings never contribute to the estimate. */ }
+            if firstPendingAt == nil { firstPendingAt = sample.timestamp }
+            if manual?.isRecording != true {
+                let previous = detector.activity
+                detector.receive(sample, resting: resting, maximum: maximum)
+                if let current = detector.activity, current != previous {
+                    let mayInsert = checkpoints[current.id]?.mayInsert ?? (previous?.id != current.id)
+                    checkpoints[current.id] = TrackerActivityCheckpoint(record: current, mayInsert: mayInsert)
+                }
+                if detectedActivity != detector.activity { detectedActivity = detector.activity }
+            }
+            if now.timeIntervalSince(lastSaveAttempt) >= 15 { flush() }
+        } catch {
+            // A duplicate or nonfinite reading must never extend a detected activity.
+        }
     }
+
     func flush() {
         synchronizeGeneration()
-        guard let store, !store.isLoadingSavedData, !accumulator.pending.isEmpty else { return }
+        guard let store, !store.isLoadingSavedData, firstPendingAt != nil else { return }
+        lastSaveAttempt = Date()
         do {
-            try store.saveTrackerReadings(accumulator.pending)
-            accumulator.acknowledgeSaved(); lastSavedAt = Date(); error = nil
-        } catch { self.error = error.localizedDescription }
+            try store.saveTrackerReadings(accumulator.pending, activities: Array(checkpoints.values))
+            accumulator.acknowledgeSaved()
+            checkpoints.removeAll()
+            firstPendingAt = nil
+            if error != nil { error = nil }
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 }

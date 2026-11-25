@@ -64,6 +64,10 @@ public struct DailyTrackerAccumulator {
     }
     public mutating func acknowledgeSaved() { records = [:]; chart = [:] }
     public mutating func reset() { self = Self() }
+    /// Stop integrating immediately on explicit loss of skin contact or a link.
+    /// Preserve uncommitted batches and the timestamp guard across reconnection.
+    public mutating func interruptStream() { engine = nil; currentDay = nil }
+
 
     public mutating func append(_ sample: HeartRateSample, resting: Double, maximum: Double) throws {
         _ = try LiveStrainPoint(sample)

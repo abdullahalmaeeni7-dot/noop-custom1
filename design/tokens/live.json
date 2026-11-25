@@ -55,5 +55,5 @@
     "respectReduceMotion": true,
     "source": "Implementation timings, not verified against the running official app."
   },
-  "intentionalLabels": "Example and recorded-day date labels stay visible in preview and exported media; missing live HR says Connect and missing day scores say Sync."
+  "overlayContent": "Preview and exported media draw available measurements. The date selector is in Live Controls."
 }

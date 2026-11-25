@@ -68,21 +68,32 @@ struct MonitorShortcut: View {
 
 struct ReferenceActivityRow: View {
     let activity: ActivityRecord
+    private func clock(_ date: Date) -> String {
+        if activity.automaticallyDetected == true {
+            var style = Date.FormatStyle.dateTime.hour().minute()
+            style.locale = AppLanguage.current.locale
+            style.timeZone = .autoupdatingCurrent
+            return date.formatted(style)
+        }
+        return utcDateText(date, style: .dateTime.hour().minute())
+    }
+
     var body: some View {
         WCard(padding: 8) {
             HStack(spacing: 11) {
                 HStack(spacing: 5) {
-                    Image(systemName: activity.name.localizedCaseInsensitiveContains("walk") ? "figure.walk" : activity.name.localizedCaseInsensitiveContains("soccer") ? "figure.soccer" : "figure.run").font(.system(size: 20, weight: .light))
-                    Text(L10n.text(activity.strain.map { decimalText($0) } ?? "—")).font(WFont.number(17, bold: true))
+                    Image(systemName: activity.automaticallyDetected == true ? "waveform.path.ecg" : activity.name.localizedCaseInsensitiveContains("walk") ? "figure.walk" : activity.name.localizedCaseInsensitiveContains("soccer") ? "figure.soccer" : "figure.run").font(.system(size: 20, weight: .light))
+                    Text(activity.automaticallyDetected == true ? Duration.seconds(activity.durationMinutes * 60).formatted(.units(allowed: [.minutes], width: .abbreviated)) : L10n.text(activity.strain.map { decimalText($0) } ?? "—")).font(WFont.number(17, bold: true))
                 }.frame(width: 79, height: 39).background(WColor.blue.opacity(0.8), in: RoundedRectangle(cornerRadius: 4))
                 VStack(alignment: .leading, spacing: 3) {
                     Text(L10n.text(activity.name.uppercased())).font(WFont.label(11)).lineLimit(1)
+                    if activity.automaticallyDetected == true { Text(L10n.text("Possible activity")).font(WFont.label(9)).foregroundStyle(WColor.muted) }
                     if activity.strainIsEstimate == true { Text(L10n.text("LOCAL STRAIN ESTIMATE")).font(WFont.label(7)).foregroundStyle(WColor.muted) }
                 }
                 Spacer(minLength: 4)
                 VStack(alignment: .trailing, spacing: 3) {
-                    Text(L10n.text(utcDateText(activity.start, style: .dateTime.hour().minute()))).font(WFont.number(10))
-                    Text(L10n.text(utcDateText(activity.start.addingTimeInterval(Double(activity.durationMinutes) * 60), style: .dateTime.hour().minute()))).font(WFont.number(10)).foregroundStyle(WColor.muted)
+                    Text(L10n.text(clock(activity.start))).font(WFont.number(10))
+                    Text(L10n.text(clock(activity.start.addingTimeInterval(Double(activity.durationMinutes) * 60)))).font(WFont.number(10)).foregroundStyle(WColor.muted)
                 }
             }
         }

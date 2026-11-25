@@ -100,10 +100,8 @@ final class SetupFlowTests: XCTestCase {
         let day = app.buttons["liveRecordedDay"]
         reveal(day, in: app); day.tap()
         XCTAssertTrue(app.navigationBars["Recovery Calendar"].waitForExistence(timeout: 5))
-        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let previous = calendar.date(byAdding: .day, value: -1, to: Date())!
-        let formatter = DateFormatter(); formatter.calendar = calendar; formatter.timeZone = calendar.timeZone; formatter.dateFormat = "yyyy-MM-dd"
-        app.buttons["calendarDay-" + formatter.string(from: previous)].tap()
+        let previous = Calendar(identifier: .gregorian).date(byAdding: .day, value: -1, to: Date())!
+        displayedDay(previous, in: app).tap()
         app.navigationBars["Live Controls"].buttons["Done"].tap()
         app.buttons["closeLive"].tap()
         app.buttons["tab-home"].tap()
@@ -135,11 +133,10 @@ final class ReferenceFeatureTests: XCTestCase {
         XCTAssertTrue(app.buttons["scoreRing-sleep"].waitForExistence(timeout: 15))
         app.buttons["openRecoveryCalendar"].tap()
         XCTAssertTrue(app.navigationBars["Recovery Calendar"].waitForExistence(timeout: 5))
-        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let formatter = DateFormatter(); formatter.timeZone = calendar.timeZone; formatter.dateFormat = "yyyy-MM-dd"
-        for (offset, score) in [(-5, 29), (-2, 82)] {
+        let calendar = Calendar(identifier: .gregorian)
+        for (offset, score) in [(-2, 82), (-5, 29)] {
             let day = calendar.date(byAdding: .day, value: offset, to: Date())!
-            XCTAssertTrue(app.buttons["calendarDay-" + formatter.string(from: day)].label.contains("\(score)%"))
+            XCTAssertTrue(displayedDay(day, in: app).label.contains("\(score)%"))
         }
         capture("08-colored-recovery-calendar", app)
         app.buttons["calendarToday"].tap()
@@ -156,9 +153,94 @@ final class ReferenceFeatureTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["98"].waitForExistence(timeout: 5))
         capture("10-health-measurements", app)
     }
+    func testSavedPhotoOverlaysAndPrimaryTabs() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-whoop.language.v1", "en", "-AppleLanguages", "(en)"]
+        app.launch()
+        XCTAssertTrue(app.buttons["scoreRing-sleep"].waitForExistence(timeout: 15))
+
+        for (tabID, captureName) in [("health", "15-health"), ("community", "16-community"), ("menu", "17-more")] {
+            let tab = app.buttons["tab-" + tabID]
+            tab.tap()
+            let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"), object: tab)
+            XCTAssertEqual(XCTWaiter.wait(for: [selected], timeout: 4), .completed)
+            capture(captureName, app)
+        }
+
+        let live = app.buttons["openLiveCamera"]
+        for _ in 0..<6 where !live.isHittable { app.swipeUp() }
+        live.tap()
+        let permission = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+        if permission.waitForExistence(timeout: 2) {
+            for label in ["Allow", "OK"] where permission.buttons[label].exists {
+                permission.buttons[label].tap()
+                break
+            }
+        }
+
+        let gallery = app.buttons["Choose a saved photo"]
+        XCTAssertTrue(gallery.waitForExistence(timeout: 10))
+        gallery.tap()
+        // The system picker exposes image tiles as buttons, images or cells,
+        // depending on the simulator runtime. Use an actual photo tile.
+        let photoLabel = NSPredicate(format: "label BEGINSWITH[c] %@", "Photo,")
+        let labeledTile = app.descendants(matching: .any).matching(photoLabel).firstMatch
+        let gridTile = app.collectionViews.cells.firstMatch
+        if labeledTile.waitForExistence(timeout: 5) {
+            labeledTile.tap()
+        } else if gridTile.waitForExistence(timeout: 5) {
+            gridTile.tap()
+        } else {
+            let image = app.scrollViews.images.firstMatch
+            XCTAssertTrue(image.waitForExistence(timeout: 5), "The Photos picker must offer the imported review picture.")
+            image.tap()
+        }
+        let shutter = app.buttons["Capture photo with stats"]
+        let shutterReady = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == true AND enabled == true AND hittable == true"),
+            object: shutter
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [shutterReady], timeout: 12), .completed)
+        app.buttons["liveMode-overview"].tap()
+        let overlay = app.descendants(matching: .any).matching(identifier: "liveMetrics").firstMatch
+        XCTAssertTrue(overlay.waitForExistence(timeout: 5))
+        for value in ["15.8", "38%", "3:44"] { XCTAssertTrue(overlay.label.contains(value), overlay.label) }
+        capture("13-live-overview-photo", app)
+
+        let recovery = app.buttons["liveMode-recovery"]
+        if !recovery.isHittable { app.swipeLeft() }
+        recovery.tap()
+        XCTAssertTrue(overlay.label.contains("38%"))
+        app.buttons["liveControls"].tap()
+        let slider = app.sliders["liveLayoutSize"]
+        XCTAssertTrue(slider.waitForExistence(timeout: 5))
+        let previous = try XCTUnwrap(slider.value as? String)
+        slider.adjust(toNormalizedSliderPosition: 0.16)
+        XCTAssertNotEqual(slider.value as? String, previous)
+        app.navigationBars["Live Controls"].buttons["Done"].tap()
+        capture("14-live-resized-recovery-photo", app)
+    }
+
     private func capture(_ name: String, _ app: XCUIApplication) {
         Thread.sleep(forTimeInterval: 1)
         let attachment = XCTAttachment(screenshot: app.screenshot()); attachment.name = name; attachment.lifetime = .keepAlways
         add(attachment)
     }
+}
+
+
+/// Call newest to oldest. A seven-day review can cross into the preceding month.
+private func displayedDay(_ date: Date, in app: XCUIApplication) -> XCUIElement {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.timeZone = .current
+    formatter.dateFormat = "yyyy-MM-dd"
+    let day = app.buttons["calendarDay-" + formatter.string(from: date)]
+    if !day.exists {
+        app.buttons["Previous month"].tap()
+        XCTAssertTrue(day.waitForExistence(timeout: 3))
+    }
+    return day
 }

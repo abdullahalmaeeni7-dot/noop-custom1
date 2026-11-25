@@ -1,0 +1,51 @@
+{
+  "source": "user-supplied WHOOP Android 5.444.1 / 431134",
+  "calendar": {
+    "columns": 7,
+    "firstWeekday": "Monday",
+    "visibleDaySizeDp": 36,
+    "source": "res/layout/custom_calendar_day.xml",
+    "iosMinimumTouchPoints": 44,
+    "recoveryThresholds": {
+      "red": [
+        0,
+        33
+      ],
+      "yellow": [
+        34,
+        66
+      ],
+      "green": [
+        67,
+        100
+      ]
+    },
+    "missingScoreColor": "uncolored"
+  },
+  "live": {
+    "fullWidthHeightRatio": 0.5625,
+    "condensedWidthHeightRatio": 0.8,
+    "sourceHeightWidthRatio": 1.25,
+    "photoMinScale": 0.6,
+    "photoMaxScale": 8,
+    "photoRestrictedBounds": false,
+    "statScaleRangeImplementation": [
+      0.35,
+      1.65
+    ],
+    "statBounds": "clamped to canvas; implementation choice, not recovered original gesture code",
+    "source": "res/layout/activity_selfie.xml and AspectLetterboxView.onLayout bytecode"
+  },
+  "motion": {
+    "loadingFrames": 132,
+    "loadingFps": 60,
+    "loadingDurationSeconds": 2.2,
+    "introDurationSeconds": 4.053,
+    "introPixels": [
+      1080,
+      1920
+    ],
+    "respectReduceMotion": true
+  },
+  "exactIosPixelParityVerified": false
+}

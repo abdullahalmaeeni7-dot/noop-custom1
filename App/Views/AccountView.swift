@@ -46,6 +46,10 @@ struct AccountView: View {
                 if account.isLinked {
                     WCard {
                         VStack(alignment: .leading, spacing: 14) {
+                            Toggle(L10n.text("Automatically sync recent WHOOP data"), isOn: $account.automaticSyncEnabled)
+                                .tint(WColor.green).accessibilityIdentifier("automaticWhoopSync")
+                            Text(L10n.text("Refresh sleep, Recovery, Strain and workouts when the app opens."))
+                                .font(WFont.body(14)).foregroundStyle(WColor.muted)
                             SectionHeading(title: "Choose your days")
                             Picker(L10n.text("Date range"), selection: $days) {
                                 Text(L10n.text("14 days")).tag(14)

@@ -19,6 +19,12 @@ struct LiveOverlaySnapshot: Equatable, Sendable {
     var layout = LiveOverlayLayout()
     var graphSamples: [HeartRateSample] = []
     var historicalGraph = false
+    func isAvailable(_ metric: CameraOverlayMetric, at index: Int, now: Date) -> Bool {
+        guard metric.available else { return false }
+        guard index == heartRateIndex else { return true }
+        return sampleDate.map { (0...10).contains(now.timeIntervalSince($0)) } ?? false
+    }
+
     func rendered(at now: Date) -> [String] {
         var result = values
         if let index = heartRateIndex, result.indices.contains(index), sampleDate.map({ !(0...10).contains(now.timeIntervalSince($0)) }) ?? true { result[index] = referenceMode == .live ? "Connect" : "—" }
@@ -385,10 +391,10 @@ extension LiveOverlayRenderer {
             context.restoreGState()
             if big {
                 brand(in: CGRect(x: center.x - w * 0.12, y: center.y - w * 0.184, width: w * 0.24, height: w * 0.039))
-                number(metric.value, center: CGPoint(x: center.x, y: center.y + w * 0.012), size: metric.available ? w * 0.22 : w * 0.11)
+                number(metric.value, center: CGPoint(x: center.x, y: center.y + w * 0.012), size: w * 0.22)
                 label(metric.label.replacingOccurrences(of: "\n", with: " "), rect: CGRect(x: center.x - w * 0.32, y: center.y + w * 0.171, width: w * 0.64, height: w * 0.09), size: w * 0.035)
             } else {
-                number(metric.value, center: center, size: compact ? w * 0.048 : metric.available ? w * 0.083 : w * 0.043)
+                number(metric.value, center: center, size: compact ? w * 0.048 : w * 0.083)
                 label(compact ? metric.label.replacingOccurrences(of: " ", with: "\n") : metric.label, rect: CGRect(x: center.x - w * 0.145, y: center.y + diameter / 2 + w * (compact ? 0.02 : 0.04),
                                                 width: w * 0.29, height: w * 0.09), size: w * (compact ? 0.0225 : 0.025))
             }
@@ -408,7 +414,7 @@ extension LiveOverlayRenderer {
         }
         switch mode {
         case .overview:
-            for (index, metric) in metrics.prefix(3).enumerated() {
+            for (index, metric) in metrics.prefix(3).enumerated() where metric.available {
                 widget([.strain, .recovery, .sleep][index]) {
                     let base = snapshot.layout.baseFrame([.strain, .recovery, .sleep][index], mode: mode, width: w, height: h)
                     ring(metric, center: CGPoint(x: base.midX, y: base.y + w * 0.111),
@@ -416,7 +422,7 @@ extension LiveOverlayRenderer {
                 }
             }
         case .strain, .recovery, .sleep:
-            if let metric = metrics.first {
+            if let metric = metrics.first, metric.available {
                 widget(mode == .strain ? .strain : mode == .recovery ? .recovery : .sleep) {
                     ring(metric, center: CGPoint(x: w / 2, y: h / 2), diameter: w * 0.75, stroke: w * 0.038, big: true)
                 }
@@ -424,7 +430,7 @@ extension LiveOverlayRenderer {
         case .live:
             guard metrics.count == 4 else { return }
             let cardX = w * 0.71, cardW = w * 0.255
-            for index in 1...3 {
+            for index in 1...3 where metrics[index].available {
                 let cardH = index == 3 ? h * 0.06 : h * 0.156
                 let y = index == 1 ? h * 0.066 : index == 2 ? h * 0.236 : h * 0.406
                 widget(index == 1 ? .strain : index == 2 ? .calories : .timer) {
@@ -439,19 +445,17 @@ extension LiveOverlayRenderer {
                 }
             }
             widget(.heartRate) {
+            guard snapshot.isAvailable(metrics[0], at: 0, now: Date()) else { return }
             let center = CGPoint(x: w * 0.5, y: h * 0.718), radius = w * 0.142
             UIColor.black.withAlphaComponent(0.8).setFill(); UIBezierPath(ovalIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)).fill()
             text("♥", center: CGPoint(x: center.x, y: center.y - w * 0.075), size: w * 0.045)
-            let rate = snapshot.rendered(at: Date()).first ?? "Connect"
-            text(rate, center: center, size: Double(rate) == nil ? w * 0.042 : w * 0.115)
+            text(metrics[0].value, center: center, size: w * 0.115)
             text(metrics[0].label, center: CGPoint(x: center.x, y: center.y + w * 0.082), size: w * 0.025, tracking: w * 0.004)
             }
             widget(.heartRateGraph) {
                 let rect = snapshot.layout.baseFrame(.heartRateGraph, mode: mode, width: w, height: h)
                 let samples = snapshot.graphSamples.filter { $0.bpm.isFinite && (1...300).contains($0.bpm) }.sorted { $0.timestamp < $1.timestamp }
-                guard let first = samples.first, let last = samples.last else {
-                    text("Waiting for heart-rate data", center: CGPoint(x: rect.midX, y: rect.midY), size: w * 0.025); return
-                }
+                guard let first = samples.first, let last = samples.last else { return }
                 let low = (samples.map(\.bpm).min() ?? 0) - 5, high = (samples.map(\.bpm).max() ?? 0) + 5
                 let span = max(1, last.timestamp.timeIntervalSince(first.timestamp))
                 context.setStrokeColor(UIColor.white.cgColor); context.setLineWidth(w * 0.004)

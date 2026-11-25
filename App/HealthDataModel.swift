@@ -9,6 +9,140 @@ final class HealthDataModel: ObservableObject {
     @Published private(set) var status = "Choose a date range to bring your measurements into this app."
     @Published private(set) var error: String?
 
+    @Published private(set) var automaticSleepEnabled = UserDefaults.standard.bool(forKey: "whoop.health.autoSleep") {
+        didSet { UserDefaults.standard.set(automaticSleepEnabled, forKey: "whoop.health.autoSleep") }
+    }
+    @Published private(set) var sleepSyncStatus: String?
+    @Published private(set) var requestingSleepAccess = false
+    @Published private(set) var backgroundSleepAvailable: Bool?
+    private var observer: HKObserverQuery?
+    private var sleepRefresh: Task<Void, Never>?
+    private var sleepChangedDuringQuery = false
+    private var lastSleepRead: Date?
+    private var refreshEpoch = UUID()
+
+    /// Explicitly enabled on the Apple Health screen. Reading authorization is requested
+    /// only here; passive refresh never presents a permission dialog.
+    func setAutomaticSleep(_ enabled: Bool, store: AppStore) async {
+        if !enabled {
+            automaticSleepEnabled = false
+            if let observer { healthStore.stop(observer) }
+            observer = nil
+            refreshEpoch = UUID()
+            sleepSyncStatus = nil
+            backgroundSleepAvailable = nil
+            lastSleepRead = nil
+            guard let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { return }
+            healthStore.disableBackgroundDelivery(for: type) { _, _ in }
+            return
+        }
+        guard !requestingSleepAccess else { return }
+        requestingSleepAccess = true
+        defer { requestingSleepAccess = false }
+        do {
+            guard isAvailable, let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { throw HealthImportProblem.unavailable }
+            try await requestReadAccess(to: [type])
+            automaticSleepEnabled = true
+            startSleepObserver(store: store)
+            await refreshSleep(store: store, force: true)
+        } catch { sleepSyncStatus = error.localizedDescription }
+    }
+
+    func restoreSleepObserver(store: AppStore) {
+        guard automaticSleepEnabled && isAvailable else { return }
+        startSleepObserver(store: store)
+    }
+
+    func resumeSleepSync(store: AppStore) async {
+        guard automaticSleepEnabled, isAvailable, !store.isLoadingSavedData else { return }
+        startSleepObserver(store: store)
+        await refreshSleep(store: store, force: false)
+    }
+
+    private func startSleepObserver(store: AppStore) {
+        guard observer == nil, let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { return }
+        let query = HKObserverQuery(sampleType: type, predicate: nil) { [weak self, weak store] _, completed, error in
+            Task { @MainActor in
+                defer { completed() }
+                guard let self, let store, self.automaticSleepEnabled else { return }
+                if let error { self.sleepSyncStatus = error.localizedDescription; return }
+                if store.isLoadingSavedData || store.isImporting {
+                    for await (loading, importing) in store.$isLoadingSavedData.combineLatest(store.$isImporting).values {
+                        if !loading && !importing { break }
+                    }
+                }
+                await self.refreshSleep(store: store, force: true)
+            }
+        }
+        observer = query
+        healthStore.execute(query)
+        healthStore.enableBackgroundDelivery(for: type, frequency: .hourly) { [weak self] success, _ in
+            Task { @MainActor in
+                guard let self, self.automaticSleepEnabled else { return }
+                self.backgroundSleepAvailable = success
+            }
+        }
+    }
+
+    private func refreshSleep(store: AppStore, force: Bool) async {
+        if let current = sleepRefresh {
+            // Complete every observer notification only after its catch-up query finishes.
+            if force { sleepChangedDuringQuery = true }
+            await current.value
+            return
+        }
+        guard automaticSleepEnabled, !store.isLoadingSavedData, !store.isImporting, !store.isExampleMode else { return }
+        if !force, Date().timeIntervalSince(lastSleepRead ?? .distantPast) < 90 { return }
+        let epoch = refreshEpoch
+        let generation = store.trackerDataGeneration
+        let task = Task { @MainActor in
+            defer { sleepRefresh = nil }
+            repeat {
+                sleepChangedDuringQuery = false
+                await readAndSaveSleep(store: store, generation: generation, epoch: epoch)
+            } while sleepChangedDuringQuery && automaticSleepEnabled && epoch == refreshEpoch
+        }
+        sleepRefresh = task
+        await task.value
+    }
+
+    private func readAndSaveSleep(store: AppStore, generation: UUID, epoch: UUID) async {
+        do {
+            let now = Date()
+            let oldestWakeDay = DashboardDatePolicy.today(now: now).addingTimeInterval(-6 * 86_400)
+            let nights = try await readNights(start: now.addingTimeInterval(-9 * 86_400), end: now)
+            guard automaticSleepEnabled, refreshEpoch == epoch, generation == store.trackerDataGeneration,
+                  !store.isImporting, !store.isLoadingSavedData, !store.isExampleMode else { return }
+            let updates: [DailySnapshot] = nights.compactMap { date, minutes in
+                guard date >= oldestWakeDay else { return nil }
+                var day = DailySnapshot.empty(on: date)
+                day.sleepMinutes = minutes
+                day.sleepFromAppleHealth = true
+                return day
+            }
+            if !updates.isEmpty { try store.mergeMeasurements(updates, selectToday: false) }
+            sleepSyncStatus = updates.isEmpty ? "Apple Health has no readable sleep for the past seven days. Check Sleep in the Health app and allow sleep access." : "Recent sleep checked against Apple Health."
+            lastSleepRead = now
+        } catch {
+            if automaticSleepEnabled && refreshEpoch == epoch { sleepSyncStatus = error.localizedDescription }
+        }
+    }
+    private func readNights(start: Date, end: Date) async throws -> [Date: Int] {
+        guard let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else { throw HealthImportProblem.unavailable }
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let result = try await boundedSamples(type: type, predicate: predicate, limit: sleepLimit + 1) { samples in
+            let asleep = Set([HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue, HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                              HKCategoryValueSleepAnalysis.asleepDeep.rawValue, HKCategoryValueSleepAnalysis.asleepREM.rawValue])
+            let intervals = samples.compactMap { record -> DateInterval? in
+                guard let sample = record as? HKCategorySample, asleep.contains(sample.value), sample.endDate > sample.startDate else { return nil }
+                return DateInterval(start: sample.startDate, end: sample.endDate)
+            }
+            return SleepIntervals.minutesByWakeDay(intervals, now: end)
+        }
+        guard !result.capped else { throw HealthImportProblem.tooManySleepRecords }
+        return result.value
+    }
+
     private let healthStore = HKHealthStore()
     private let heartRateLimit = 90_000
     private let sleepLimit = 50_000
@@ -42,7 +176,7 @@ final class HealthDataModel: ObservableObject {
                 throw HealthImportProblem.invalidRange
             }
             let rangePredicate = HKQuery.predicateForSamples(withStart: start, end: now, options: .strictStartDate)
-            let rates: [HeartRateSample] = try await samples(type: heartRate, predicate: rangePredicate,
+            let rateResult = try await boundedSamples(type: heartRate, predicate: rangePredicate,
                                                             limit: heartRateLimit + 1) { samples in
                 // DailySnapshot identifies rates by timestamp. Resolve simultaneous source
                 // records deterministically, rather than introducing duplicate identities.
@@ -57,25 +191,12 @@ final class HealthDataModel: ObservableObject {
                 return records.map { HeartRateSample(timestamp: $0.key, bpm: $0.value.1) }
                     .sorted { $0.timestamp < $1.timestamp }
             }
-            // Use the raw count for the limit notice, including duplicate/invalid records.
-            // samples() records whether its finite limit was reached before transformation.
-            let heartRateCapped = lastQueryReachedLimit
-            let asleepIntervals: [DateInterval] = try await samples(type: sleep,
-                predicate: HKQuery.predicateForSamples(withStart: start, end: now, options: []),
-                limit: sleepLimit + 1) { samples in
-                    samples.compactMap { sample -> DateInterval? in
-                        guard let sample = sample as? HKCategorySample,
-                              [HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue,
-                               HKCategoryValueSleepAnalysis.asleepCore.rawValue,
-                               HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
-                               HKCategoryValueSleepAnalysis.asleepREM.rawValue].contains(sample.value),
-                              sample.endDate > sample.startDate else { return nil }
-                        return DateInterval(start: sample.startDate, end: sample.endDate)
-                    }
-                }
-            let sleepCapped = lastQueryReachedLimit
-            // Do not save a partial sleep total that could look like a complete night.
-            guard !sleepCapped else { throw HealthImportProblem.tooManySleepRecords }
+            let rates = rateResult.value
+            let heartRateCapped = rateResult.capped
+            let localToday = DashboardDatePolicy.today(now: now)
+            let firstWakeDay = localToday.addingTimeInterval(Double(1 - days) * 86_400)
+            var nights = try await readNights(start: firstWakeDay.addingTimeInterval(-2 * 86_400), end: now)
+                .filter { (firstWakeDay...localToday).contains($0.key) }
             let ratesByDay = Dictionary(grouping: rates.prefix(heartRateLimit)) { DayCalendar.start(of: $0.timestamp) }
             var result: [DailySnapshot] = []
             for offset in 0..<days {
@@ -94,17 +215,28 @@ final class HealthDataModel: ObservableObject {
                       valid(restingRate, in: 1...300), valid(respiratoryRate, in: 0...100) else {
                     throw HealthImportProblem.invalidMeasurements
                 }
-                let asleepSeconds = SleepIntervals.seconds(asleepIntervals, within: DateInterval(start: dayStart, end: dayEnd))
+                let sleepMinutes = nights.removeValue(forKey: dayStart) ?? 0
                 let dayRates = (ratesByDay[dayStart] ?? []).filter { $0.timestamp >= dayStart && $0.timestamp < dayEnd }
                 guard stepCount != nil || energyKcal != nil || restingRate != nil || respiratoryRate != nil ||
-                        asleepSeconds > 0 || !dayRates.isEmpty else { continue }
-                result.append(DailySnapshot(date: dayStart, recovery: nil, strain: nil, sleepPerformance: nil,
-                    sleepMinutes: Int((asleepSeconds / 60).rounded(.down)), sleepNeededMinutes: 0,
+                        sleepMinutes > 0 || !dayRates.isEmpty else { continue }
+                var day = DailySnapshot(date: dayStart, recovery: nil, strain: nil, sleepPerformance: nil,
+                    sleepMinutes: sleepMinutes, sleepNeededMinutes: 0,
                     restingHeartRate: restingRate, hrv: nil, respiratoryRate: respiratoryRate,
                     steps: Int((stepCount ?? 0).rounded()), energyKcal: energyKcal ?? 0,
-                    heartRates: dayRates, source: .imported))
+                    heartRates: dayRates, source: .imported)
+                if sleepMinutes > 0 { day.sleepFromAppleHealth = true }
+                result.append(day)
                 status = "Read \(offset + 1) of \(days) days…"
             }
+            // A local wake date can already be tomorrow in the archive's UTC calendar.
+            // Keep such nights even when that date falls outside the quantities' UTC range.
+            for (wakeDay, minutes) in nights {
+                var day = DailySnapshot.empty(on: wakeDay)
+                day.sleepMinutes = minutes
+                day.sleepFromAppleHealth = true
+                result.append(day)
+            }
+            result.sort { $0.date < $1.date }
             guard !result.isEmpty else { throw HealthImportProblem.noData }
             status = "Read measurements for \(result.count) \(result.count == 1 ? "day" : "days")." +
                 (heartRateCapped ? " Heart rate reached the 90,000-record limit; later records are omitted. Other daily measurements cover the full range." : "")
@@ -143,10 +275,8 @@ final class HealthDataModel: ObservableObject {
         } onCancel: { pending.cancel() }
     }
 
-    private var lastQueryReachedLimit = false
-
-    private func samples<Value>(type: HKSampleType, predicate: NSPredicate, limit: Int,
-                                transform: @escaping ([HKSample]) -> Value) async throws -> Value {
+    private func boundedSamples<Value>(type: HKSampleType, predicate: NSPredicate, limit: Int,
+                                transform: @escaping ([HKSample]) -> Value) async throws -> (value: Value, capped: Bool) {
         let pending = HealthQueryOperation<(Value, Bool)>()
         let result: (Value, Bool) = try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
@@ -160,8 +290,7 @@ final class HealthDataModel: ObservableObject {
                 pending.execute(query, in: healthStore)
             }
         } onCancel: { pending.cancel() }
-        lastQueryReachedLimit = result.1
-        return result.0
+        return result
     }
 
     private func statistic(type: HKQuantityType, predicate: NSPredicate, options: HKStatisticsOptions,

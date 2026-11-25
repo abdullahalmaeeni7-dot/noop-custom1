@@ -114,7 +114,7 @@ struct LiveView: View {
     }
     private var photoContent: some View {
         VStack(spacing: 15) {
-            DatePicker("Recorded day", selection: $store.selectedDate, in: ...Date(), displayedComponents: .date)
+            DatePicker("Recorded day", selection: $store.selectedDate, in: ...DashboardDatePolicy.today(), displayedComponents: .date)
                 .environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!).font(NFont.body(13)).frame(minHeight: 44)
                 .onChange(of: store.selectedDate) { _, _ in renderedPhoto = nil; exportURL = nil }
             PhotosPicker(selection: $photo, matching: .images) { Label(L10n.text("CHOOSE SAVED PHOTO"), systemImage: "photo").frame(maxWidth: .infinity, minHeight: 46) }.font(NFont.label(12)).disabled(busy)

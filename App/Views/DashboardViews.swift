@@ -1,10 +1,14 @@
 import SwiftUI
 import Charts
+import CoreTransferable
+import UIKit
+import UniformTypeIdentifiers
 import WHOOPCore
 
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var tracker: DeviceModel
+    @EnvironmentObject private var automaticRecorder: DailyTrackerRecorder
     @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
     let openMetric: (ScoreMetric) -> Void
     let openJournal: () -> Void
@@ -26,8 +30,14 @@ struct HomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
             overview.padding(.top, 22).padding(.bottom, 12)
-            if tracker.connectedName != nil && !DayCalendar.utc.isDateInToday(day.date) {
-                Button(L10n.text("VIEW TODAY’S TRACKING")) { store.selectedDate = DayCalendar.start(of: Date()) }.buttonStyle(WButton(filled: false))
+            if tracker.wearState == .offBody {
+                trackingNotice("Tracker off body", detail: "Put your strap back on to resume readings.", symbol: "sensor.tag.radiowaves.forward", color: WColor.yellow)
+            } else if let active = automaticRecorder.detectedActivity, DashboardDatePolicy.isToday(day.date) {
+                trackingNotice("Possible activity in progress", detail: L10n.text("Elevated heart rate") + " · " + Duration.seconds(active.durationMinutes * 60).formatted(.units(allowed: [.minutes], width: .abbreviated)), symbol: "waveform.path.ecg", color: WColor.blue)
+            }
+
+            if tracker.connectedName != nil && !DashboardDatePolicy.isToday(day.date) {
+                Button(L10n.text("VIEW TODAY’S TRACKING")) { store.selectedDate = DashboardDatePolicy.today() }.buttonStyle(WButton(filled: false))
             }
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
@@ -39,6 +49,9 @@ struct HomeView: View {
                     Text(L10n.text("Recovery needs overnight data")).font(WFont.body(15).weight(.semibold))
                     Text(L10n.text("Heart-rate broadcasting does not supply WHOOP Recovery or Sleep scores. Sync your WHOOP account or import its data to add them.")).font(WFont.body(13)).foregroundStyle(WColor.muted)
                     Button(L10n.text("WHOOP ACCOUNT"), action: openAccount).buttonStyle(WButton(filled: false))
+                    if day.sleepMinutes == 0 {
+                        Button(L10n.text("SET UP AUTOMATIC SLEEP"), action: openHealthImport).buttonStyle(WButton(filled: false))
+                    }
                 }
             }
             HStack(spacing: 11) {
@@ -52,6 +65,22 @@ struct HomeView: View {
             discover
         }
     }
+    private func trackingNotice(_ title: String, detail: String, symbol: String, color: Color) -> some View {
+        Button(action: openDevice) {
+            WCard {
+                HStack(spacing: 12) {
+                    Image(systemName: symbol).foregroundStyle(color)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(L10n.text(title)).font(WFont.body(16).weight(.semibold))
+                        Text(L10n.text(detail)).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
+                }.frame(minHeight: 44)
+            }
+        }.buttonStyle(.plain).accessibilityIdentifier("trackerNotice")
+    }
+
     private var myDay: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
@@ -86,6 +115,7 @@ struct HomeView: View {
                     .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
             }.buttonStyle(.plain)
             tonight
+            SleepReviewEntry(wakeDay: day.date, compact: true).id(day.date)
             activities
             journalCard
         }.zIndex(3)
@@ -206,10 +236,14 @@ struct HomeView: View {
             WhoopWordmark().frame(width: 66, height: 12)
             HStack(alignment: .top, spacing: 32) {
                 ForEach(ScoreMetric.allCases) { metric in
-                    PulseRing(value: metric.value(day) == nil ? "NO DATA" : metric.text(day), fraction: metric.fraction(day),
+                    let durationOnly = metric == .sleep && day.sleepPerformance == nil && day.displayedSleepMinutes > 0
+                    let durationProgress = day.sleepNeededMinutes > 0 ? Double(day.displayedSleepMinutes) / Double(day.sleepNeededMinutes) : 0
+                    PulseRing(value: durationOnly ? clockDuration(day.displayedSleepMinutes) : metric.value(day) == nil ? "NO DATA" : metric.text(day),
+                              fraction: durationOnly ? durationProgress : metric.fraction(day),
                               previous: nil,
                               tint: metric == .recovery ? PulseColor.recoveryScore(day.recovery.map(Double.init)) : metric.color,
-                              label: metric.title, action: { openMetric(metric) })
+                              label: durationOnly ? "TIME ASLEEP" : metric.title, action: { openMetric(metric) })
+                        .accessibilityIdentifier("scoreRing-" + metric.rawValue)
                 }
             }.padding(.horizontal, 15)
 
@@ -268,15 +302,15 @@ struct HomeView: View {
                 Button(L10n.text("VIEW ALL"), action: openActivities).font(WFont.label(8)).foregroundStyle(WColor.muted)
                     .accessibilityLabel(L10n.text("View all saved activities"))
             }
-            if day.sleepMinutes > 0 {
+            if day.displayedSleepMinutes > 0 {
                 Button { openMetric(.sleep) } label: {
                     WCard(padding: 8) {
                         HStack(spacing: 11) {
                             HStack(spacing: 5) {
                                 Image(systemName: "moon.fill").font(.system(size: 15))
-                                Text(L10n.text(clockDuration(day.sleepMinutes))).font(WFont.number(16, bold: true))
+                                Text(L10n.text(clockDuration(day.displayedSleepMinutes))).font(WFont.number(16, bold: true))
                             }.frame(width: 79, height: 39).background(WColor.sleep, in: RoundedRectangle(cornerRadius: 4))
-                            Text(L10n.text("SLEEP")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
+                            Text(L10n.text(day.usesConfirmedSleep ? "CONFIRMED SLEEP" : "SLEEP")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
                             Spacer()
                             Image(systemName: "chevron.forward").font(.system(size: 10)).foregroundStyle(WColor.muted)
                         }
@@ -284,7 +318,7 @@ struct HomeView: View {
                 }.buttonStyle(.plain)
             }
             ForEach(store.dayActivities.sorted { $0.start < $1.start }) { activity in ReferenceActivityRow(activity: activity) }
-            if day.sleepMinutes == 0 && store.dayActivities.isEmpty {
+            if day.displayedSleepMinutes == 0 && store.dayActivities.isEmpty {
                 Text(L10n.text("No activities recorded for this day.")).font(WFont.body(13)).foregroundStyle(WColor.muted).padding(.vertical, 7)
             }
             HStack(spacing: 9) {
@@ -311,8 +345,8 @@ struct HomeView: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
-                            Text(L10n.text(day.sleepMinutes > 0 ? clockDuration(day.sleepMinutes) : "NO DATA")).font(WFont.number(day.sleepMinutes > 0 ? 28 : 16, bold: true))
-                            Text(L10n.text("RECORDED SLEEP")).font(WFont.label(8)).foregroundStyle(WColor.muted)
+                            Text(L10n.text(day.displayedSleepMinutes > 0 ? clockDuration(day.displayedSleepMinutes) : "NO DATA")).font(WFont.number(day.displayedSleepMinutes > 0 ? 28 : 16, bold: true))
+                            Text(L10n.text(day.usesConfirmedSleep ? "CONFIRMED SLEEP" : "RECORDED SLEEP")).font(WFont.label(8)).foregroundStyle(WColor.muted)
                         }
                     }
                     Text(L10n.text("VIEW SLEEP DETAILS")).font(WFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
@@ -328,7 +362,6 @@ struct HomeView: View {
                 .background(WColor.elevated.opacity(0.8), in: RoundedRectangle(cornerRadius: 5))
         }.buttonStyle(.plain)
     }
-    private func clockDuration(_ minutes: Int) -> String { String(format: "%d:%02d", minutes / 60, minutes % 60) }
     private var averageHeartRate: Double? {
         guard !day.heartRates.isEmpty else { return nil }
         return day.heartRates.map(\.bpm).reduce(0, +) / Double(day.heartRates.count)
@@ -392,54 +425,243 @@ struct ActivityRow: View {
 
 struct HealthMonitorView: View {
     @EnvironmentObject private var store: AppStore
-    let openMetric: (ScoreMetric) -> Void
-    let importData: () -> Void
-    let openHealthImport: () -> Void
-    var showImportActions = true
+    @EnvironmentObject private var device: DeviceModel
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @State private var received: [HeartRateSample] = []
+    @State private var showingReview = false
+
     private var day: DailySnapshot { store.selectedDay }
+
+    private var liveReading: HeartRateSample? {
+        guard let bpm = device.heartRate, let date = device.heartRateReceivedAt,
+              DayCalendar.utc.isDate(date, inSameDayAs: day.date) else { return nil }
+        return HeartRateSample(timestamp: date, bpm: bpm)
+    }
+
+    private var metrics: [HealthReading] {
+        [
+            HealthReading("RESPIRATORY RATE", day.respiratoryRate, "rpm", "lungs", precision: 1),
+            HealthReading("BLOOD OXYGEN (SpO₂)", day.oxygenSaturation, "%", "drop"),
+            HealthReading("RHR", day.restingHeartRate, "bpm", "heart"),
+            HealthReading("HRV", day.hrv, "ms", "waveform.path.ecg"),
+            HealthReading("SKIN TEMP", day.skinTemperatureCelsius, "°C", "thermometer.medium", precision: 1)
+        ]
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            SectionHeading(title: "Health monitor", subtitle: "Measurements recorded for this day")
-            WCard {
-                VStack(alignment: .leading, spacing: 7) {
-                    Text(L10n.text("HEART RATE")).font(WFont.label(9)).tracking(AppLanguage.isArabic ? 0 : 0.6)
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(L10n.text(decimalText(day.heartRates.last?.bpm, places: 0))).font(WFont.number(35, bold: true)).foregroundStyle(WColor.blue)
-                        Text(L10n.text("BPM · LAST SAMPLE")).font(WFont.label(8)).foregroundStyle(WColor.muted)
-                    }
-                    if !day.heartRates.isEmpty { HeartRateChart(samples: day.heartRates).frame(height: 95) }
-                    else { Text(L10n.text("No heart-rate samples available")).font(WFont.body(13)).foregroundStyle(WColor.muted) }
+        VStack(spacing: 0) {
+            ZStack {
+                Text(L10n.text("HEALTH MONITOR"))
+                    .font(WFont.label(13)).tracking(AppLanguage.isArabic ? 0 : 1.2)
+                    .accessibilityAddTraits(.isHeader)
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "chevron.backward").font(.system(size: 23, weight: .medium))
+                            .frame(width: 44, height: 44)
+                    }.accessibilityLabel(L10n.text("Back"))
+                    Spacer()
                 }
-            }
-            HStack(spacing: 10) {
-                healthTile("RESPIRATORY RATE", value: decimalText(day.respiratoryRate), unit: "rpm", symbol: "lungs", available: day.respiratoryRate != nil)
-                healthTile("BLOOD OXYGEN", value: decimalText(day.oxygenSaturation, places: 0), unit: "%", symbol: "drop", available: day.oxygenSaturation != nil)
-            }
-            HStack(spacing: 10) {
-                healthTile("RHR", value: decimalText(day.restingHeartRate, places: 0), unit: "bpm", symbol: "heart", available: day.restingHeartRate != nil)
-                healthTile("HRV", value: decimalText(day.hrv, places: 0), unit: "ms", symbol: "waveform.path.ecg", available: day.hrv != nil)
-            }
-            HStack(spacing: 10) {
-                healthTile("SKIN TEMP", value: decimalText(day.skinTemperatureCelsius), unit: "°C", symbol: "thermometer.medium", available: day.skinTemperatureCelsius != nil)
-                healthTile("SLEEP", value: day.sleepMinutes > 0 ? durationText(day.sleepMinutes) : "—", unit: "", symbol: "moon", available: day.sleepMinutes > 0)
-            }
-            if showImportActions {
-                Button(L10n.text("IMPORT FROM APPLE HEALTH"), action: openHealthImport).buttonStyle(WButton())
-                Button(L10n.text("IMPORT DAY DATA FILE"), action: importData).buttonStyle(WButton(filled: false))
-            }
+            }.padding(.horizontal, ReferenceSize.pageInset).frame(minHeight: 44)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    heartRateHeader
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 11),
+                                             count: typeSize.isAccessibilitySize ? 1 : 2),
+                              alignment: .leading, spacing: 11) {
+                        ForEach(metrics) { reading in healthTile(reading) }
+                    }.padding(.horizontal, ReferenceSize.pageInset)
+
+                    if let report {
+                        VStack(alignment: .leading, spacing: 11) {
+                            ShareLink(item: report, preview: SharePreview(L10n.text("Health report"))) {
+                                Label(L10n.text("SHARE YOUR HEALTH REPORT"), systemImage: "square.and.arrow.up")
+                                    .font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.9)
+                                    .padding(.horizontal, 16).frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                                    .background(WColor.card, in: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius))
+                            }.accessibilityIdentifier("healthReportShare")
+                            Text(L10n.text("Share a printable PDF of this day’s recorded measurements."))
+                                .font(WFont.body(14)).foregroundStyle(WColor.muted)
+                        }.padding(.horizontal, ReferenceSize.pageInset).padding(.top, 18)
+                    }
+                }.frame(maxWidth: 680).frame(maxWidth: .infinity).padding(.bottom, 88)
+            }.scrollIndicators(.hidden)
+        }
+        .foregroundStyle(.white).buttonStyle(.plain).background(WhoopBackground())
+        .overlay(alignment: .bottomTrailing) {
+            DayReviewButton(action: { showingReview = true }).padding(.trailing, 12).padding(.bottom, 4)
+        }
+        .sheet(isPresented: $showingReview) { DayReviewView() }
+        .onReceive(device.heartRateSamples) { sample in
+            guard DayCalendar.utc.isDate(sample.timestamp, inSameDayAs: day.date) else { return }
+            received.append(sample)
+            if received.count > 120 { received.removeFirst(received.count - 120) }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private var heartRateHeader: some View {
+        let live = liveReading
+        let saved = Array(day.heartRates.suffix(120))
+        let last = live ?? saved.last
+        let newSamples = received.filter { sample in
+            saved.last.map { sample.timestamp > $0.timestamp } ?? true
+        }
+        var trace = Array((saved + newSamples).suffix(120))
+        if let live, trace.last?.timestamp != live.timestamp { trace.append(live) }
+        return HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(L10n.text("HEART RATE")).font(WFont.label(13)).tracking(AppLanguage.isArabic ? 0 : 0.9)
+                Image(systemName: "heart.fill").font(.system(size: 18)).foregroundStyle(WColor.blue)
+                if let last {
+                    Text(decimalText(last.bpm, places: 0)).font(WFont.number(34, bold: true))
+                    Text(L10n.text("BPM")).font(WFont.label(10)).foregroundStyle(WColor.muted)
+                    Text(live == nil ? utcDateText(last.timestamp, style: .dateTime.hour().minute()) : L10n.text("LIVE"))
+                        .font(WFont.body(12)).foregroundStyle(WColor.muted)
+                } else {
+                    Text(L10n.text("No heart-rate samples available")).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                }
+            }.frame(width: typeSize.isAccessibilitySize ? nil : 95, alignment: .leading)
+            if !trace.isEmpty {
+                MonitorHeartRateTrace(samples: trace)
+                    .accessibilityLabel(L10n.text("Heart rate overview from \(trace.count) samples"))
+            } else { Spacer(minLength: 0) }
+        }
+        .padding(.horizontal, 22).padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 146, alignment: .leading)
+        .background {
+            Canvas { context, size in
+                var grid = Path()
+                for x in stride(from: CGFloat.zero, to: size.width, by: 14) {
+                    grid.move(to: .init(x: x, y: 0)); grid.addLine(to: .init(x: x, y: size.height))
+                }
+                for y in stride(from: CGFloat.zero, to: size.height, by: 14) {
+                    grid.move(to: .init(x: 0, y: y)); grid.addLine(to: .init(x: size.width, y: y))
+                }
+                context.stroke(grid, with: .color(.white.opacity(0.07)), lineWidth: 0.75)
+            }.mask(LinearGradient(colors: [.clear, .white, .white, .clear], startPoint: .top, endPoint: .bottom))
         }
     }
-    private func healthTile(_ title: String, value: String, unit: String, symbol: String, available: Bool) -> some View {
-        WCard(padding: 12) {
-            VStack(alignment: .leading, spacing: 10) {
-                Label(L10n.text(title), systemImage: symbol).font(WFont.label(8)).foregroundStyle(WColor.muted).lineLimit(1).minimumScaleFactor(0.6)
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text(L10n.text(value)).font(WFont.number(27, bold: true)).lineLimit(1).minimumScaleFactor(0.6)
-                    Text(L10n.text(value == "—" ? "" : unit)).font(WFont.body(11)).foregroundStyle(WColor.muted)
+
+    private func healthTile(_ reading: HealthReading) -> some View {
+        let available = reading.value != nil
+        return VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(L10n.text(reading.title)).font(WFont.label(10)).tracking(AppLanguage.isArabic ? 0 : 0.65)
+            } icon: {
+                Image(systemName: reading.symbol).font(.system(size: 16, weight: .regular))
+            }.foregroundStyle(WColor.muted)
+            Spacer(minLength: 6)
+            if available {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(reading.formatted).font(WFont.number(32, bold: true))
+                    Text(L10n.text(reading.unit)).font(WFont.body(14).weight(.semibold))
                 }
-                Text(L10n.text(available ? "RECORDED" : "NOT AVAILABLE")).font(WFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.6)
-                    .foregroundStyle(available ? WColor.sleep : WColor.muted)
-            }.frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Text(L10n.text(available ? "RECORDED" : "NOT AVAILABLE")).font(WFont.label(9))
+                .foregroundStyle(WColor.muted).padding(.horizontal, 5).padding(.vertical, 3)
+                .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 3))
+        }
+        .padding(10).frame(maxWidth: .infinity, minHeight: 117, alignment: .topLeading)
+        .background(WColor.card, in: RoundedRectangle(cornerRadius: ReferenceSize.cardRadius, style: .continuous))
+    }
+
+    private var report: HealthDayReport? {
+        var rows = metrics.filter { $0.value != nil }.map {
+            "\(L10n.text($0.title))   \($0.formatted) \(L10n.text($0.unit))"
+        }
+        if let last = day.heartRates.last {
+            let sampleTime = utcDateText(last.timestamp, style: .dateTime.hour().minute().second())
+            rows.insert("\(L10n.text("HEART RATE"))   \(decimalText(last.bpm, places: 0)) \(L10n.text("BPM")) · \(sampleTime) UTC", at: 0)
+        }
+        guard !rows.isEmpty else { return nil }
+        if day.source == .example { rows.insert(L10n.text("EXAMPLE DAY"), at: 0) }
+        return HealthDayReport(date: utcDateText(day.date, style: .dateTime.year().month(.wide).day()), rows: rows)
+    }
+}
+
+private struct HealthReading: Identifiable {
+    var id: String { title }
+    let title: String
+    let value: Double?
+    let unit: String
+    let symbol: String
+    let precision: Int
+    var formatted: String { decimalText(value, places: precision) }
+
+    init(_ title: String, _ value: Double?, _ unit: String, _ symbol: String, precision: Int = 0) {
+        self.title = title
+        self.value = value
+        self.unit = unit
+        self.symbol = symbol
+        self.precision = precision
+    }
+}
+
+private struct MonitorHeartRateTrace: View {
+    let samples: [HeartRateSample]
+
+    var body: some View {
+        Canvas { context, size in
+            guard let first = samples.first, let last = samples.last,
+                  let minimum = samples.map(\.bpm).min(), let maximum = samples.map(\.bpm).max() else { return }
+            let duration = max(1, last.timestamp.timeIntervalSince(first.timestamp))
+            let height = max(1, size.height - 16)
+            func point(_ reading: HeartRateSample) -> CGPoint {
+                let x = 4 + (size.width - 8) * (1 - last.timestamp.timeIntervalSince(reading.timestamp) / duration)
+                let y = 8 + height * (maximum + 6 - reading.bpm) / (maximum - minimum + 12)
+                return CGPoint(x: x, y: y)
+            }
+            var trace = Path()
+            var previous: HeartRateSample?
+            for reading in samples {
+                let mapped = point(reading)
+                if let previous, reading.timestamp.timeIntervalSince(previous.timestamp) <= 90 {
+                    trace.addLine(to: mapped)
+                } else {
+                    trace.move(to: mapped)
+                    context.fill(Path(ellipseIn: CGRect(x: mapped.x - 1, y: mapped.y - 1, width: 2, height: 2)), with: .color(WColor.blue))
+                }
+                previous = reading
+            }
+            context.stroke(trace, with: .color(WColor.blue), lineWidth: 1.8)
+            let end = point(last)
+            var marker = Path()
+            marker.move(to: .init(x: end.x, y: 4))
+            marker.addLine(to: .init(x: end.x, y: size.height - 4))
+            context.stroke(marker, with: .color(WColor.muted), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+            context.fill(Path(ellipseIn: CGRect(x: end.x - 3.5, y: end.y - 3.5, width: 7, height: 7)), with: .color(.white))
+        }.frame(height: 104)
+    }
+}
+
+private struct HealthDayReport: Transferable {
+    let date: String
+    let rows: [String]
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .pdf) { (report: HealthDayReport) in
+            await MainActor.run { report.pdf() }
+        }.suggestedFileName("Health-report.pdf")
+    }
+
+    @MainActor private func pdf() -> Data {
+        let page = CGRect(x: 0, y: 0, width: 595, height: 842)
+        return UIGraphicsPDFRenderer(bounds: page).pdfData { context in
+            context.beginPage()
+            let style = NSMutableParagraphStyle()
+            style.alignment = AppLanguage.isArabic ? .right : .left
+            style.baseWritingDirection = AppLanguage.isArabic ? .rightToLeft : .leftToRight
+            func draw(_ text: String, y: CGFloat, font: UIFont) {
+                (text as NSString).draw(in: CGRect(x: 44, y: y, width: page.width - 88, height: 52),
+                                        withAttributes: [.font: font, .foregroundColor: UIColor.black, .paragraphStyle: style])
+            }
+            draw(L10n.text("Health report"), y: 45, font: .boldSystemFont(ofSize: 26))
+            draw(date + " UTC", y: 100, font: .systemFont(ofSize: 16))
+            for (index, row) in rows.enumerated() {
+                draw(row, y: 162 + 50 * CGFloat(index), font: .systemFont(ofSize: 15))
+            }
         }
     }
 }
@@ -518,10 +740,9 @@ struct HeartRateChart: View {
 
 struct HealthView: View {
     @EnvironmentObject private var store: AppStore
-    let openMetric: (ScoreMetric) -> Void
+    let openMonitor: () -> Void
     let importData: () -> Void
     let openHealthImport: () -> Void
-    @State private var showingMonitor = false
     @State private var showingStress = false
     @State private var showingProfile = false
     var body: some View {
@@ -538,7 +759,7 @@ struct HealthView: View {
                     Button(L10n.text("PERSONALIZE YOUR PROFILE")) { showingProfile = true }.buttonStyle(WButton(filled: false))
                 }
             }
-            Button { showingMonitor = true } label: {
+            Button(action: openMonitor) {
                 WCard(padding: 16) {
                     VStack(alignment: .leading, spacing: 22) {
                         HStack { Text(L10n.text("HEALTH MONITOR")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.8); Spacer(); Image(systemName: "chevron.forward").foregroundStyle(WColor.muted) }
@@ -566,10 +787,6 @@ struct HealthView: View {
             }.buttonStyle(.plain)
             Button(L10n.text("IMPORT FROM APPLE HEALTH"), action: openHealthImport).buttonStyle(WButton())
             Button(L10n.text("IMPORT YOUR WHOOP DATA"), action: importData).buttonStyle(WButton(filled: false))
-        }.sheet(isPresented: $showingMonitor) {
-            SheetScaffold(title: "HEALTH MONITOR") {
-                HealthMonitorView(openMetric: openMetric, importData: importData, openHealthImport: openHealthImport, showImportActions: false)
-            }
         }.sheet(isPresented: $showingStress) { StressMonitorView() }
             .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
     }

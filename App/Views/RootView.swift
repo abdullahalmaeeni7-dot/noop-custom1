@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import WHOOPCore
 
 private enum AppSheet: String, Identifiable {
-    case journal, activity, device, data, about, reference, healthMonitor, healthImport, workout, activities, account, stress, live, tier, measurementExport, review
+    case journal, activity, device, data, about, reference, healthImport, workout, activities, account, stress, live, tier, measurementExport, review
     var id: String { rawValue }
 }
 
@@ -54,9 +54,9 @@ struct RootView: View {
     @State private var restoringBackup = false
     @State private var pendingBackup: LocalBackup?
     @State private var exportName = "WHOOP-day-data"
+    @State private var showingHealthMonitor = false
     @State private var showingLive = false
     @State private var showingProfile = false
-    @State private var attemptedReconnect = false
     @State private var compactMetrics = false
     @State private var windowBottomInset: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -85,9 +85,6 @@ struct RootView: View {
             }
         } message: { Text(L10n.text("This replaces saved day data, journal entries, activities and nutrition records. Save a full backup first if you want to keep the current data.")) }
         .task { recorder.bind(device); liveActivity.bind(recorder) }
-        .onAppear {
-            if !attemptedReconnect { attemptedReconnect = true; device.reconnectSavedDevice() }
-        }
         .alert(L10n.text("Your data needs attention"), isPresented: Binding(get: { store.persistenceError != nil }, set: { if !$0 { store.persistenceError = nil } })) {
             Button(L10n.text("OK")) { store.persistenceError = nil }
         } message: { Text(L10n.text(store.persistenceError ?? "")) }
@@ -130,10 +127,6 @@ struct RootView: View {
                 case .data: DataHelpView()
                 case .about: AboutView()
                 case .reference: ReferenceStrainView()
-                case .healthMonitor:
-                    SheetScaffold(title: "HEALTH MONITOR") {
-                        HealthMonitorView(openMetric: openMetric, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport }, showImportActions: false)
-                    }
                 case .healthImport: HealthImportView()
                 case .workout: WorkoutView()
                 case .activities: ActivityLibraryView()
@@ -152,6 +145,7 @@ struct RootView: View {
                 .environment(\.calendar, DayCalendar.utc)
         }
         .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }
+        .fullScreenCover(isPresented: $showingHealthMonitor) { HealthMonitorView() }
         .fullScreenCover(isPresented: $showingLive) { ReferenceLiveView(reference: nil) }
         .confirmationDialog(L10n.text("Start activity"), isPresented: $showingStartOptions, titleVisibility: .visible) {
             Button(L10n.text("Record workout without camera")) { sheet = .workout }
@@ -181,7 +175,7 @@ struct RootView: View {
                 .simultaneousGesture(DragGesture(minimumDistance: 55).onEnded { drag in
                     guard store.tab == .home, abs(drag.translation.width) > abs(drag.translation.height) * 1.5 else { return }
                     let offset = drag.translation.width < 0 ? 1 : -1
-                    if offset < 0 || !DayCalendar.utc.isDateInToday(store.selectedDate) { store.moveDay(offset) }
+                    if offset < 0 || !DashboardDatePolicy.isToday(store.selectedDate) { store.moveDay(offset) }
                 })
 
         }
@@ -204,13 +198,13 @@ struct RootView: View {
     @ViewBuilder private var selectedScreen: some View {
         switch store.tab {
         case .home:
-            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { sheet = .healthMonitor }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openLive: { showingLive = true }, openReview: { sheet = .review })
+            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { showingHealthMonitor = true }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openLive: { showingLive = true }, openReview: { sheet = .review })
         case .sleep: MetricDetailView(metric: .sleep, embedded: true)
         case .recovery: MetricDetailView(metric: .recovery, embedded: true)
         case .strain: MetricDetailView(metric: .strain, embedded: true)
         case .nutrition: NutritionRootView()
         case .health:
-            HealthView(openMetric: openMetric, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport })
+            HealthView(openMonitor: { showingHealthMonitor = true }, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport })
         case .community:
             CommunityView(openActivity: { sheet = .activity }, importData: { restoringBackup = false; importing = true })
         case .profile:
@@ -224,7 +218,7 @@ struct RootView: View {
                      }, clearData: { confirmClear = true },
                      openHealthImport: { sheet = .healthImport }, openWorkout: { sheet = .workout },
                      openActivities: { sheet = .activities }, exportBackup: exportBackup,
-                     restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openAccount: { sheet = .account }, openHealth: { store.tab = .health }, openCommunity: { store.tab = .community }, openProfile: { showingProfile = true }, openJournal: { sheet = .journal })
+                     restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openAccount: { sheet = .account }, openHealth: { showingHealthMonitor = true }, openCommunity: { store.tab = .community }, openProfile: { showingProfile = true }, openJournal: { sheet = .journal })
         }
     }
 
@@ -257,7 +251,7 @@ struct RootView: View {
                 Button { sheet = recorder.isRecording ? .workout : .device } label: {
                     ZStack(alignment: .topTrailing) {
                         Image(systemName: recorder.isRecording ? "record.circle" : "applewatch").font(.system(size: 25, weight: .light)).foregroundStyle(.white)
-                        Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : PulseColor.mint).frame(width: 6, height: 6)
+                        Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : (device.wearState == .offBody ? WColor.yellow : PulseColor.mint)).frame(width: 6, height: 6)
                     }.frame(width: 44, height: 44)
                 }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker").accessibilityIdentifier("homeTracker")
             }
@@ -275,25 +269,23 @@ struct RootView: View {
                     Button {
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { store.tab = tab }
                     } label: {
-                        VStack(spacing: 4) {
+                        VStack(spacing: 3) {
                             WhoopNavigationIcon(tab: tab)
-                            Text(L10n.text(tab.title)).font(WFont.body(9)).lineLimit(1).minimumScaleFactor(0.8)
+                            Text(L10n.text(tab.title)).font(WFont.body(11).weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
                         }.foregroundStyle(selected ? Color.white : WColor.muted)
                             .frame(maxWidth: .infinity, minHeight: ReferenceSize.navigationHeight)
                     }.buttonStyle(.plain).accessibilityAddTraits(selected ? .isSelected : []).accessibilityIdentifier("tab-\(tab.rawValue)")
                 }
-            }.padding(.horizontal, 9).background {
-                AppGlassSurface(shape: Capsule(), solid: PulseColor.top, interactive: true)
-                    .background(Capsule().fill(PulseColor.top.opacity(0.88)))
+            }.padding(.horizontal, 4).background {
+                AppGlassSurface(shape: RoundedRectangle(cornerRadius: 25, style: .continuous), solid: PulseColor.top, interactive: true)
+                    .background(PulseColor.top.opacity(0.88), in: RoundedRectangle(cornerRadius: 25, style: .continuous))
             }
-            Button { sheet = .review } label: {
-                ZStack {
-                    Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.1).frame(width: 29, height: 29)
-                    WhoopMonogram().environment(\.layoutDirection, .leftToRight).frame(width: 18, height: 15)
-                }.frame(width: ReferenceSize.navigationHeight, height: ReferenceSize.navigationHeight)
-            }.buttonStyle(.plain).background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 22), tint: WColor.purple.opacity(0.12), interactive: true))
-                .accessibilityLabel(L10n.text("Open your day in review"))
-        }.padding(.horizontal, 12).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)
+            DayReviewButton { sheet = .review }
+        }.padding(.horizontal, 11).padding(.top, 6).padding(.bottom, 3).frame(maxWidth: 680).frame(maxWidth: .infinity)
+            .background(alignment: .bottom) {
+                LinearGradient(colors: [.clear, .black.opacity(0.65), .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 96).offset(y: 27).allowsHitTesting(false)
+            }
     }
 
     private func openMetric(_ metric: ScoreMetric) {
@@ -370,12 +362,12 @@ struct DaySelector: View {
             }
     }
     private var dayTitle: String {
-        DayCalendar.utc.isDateInToday(store.selectedDate) ? "TODAY" : utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day()).uppercased()
+        DashboardDatePolicy.isToday(store.selectedDate) ? "TODAY" : utcDateText(store.selectedDate, style: .dateTime.month(.abbreviated).day()).uppercased()
     }
     private func dayArrow(_ offset: Int) -> some View {
         Button { store.moveDay(offset) } label: {
             Image(systemName: offset < 0 ? "chevron.backward" : "chevron.forward").font(.system(size: compact ? 11 : 16, weight: .bold)).frame(width: 44, height: 44)
-        }.disabled(offset > 0 && DayCalendar.utc.isDateInToday(store.selectedDate))
+        }.disabled(offset > 0 && DashboardDatePolicy.isToday(store.selectedDate))
             .accessibilityLabel(L10n.text(offset < 0 ? "Previous day" : "Next day"))
     }
 
@@ -474,5 +466,26 @@ struct RecoveryCalendarSheet: View {
         var components = DayCalendar.utc.dateComponents([.year, .month], from: displayed)
         components.year = year; components.day = 1
         if let date = DayCalendar.utc.date(from: components) { displayed = min(date, RecoveryCalendarMonth(containing: today).start) }
+    }
+}
+
+struct DayReviewButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle().stroke(LinearGradient(colors: [WColor.purple, WColor.blue], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.2)
+                    .frame(width: 29, height: 29)
+                WhoopMonogram().environment(\.layoutDirection, .leftToRight).frame(width: 18, height: 15)
+            }.frame(width: ReferenceSize.navigationHeight, height: ReferenceSize.navigationHeight)
+        }
+        .buttonStyle(.plain)
+        .background {
+            let shape = RoundedRectangle(cornerRadius: 23, style: .continuous)
+            AppGlassSurface(shape: shape, tint: WColor.purple.opacity(0.08), interactive: true)
+                .background(LinearGradient(colors: [Color(red: 0.16, green: 0.15, blue: 0.23), PulseColor.top], startPoint: .topLeading, endPoint: .bottomTrailing), in: shape)
+        }
+        .accessibilityLabel(L10n.text("Open your day in review"))
     }
 }

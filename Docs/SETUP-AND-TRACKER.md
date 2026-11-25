@@ -14,6 +14,8 @@ Home and detail score rings share `PulseRingTrack`: rounded strokes, a twelve-o'
 
 The native system launch screen now uses the same centered wordmark and background as saved-data loading. Loading waits only for actual storage work; no artificial delay is added.
 
+For wrist-removal status, optional stored-reading sync, sleep sources and the threshold for activity detection, see [Using the tracker overnight](OVERNIGHT-TRACKING.md).
+
 ## Verification
 
 `TrackerConnectionEvidenceTests` covers freshness expiry, future timestamps, invalid values and link-only states. The existing suite covers captured protocol frames, handshake gating, history batches, storage-before-acknowledgement, ZIP/JSON import and export, recording and provider-score preservation. `UITests/SetupFlowTests.swift` exercises the real simulator UI through first launch, app restart during setup, searching with no physical hardware, import/export access, Home and Device Settings. It also captures Arabic first launch. Simulator screenshots and test outcomes are published by the native-layout workflow.

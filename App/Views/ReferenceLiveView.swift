@@ -48,6 +48,7 @@ struct ReferenceLiveView: View {
     @State private var resting = 55.0
     @State private var maximum = 190.0
     @State private var confirmDiscard = false
+    @State private var showCameraOptions = false
     private let clock = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -94,7 +95,8 @@ struct ReferenceLiveView: View {
     }
 
     private func canvas(width: CGFloat, height: CGFloat) -> some View {
-        ZStack {
+        let overlay = snapshot()
+        return ZStack {
             if let photoImage {
                 Image(uiImage: photoImage).resizable().scaledToFill().frame(width: width, height: height)
                     .scaleEffect(layout.boundedPhotoScale).offset(x: layout.photoOffsetX * width, y: layout.photoOffsetY * height)
@@ -103,19 +105,12 @@ struct ReferenceLiveView: View {
                 ReferenceCameraPreview(session: camera.engine.session).frame(width: width, height: height)
             } else {
                 Color(white: 0.08)
-                VStack(spacing: 16) {
-                    Image(systemName: "camera").font(.system(size: 36, weight: .light))
-                    Text(L10n.text(camera.status)).font(PulseFont.body(14)).multilineTextAlignment(.center)
-                    Button(L10n.text("OPEN CAMERA")) { task = Task { await openCamera() } }
-                        .font(PulseFont.label(12)).frame(minHeight: 48)
-                    Button(L10n.text("IPHONE CAMERA SETTINGS")) {
-                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
-                    }.font(PulseFont.label(10)).frame(minHeight: 44)
-                }.foregroundStyle(.white).padding(32).offset(y: -height * 0.1)
             }
-            CachedLiveOverlay(snapshot: snapshot(), size: CGSize(width: width, height: height))
+            CachedLiveOverlay(snapshot: overlay, size: CGSize(width: width, height: height))
                 .allowsHitTesting(false)
-                .accessibilityLabel(snapshot().referenceMetrics?.map { "\($0.label.replacingOccurrences(of: "\n", with: " ")), \($0.value)" }.joined(separator: ". ") ?? "Saved day stats")
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(overlayReadout(overlay))
+                .accessibilityIdentifier("liveMetrics")
             if editing && !editingPhoto { adjustmentTargets(width: width, height: height) }
             VStack {
                 HStack {
@@ -124,6 +119,19 @@ struct ReferenceLiveView: View {
                         else if camera.recording { camera.stop(); drawer = true } else { dismiss() }
                     } label: { Image(systemName: "xmark").font(.system(size: 21, weight: .semibold)).frame(width: 44, height: 44) }
                         .accessibilityLabel(camera.recording ? "Stop video and review" : "Close Live").accessibilityIdentifier("closeLive")
+                    if photoData == nil, !camera.ready {
+                        Button { showCameraOptions = true } label: {
+                            Image(systemName: "camera.badge.ellipsis")
+                                .font(.system(size: 19)).frame(width: 44, height: 44)
+                        }
+                        .accessibilityLabel(L10n.text(camera.status))
+                        .accessibilityHint(L10n.text("OPEN CAMERA"))
+                        .confirmationDialog(L10n.text(camera.status), isPresented: $showCameraOptions, titleVisibility: .visible) {
+                            Button(L10n.text("OPEN CAMERA")) { task = Task { await openCamera() } }
+                            Button(L10n.text("IPHONE CAMERA SETTINGS"), action: openCameraSettings)
+                            Button(L10n.text("Cancel"), role: .cancel) {}
+                        }
+                    }
                     Spacer()
                 }.padding(.horizontal, width * 0.018).padding(.top, height * 0.017)
                 Spacer()
@@ -149,22 +157,29 @@ struct ReferenceLiveView: View {
                 let next = min(CameraOverlayMode.allCases.count - 1, max(0, index + (drag.translation.width < 0 ? 1 : -1)))
                 select(CameraOverlayMode.allCases[next])
             })
-            .onTapGesture(count: 2) { if !camera.recording { editing.toggle(); persistLayout() } }
+            .onTapGesture(count: 2) { if !camera.recording, !camera.starting, !busy { editing.toggle(); persistLayout() } }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(L10n.text("Live camera, \(mode.rawValue). \(snapshot().source)"))
     }
 
+    private func overlayReadout(_ overlay: LiveOverlaySnapshot) -> String {
+        guard let metrics = overlay.referenceMetrics else { return "" }
+        let widgets = LiveOverlayLayout.widgets(for: mode)
+        return metrics.enumerated().compactMap { index, metric -> String? in
+            guard widgets.indices.contains(index), layout.isVisible(widgets[index], mode: mode),
+                  overlay.isAvailable(metric, at: index, now: now) else { return nil }
+            return L10n.text(metric.label).replacingOccurrences(of: "\n", with: " ") + ", " + metric.value
+        }.joined(separator: ". ")
+    }
+
     private func captureControls(width: CGFloat) -> some View {
         HStack(spacing: 0) {
-            PhotosPicker(selection: $photo, matching: .images) {
-                Group {
-                    if let photoImage { Image(uiImage: photoImage).resizable().scaledToFill() }
-                    else { Image(systemName: "photo").font(.system(size: 24, weight: .light)) }
-                }.frame(width: 38, height: 38).clipped().background(.black.opacity(0.2))
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.5), lineWidth: 3))
-                    .clipShape(RoundedRectangle(cornerRadius: 4)).frame(maxWidth: .infinity, minHeight: 48)
-            }.accessibilityLabel(L10n.text("Choose a saved photo")).disabled(camera.recording || busy)
-            Button { drawer = true } label: { Image(systemName: "rectangle.split.3x1.fill").font(.system(size: 23)).frame(maxWidth: .infinity, minHeight: 48) }
+            if mode != .live { photoControl }
+            Button { drawer = true } label: { VStack(spacing: 1) {
+                Rectangle().frame(height: 4)
+                Rectangle().frame(height: 11)
+                Rectangle().frame(height: 4)
+            }.foregroundStyle(.white).frame(width: 12).frame(maxWidth: .infinity, minHeight: 48) }
                 .accessibilityLabel(L10n.text("Overlay and capture settings")).accessibilityIdentifier("liveControls").disabled(camera.recording || camera.starting || busy)
             Button(action: shutter) {
                 ZStack {
@@ -172,20 +187,43 @@ struct ReferenceLiveView: View {
                     Circle().fill(.white).frame(width: 56, height: 56)
                     if camera.recording { RoundedRectangle(cornerRadius: 4).fill(.red).frame(width: 22, height: 22) }
                     else { WhoopMonogram().fill(mode == .live ? .red : Color(white: 0.23)).environment(\.layoutDirection, .leftToRight).frame(width: 25, height: 22) }
-                }.frame(width: width / 5, height: 76)
+                }.frame(width: width / (mode == .live ? 3 : 5), height: 76)
             }.accessibilityLabel(camera.recording ? "Stop video" : mode == .live && photoData == nil ? "Record video" : "Capture photo with stats")
                 .disabled(editing || busy || camera.starting || (photoData == nil && !camera.ready))
-            Button {
-                let requested = !torch
-                camera.engine.setTorch(requested) { accepted in Task { @MainActor in
-                    if accepted { torch = requested } else { message = "The light is unavailable for this camera." }
-                } }
-            } label: { Image(systemName: torch ? "bolt.fill" : "bolt.slash.fill").font(.system(size: 23)).frame(maxWidth: .infinity, minHeight: 48) }
-                .accessibilityLabel(torch ? "Turn camera light off" : "Turn camera light on").disabled(photoData != nil || busy || !camera.ready)
+            if mode != .live { lightControl }
             Button { torch = false; camera.engine.flip() } label: {
                 Image(systemName: "camera.rotate").font(.system(size: 29, weight: .light)).frame(maxWidth: .infinity, minHeight: 48)
             }.accessibilityLabel(L10n.text("Switch front and back cameras")).disabled(camera.recording || camera.starting || busy || photoData != nil)
-        }.buttonStyle(PulsePressStyle()).background(AppGlassSurface(shape: Capsule(), solid: Color(white: 0.1), interactive: true))
+        }.buttonStyle(PulsePressStyle())
+    }
+
+    private var photoControl: some View {
+        PhotosPicker(selection: $photo, matching: .images) {
+            Group {
+                if let photoImage { Image(uiImage: photoImage).resizable().scaledToFill() }
+                else { Image(systemName: "photo").font(.system(size: 24, weight: .light)) }
+            }.frame(width: 38, height: 38).clipped().background(.black.opacity(0.2))
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.5), lineWidth: 3))
+                .clipShape(RoundedRectangle(cornerRadius: 4)).frame(maxWidth: .infinity, minHeight: 48)
+        }.accessibilityLabel(L10n.text("Choose a saved photo")).disabled(camera.recording || busy)
+    }
+
+    private func toggleLight() {
+        let requested = !torch
+        camera.engine.setTorch(requested) { accepted in
+            Task { @MainActor in
+                if accepted { torch = requested } else { message = "The light is unavailable for this camera." }
+            }
+        }
+    }
+
+    private var lightControl: some View {
+        Button(action: toggleLight) {
+            Image(systemName: torch ? "bolt.fill" : "bolt.slash.fill")
+                .font(.system(size: 23)).frame(maxWidth: .infinity, minHeight: 48)
+        }
+        .accessibilityLabel(torch ? "Turn camera light off" : "Turn camera light on")
+        .disabled(photoData != nil || busy || !camera.ready)
     }
 
     private func footer(width: CGFloat) -> some View {
@@ -245,6 +283,10 @@ struct ReferenceLiveView: View {
                                    layout: layout, graphSamples: historical ? Array(day.heartRates.suffix(120)) : graphSamples,
                                    historicalGraph: historical)
     }
+    private func openCameraSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+    }
+
     private func openCamera() async {
         guard scenePhase == .active, !camera.recording, !camera.starting, !Task.isCancelled else { return }
         await camera.open(microphone: microphone)
@@ -310,7 +352,7 @@ struct ReferenceLiveView: View {
                             HStack { Text(utcDateText(recordedDate, style: .dateTime.month(.wide).day().year())); Spacer(); Image(systemName: "calendar") }
                                 .frame(minHeight: 44)
                         }.accessibilityIdentifier("liveRecordedDay")
-                        if !DayCalendar.utc.isDateInToday(recordedDate) {
+                        if !DashboardDatePolicy.isToday(recordedDate) {
                             Button(L10n.text("USE TODAY")) { recordedDate = DashboardDatePolicy.today() }.frame(minHeight: 44)
                         }
                         let activities = store.activities.filter { DayCalendar.start(of: $0.start) == DayCalendar.start(of: recordedDate) && $0.strain != nil && ($0.strainIsEstimate != true || showLocalEstimates) }
@@ -330,6 +372,22 @@ struct ReferenceLiveView: View {
                     PulseCard {
                         Text(L10n.text("CAPTURE")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
                         Text(L10n.text(camera.status)).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                        if !camera.ready && photoData == nil {
+                            Button(L10n.text("OPEN CAMERA")) { task = Task { await openCamera() } }
+                                .frame(minHeight: 44)
+                            Button(L10n.text("IPHONE CAMERA SETTINGS"), action: openCameraSettings)
+                                .frame(minHeight: 44)
+                        }
+                        if mode == .live {
+                            PhotosPicker(selection: $photo, matching: .images) {
+                                Label(L10n.text("Choose a saved photo"), systemImage: "photo")
+                                    .frame(minHeight: 44)
+                            }
+                            Button(action: toggleLight) {
+                                Label(L10n.text(torch ? "Turn camera light off" : "Turn camera light on"), systemImage: torch ? "bolt.fill" : "bolt.slash.fill")
+                                    .frame(minHeight: 44)
+                            }.disabled(photoData != nil || !camera.ready)
+                        }
                         Text(L10n.text("Use Live for video, or the other modes for a photo. Video clips stop after five minutes or when the app leaves the foreground."))
                             .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
                         Toggle(L10n.text("Microphone audio"), isOn: $microphone).frame(minHeight: 44)
