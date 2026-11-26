@@ -2,7 +2,7 @@
 
 [Download the unsigned iPhone IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/18f1ce5df80ffccdfd93e5993b566d909169b9fe/WHOOP-unsigned.ipa). The build from `18f1ce5` passed the Apple device build and package checks. Its verified SHA-256 is `d7827764bc4cb70c29f9aa38dd8223a09ad8b4c0db811f168c5ce04b20612608`. Sign the IPA with Sideloadly. Apple Health sleep access requires a signing profile that supports HealthKit.
 
-Home shows supported wrist-removal events and sustained activity from live readings. For overnight sleep, enable Apple Health sleep sync, refresh a linked WHOOP account, or review a resting interval recorded by your band. [Overnight setup and activity detection](Docs/OVERNIGHT-TRACKING.md)
+Home shows supported wrist-removal events and sustained activity from live readings. For overnight sleep, enable Apple Health sleep sync, refresh a linked WHOOP account, or review a resting interval recorded by your band. [Overnight setup and activity detection](Docs/OVERNIGHT-TRACKING.md) · [iPhone screenshots](design/home/overnight-tracking/gallery.jpg)
 
 Previous interface revision: [Live resizing, colored Recovery history and preserved sleep/health details](Docs/LIVE-CALENDAR-AND-DATA.md). Live supports independently sized/positioned overlays, full/condensed output, photo adjustment and an actual heart-rate graph. Importing older data opens Home on Today and preserves the original measurement dates. The date picker shows reported red/yellow/green Recovery scores. The supplied APK's loading and welcome motion assets are bundled locally; [provenance](App/Resources/apk-motion-provenance.json) distinguishes the original intro from the converted loading movie.
 
