@@ -1,5 +1,7 @@
 # Tracker updates
 
+[Download the unsigned iPhone IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/18f1ce5df80ffccdfd93e5993b566d909169b9fe/WHOOP-unsigned.ipa). The build from `18f1ce5` passed the Apple device build and package checks. Its verified SHA-256 is `d7827764bc4cb70c29f9aa38dd8223a09ad8b4c0db811f168c5ce04b20612608`. Sign the IPA with Sideloadly. Apple Health sleep access requires a signing profile that supports HealthKit.
+
 Home shows supported wrist-removal events and sustained activity from live readings. For overnight sleep, enable Apple Health sleep sync, refresh a linked WHOOP account, or review a resting interval recorded by your band. [Overnight setup and activity detection](Docs/OVERNIGHT-TRACKING.md)
 
 Previous interface revision: [Live resizing, colored Recovery history and preserved sleep/health details](Docs/LIVE-CALENDAR-AND-DATA.md). Live supports independently sized/positioned overlays, full/condensed output, photo adjustment and an actual heart-rate graph. Importing older data opens Home on Today and preserves the original measurement dates. The date picker shows reported red/yellow/green Recovery scores. The supplied APK's loading and welcome motion assets are bundled locally; [provenance](App/Resources/apk-motion-provenance.json) distinguishes the original intro from the converted loading movie.
@@ -28,7 +30,7 @@ Home now follows the supplied reference hierarchy, with three animated score rin
 
 Nutrition includes a real Take Photo capture flow, photo-library selection, preview and editable AI estimates. Capture works independently of the server. **AI photo/text analysis requires a configured HTTPS account bridge with server-only `AI_API_KEY`, `AI_API_URL` and a vision-capable `AI_MODEL`.** No credentials or production service are bundled. Connection settings and manual-entry recovery are available directly from the food form.
 
-See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). The [current iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45209840245). Use the direct IPA link at the top of this file, then sign/install with Sideloadly. This binary includes direct historical tracker reads, synchronized raw storage, CSV/ZIP export, opt-in local Strain, and the existing Home/camera/import fixes. See the [native interface captures from the f55d7e8 build](design/home/native-review-08/REVIEW.md). Physical camera capture and a production AI provider remain untested.
+See [layout and camera details](Docs/LAYOUT-AND-MEAL-CAMERA.md), [ZIP and glass implementation](Docs/ZIP-AND-GLASS.md), [profile and export behavior](Docs/PROFILE-PERSONALIZATION.md), and [current verification](VALIDATION.json). The [overnight tracking iPhone build passed](https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45670044997). Use the direct IPA link at the top of this file, then sign/install with Sideloadly. This binary includes direct historical tracker reads, synchronized raw storage, CSV/ZIP export, opt-in local Strain, and the existing Home/camera/import fixes. See the [native interface captures from the f55d7e8 build](design/home/native-review-08/REVIEW.md). Physical camera capture and a production AI provider remain untested.
 
 ---
 
@@ -42,7 +44,7 @@ A standalone iOS 17+ SwiftUI project named **WHOOP**, with the original supplied
 
 For an IPA, double-click **Build IPA.command** after extracting the project on a Mac with full Xcode. The detailed [iPhone installation guide](Docs/INSTALL-IPHONE.md) covers Sideloadly, signed Xcode export and the included manual GitHub Mac-runner workflow. No IPA has been built in this Linux executor.
 
-1. Extract `WHOOP-iOS-source.zip` and open **WHOOP.xcodeproj** in Xcode 16 or newer.
+1. Extract `WHOOP-iOS-source.zip` and open **WHOOP.xcodeproj** in Xcode 26 or newer.
 2. Select the **WHOOP** scheme and an iPhone simulator, then Run.
 3. For your iPhone, select the device and your development team under **Signing & Capabilities**. The signing profile must support the included HealthKit entitlement. The display name stays WHOOP; its separate bundle identifier is `local.whoop.reconstruction`.
 
@@ -97,9 +99,9 @@ Follow [account setup](Docs/ACCOUNT-SYNC.md) and [server setup](Docs/AccountAPI/
 
 ## Verification
 
-**The current revision passes 198 Swift core tests and 13 packaging tests.** The previously recorded server suite passes 33 Node tests using local HTTP handlers and synthetic upstream records, without contacting WHOOP; this client-focused revision does not change the server.
+**The overnight tracking revision passes 213 Swift core tests and 13 packaging tests.** The previously recorded server suite passes 33 Node tests using local HTTP handlers and synthetic upstream records, without contacting WHOOP; this client-focused revision does not change the server.
 
-The portable Swift suite covers imports, provenance, timestamp roundtrips, complete backups, sleep-interval union, standard BLE bytes, recovered frame/command golden fixtures, malformed/fragmented streams, bounded live strain and reply-state handling. Exact results are in [VALIDATION.json](VALIDATION.json) and [Validation/core-tests.log](Validation/core-tests.log).
+The portable Swift suite covers imports, provenance, timestamp roundtrips, complete backups, sleep-interval union, standard BLE bytes, recovered frame/command golden fixtures, malformed/fragmented streams, bounded live strain and reply-state handling. Exact results are in [VALIDATION.json](VALIDATION.json) and [the tracker revision test log](Validation/overnight-tracker-core-tests.log).
 
 Application Swift files pass frontend parsing and the Xcode project passes structural checks. The current revision also passed an Apple SDK build and unsigned arm64 IPA validation on the Mac CI runner. These checks do not establish physical camera or tracker behavior. Native interaction outcomes are recorded separately in VALIDATION.json.
 
