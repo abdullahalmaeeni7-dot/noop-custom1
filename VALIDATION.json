@@ -494,6 +494,11 @@
     "source_commit": "18f1ce5df80ffccdfd93e5993b566d909169b9fe",
     "device_build": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45670044997",
     "simulator_run": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45670045033",
-    "simulator_capture_outcome": "7 captured screens; saved-photo test failed while selecting a Photos system picker tile"
+    "simulator_capture_outcome": "7 captured screens; saved-photo test failed while selecting a Photos system picker tile",
+    "simulator_rerun": {
+      "source": "062b01203ddde40d06f63c9d8c4ccf7b467988fd",
+      "url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45750436620",
+      "result": "Simulator app compiled and Home captured. The screenshot step reached its 35-minute limit before the interaction tests completed."
+    }
   }
 }
