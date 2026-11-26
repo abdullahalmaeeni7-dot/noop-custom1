@@ -94,6 +94,7 @@ jobs:
           wait "$BOOT_PID"
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
           xcrun simctl status_bar "$SIM_DEVICE" override --time '9:34' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+          reference_result=0
           for REVIEW_LANGUAGE in en ar; do
           xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
@@ -134,8 +135,9 @@ jobs:
           CGImageDestinationAddImage(destination, frame, nil)
           guard CGImageDestinationFinalize(destination) else { exit(1) }
           SWIFT
+            sips -g pixelWidth -g pixelHeight build/review-photo.jpg
             xcrun simctl addmedia "$SIM_DEVICE" build/review-photo.jpg
-            xcodebuild test -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -destination "platform=iOS Simulator,id=$SIM_DEVICE" -derivedDataPath build/SimulatorReview -resultBundlePath build/visual-review/reference-features.xcresult -parallel-testing-enabled NO -only-testing:WHOOPUITests/ReferenceFeatureTests ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO > build/visual-review/reference-features.log 2>&1
+            xcodebuild test -project WHOOP.xcodeproj -scheme WHOOP -configuration Release -destination "platform=iOS Simulator,id=$SIM_DEVICE" -derivedDataPath build/SimulatorReview -resultBundlePath build/visual-review/reference-features.xcresult -parallel-testing-enabled NO -only-testing:WHOOPUITests/ReferenceFeatureTests ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO > build/visual-review/reference-features.log 2>&1 || reference_result=$?
           fi
           xcrun simctl uninstall "$SIM_DEVICE" local.whoop.reconstruction
           xcrun simctl install "$SIM_DEVICE" build/SimulatorReview/Build/Products/Release-iphonesimulator/WHOOP.app
@@ -159,6 +161,7 @@ jobs:
             echo '::error::Native setup interaction tests failed; see setup-flow.log and the result bundle.'
             exit 1
           fi
+          exit "$reference_result"
       - name: Publish simulator evidence and diagnostic status
         if: always() && steps.project.outcome == 'success'
         working-directory: ${{ steps.project.outputs.directory }}

@@ -108,6 +108,32 @@ final class SetupFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["openRecoveryCalendar"].label.contains("TODAY"), "Live's recorded date must not change Home's date.")
     }
 
+    func testDConfirmSleepPersistsAcrossRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-whoop.language.v1", "en", "-whoop.setup.completed.v1", "YES"]
+        app.launch()
+        let ring = app.buttons["scoreRing-sleep"]
+        XCTAssertTrue(ring.waitForExistence(timeout: 15))
+        ring.tap()
+        let log = app.buttons["sleepReviewEntry"]
+        reveal(log, in: app)
+        XCTAssertTrue(log.isHittable)
+        log.tap()
+        let save = app.buttons["I was asleep · Save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        let saved = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "Your confirmed sleep"), object: log)
+        XCTAssertEqual(XCTWaiter.wait(for: [saved], timeout: 5), .completed)
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(ring.waitForExistence(timeout: 15))
+        ring.tap()
+        reveal(log, in: app)
+        XCTAssertTrue(log.label.contains("Your confirmed sleep"))
+        capture("19-confirmed-sleep", app)
+    }
+
     private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
         for _ in 0..<6 {
             if element.isHittable { return }
@@ -182,20 +208,7 @@ final class ReferenceFeatureTests: XCTestCase {
         let gallery = app.buttons["Choose a saved photo"]
         XCTAssertTrue(gallery.waitForExistence(timeout: 10))
         gallery.tap()
-        // The system picker exposes image tiles as buttons, images or cells,
-        // depending on the simulator runtime. Use an actual photo tile.
-        let photoLabel = NSPredicate(format: "label BEGINSWITH[c] %@", "Photo,")
-        let labeledTile = app.descendants(matching: .any).matching(photoLabel).firstMatch
-        let gridTile = app.collectionViews.cells.firstMatch
-        if labeledTile.waitForExistence(timeout: 5) {
-            labeledTile.tap()
-        } else if gridTile.waitForExistence(timeout: 5) {
-            gridTile.tap()
-        } else {
-            let image = app.scrollViews.images.firstMatch
-            XCTAssertTrue(image.waitForExistence(timeout: 5), "The Photos picker must offer the imported review picture.")
-            image.tap()
-        }
+        try selectImportedPhoto(in: app)
         let shutter = app.buttons["Capture photo with stats"]
         let shutterReady = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "exists == true AND enabled == true AND hittable == true"),
@@ -220,6 +233,56 @@ final class ReferenceFeatureTests: XCTestCase {
         XCTAssertNotEqual(slider.value as? String, previous)
         app.navigationBars["Live Controls"].buttons["Done"].tap()
         capture("14-live-resized-recovery-photo", app)
+    }
+
+    /// PhotosUI can present its first-use sheet or expose the thumbnail grid
+    /// through an out-of-process accessibility tree on different iOS releases.
+    private func selectImportedPhoto(in app: XCUIApplication) throws {
+        let picker = XCUIApplication(bundleIdentifier: "com.apple.mobileslideshow.photospicker")
+        let photoLabel = NSPredicate(format: "label BEGINSWITH[c] %@ OR label CONTAINS[c] %@", "Photo,", "review-photo")
+        let deadline = Date().addingTimeInterval(25)
+        repeat {
+            var hosts = [app]
+            if picker.state == .runningForeground { hosts.append(picker) }
+            for host in hosts {
+                let welcome = host.buttons["Continue"]
+                if welcome.exists && welcome.isHittable {
+                    welcome.tap()
+                    continue
+                }
+                let queries = [
+                    host.descendants(matching: .any).matching(photoLabel),
+                    host.collectionViews.cells,
+                    host.scrollViews.images,
+                    host.scrollViews.buttons,
+                    host.images
+                ]
+                for query in queries {
+                    for tile in query.allElementsBoundByIndex {
+                        let bounds = tile.frame
+                        // Square thumbnails occupy a grid column. Header icons,
+                        // controls and the underlying full-screen preview do not.
+                        guard bounds.width >= 65, bounds.width <= app.frame.width * 0.54,
+                              bounds.height >= 65, abs(bounds.width - bounds.height) <= 12,
+                              tile.isEnabled, tile.isHittable else { continue }
+                        tile.tap()
+                        return
+                    }
+                }
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
+        } while Date() < deadline
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "18-system-photo-picker-failure"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = "photo-picker-hierarchy"
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
+        throw NSError(domain: "ReferenceFeatureTests", code: 1, userInfo: [
+            NSLocalizedDescriptionKey: "Photos did not expose a selectable imported thumbnail. See the picker screenshot and hierarchy."
+        ])
     }
 
     private func capture(_ name: String, _ app: XCUIApplication) {
