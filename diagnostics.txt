@@ -1,0 +1,2 @@
+/Users/runner/work/noop-custom1/noop-custom1/UITests/SetupFlowTests.swift:277: error: -[WHOOPUITests.ReferenceFeatureTests testSavedPhotoOverlaysAndPrimaryTabs] : Failed to get matching snapshot: No matches found for Element at index 28 from input {(
+/Users/runner/work/noop-custom1/noop-custom1/UITests/SetupFlowTests.swift:142: error: -[WHOOPUITests.SetupFlowTests testDConfirmSleepPersistsAcrossRelaunch] : XCTAssertEqual failed: ("XCTWaiterResult(rawValue: 2)") is not equal to ("XCTWaiterResult(rawValue: 1)")
