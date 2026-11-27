@@ -500,5 +500,14 @@
       "url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/45750436620",
       "result": "Simulator app compiled and Home captured. The screenshot step reached its 35-minute limit before the interaction tests completed."
     }
+  },
+  "automatic_tracker_analysis": {
+    "core_tests_passed": 217,
+    "failures": 0,
+    "source": "c52f3f723313e739ad23d14f6c126ace0ca7259f",
+    "physical_tracker_test": false,
+    "official_score_equivalence": false,
+    "default_history_sync": true,
+    "native_build": "pending"
   }
 }

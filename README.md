@@ -1,3 +1,7 @@
+# Automatic tracker analysis
+
+Pairing now starts supported history sync. Home derives strain and estimated sleep from saved tracker readings automatically. [Behavior and verification](Docs/AUTOMATIC-TRACKER-ANALYSIS.md)
+
 # Tracker updates
 
 [Download the unsigned iPhone IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/18f1ce5df80ffccdfd93e5993b566d909169b9fe/WHOOP-unsigned.ipa). The build from `18f1ce5` passed the Apple device build and package checks. Its verified SHA-256 is `d7827764bc4cb70c29f9aa38dd8223a09ad8b4c0db811f168c5ce04b20612608`. Sign the IPA with Sideloadly. Apple Health sleep access requires a signing profile that supports HealthKit.
