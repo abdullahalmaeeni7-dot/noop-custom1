@@ -257,7 +257,7 @@ struct HomeView: View {
     }
 
     private var dailyHighlight: some View {
-        Button { openMetric(showLocalEstimates && day.strainIsLocalEstimate ? .strain : .recovery) } label: {
+        Button { openMetric(day.strainIsLocalEstimate ? .strain : .recovery) } label: {
             WCard(padding: 14) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 7) {
