@@ -138,8 +138,8 @@
     },
     {
       "path": "App/Pulse/PulseHomePanels.swift",
-      "bytes": 28421,
-      "sha256": "76f7bb8ac7ab5c1d43dfe97b4c9454fff2d9a780211f5b8b93724f6c11ee3f25"
+      "bytes": 28383,
+      "sha256": "192a02dce2ede4ff69c13d5e3bc1990e1662862aa5323c2465be3d31c8ae3f23"
     },
     {
       "path": "App/Pulse/PulseHomeView.swift",
@@ -148,8 +148,8 @@
     },
     {
       "path": "App/Pulse/PulseTrackerView.swift",
-      "bytes": 20194,
-      "sha256": "8d5ed3965011b436a6f4d0625c13af64252d94fdc583f12425d31eb69bcc8010"
+      "bytes": 19798,
+      "sha256": "306ed3410866b505dc4d71917594c93b267e8aa52d412aa08c19a26837708a11"
     },
     {
       "path": "App/Resources/BrandColors.xcassets/Contents.json",
@@ -308,8 +308,8 @@
     },
     {
       "path": "App/Views/DashboardViews.swift",
-      "bytes": 46112,
-      "sha256": "182dfd235642063c0b403117a1482ee51416fd7afb9cda97d57bcdbe00aa06bd"
+      "bytes": 45634,
+      "sha256": "bf3727dfccbfd1a305f76ffcf783f1d5883111cfaa03d1b021ed73b37519963b"
     },
     {
       "path": "App/Views/DetailViews.swift",
@@ -333,8 +333,8 @@
     },
     {
       "path": "App/Views/MeasurementExportView.swift",
-      "bytes": 15832,
-      "sha256": "ab36c61778deef0cff7e9c9320af0380bd1a733b43ad993fc16c155594fe1586"
+      "bytes": 15176,
+      "sha256": "ace738dde80faaec42466e660086c4b1b53845efdd973d5b5f91b67630ea482a"
     },
     {
       "path": "App/Views/NutritionComponents.swift",
@@ -368,13 +368,13 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 30165,
-      "sha256": "b35e0dc8826b4c71beb8fbd52201aa6dab4f6b3b55e76e19e34aed6800048bf4"
+      "bytes": 29940,
+      "sha256": "d03cadd253d3f599ff6d73e3fdadf57111ee432d02cff316aa133225f02a4526"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
-      "bytes": 22562,
-      "sha256": "500b7491c21615e851be37517d61069e973d12b01dd1ae059d461d96aa0dadd8"
+      "bytes": 27647,
+      "sha256": "dd9340ff908ed7492612b54b253efa7790634b3f96472076dd2e63927a9156bd"
     },
     {
       "path": "App/Views/Theme.swift",
@@ -388,8 +388,8 @@
     },
     {
       "path": "App/WHOOPApp.swift",
-      "bytes": 20892,
-      "sha256": "ef37335a07ae0a3ae54315dabe9dffb5c1f1bf45dac816b6b4eeb10ca26fe472"
+      "bytes": 20397,
+      "sha256": "cb9f1c54afdb7b27bfed9df9aee38f14db226f91aa4c4f65ba2886de8f9067a1"
     },
     {
       "path": "App/WhoopWordmark.swift",
@@ -483,13 +483,13 @@
     },
     {
       "path": "Core/MeasurementExport.swift",
-      "bytes": 19668,
-      "sha256": "0e78763ac29e6570a2c1419bbfd89614d9e74dcfda2265782b6ddcf71626a9b2"
+      "bytes": 19895,
+      "sha256": "abb719cb68a727eea2e732edf860792b29b67f785b7b820f13fabb04661963c7"
     },
     {
       "path": "Core/Models.swift",
-      "bytes": 13844,
-      "sha256": "f08e2dcd0fe6df89852f959858a2fc70421a2ec91224cfc8e0291fc9007139f4"
+      "bytes": 15111,
+      "sha256": "cdf1eef6556485794e2405db19bc73268d591f8b1193226324f1bc11ff92acee"
     },
     {
       "path": "Core/NutritionModels.swift",
@@ -508,8 +508,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 133790,
-      "sha256": "ea6d9062e6b61ba384c5974a6b26be9d76e290c50b5718d2433a301cbc76f45c"
+      "bytes": 136549,
+      "sha256": "ee9a7678144d739eebc843e4d9aa4d5184d655077b56b8799b1d9d2fec3c9163"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -752,6 +752,11 @@
       "sha256": "bd2ef643be9d20ea4e20e38713efa2c8009981405800a4836cd3047ad1e0f4eb"
     },
     {
+      "path": "Docs/PERSONAL-SETUP.md",
+      "bytes": 2008,
+      "sha256": "9d891d0803d3ad43498f2d34aabef6cd840f399fac41c63d3b760af388d5bb6d"
+    },
+    {
       "path": "Docs/PROFILE-PERSONALIZATION.md",
       "bytes": 5174,
       "sha256": "afe9917dc255c87d109c8ca192e7ad3b001bc46a363d983d63923779b38eb5b8"
@@ -873,8 +878,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 16210,
-      "sha256": "0bfb7179d09abc92b13f063069464e4545e6956827b5e05f0d7fe9e1a01a30b8"
+      "bytes": 17034,
+      "sha256": "ed3643a28342bfe31aea13572f475371e3ee67d2225f73e521c6a09256046c38"
     },
     {
       "path": "STATUS.md",
@@ -1067,6 +1072,11 @@
       "sha256": "fac972f955a763f206358a98c4c41269bb4c15e10b5650121c4c9cd2266b0ca3"
     },
     {
+      "path": "Tests/WHOOPCoreTests/SetupProfileTests.swift",
+      "bytes": 1869,
+      "sha256": "8671f9a8eb3ca60827259597eae399c0d087f9e32e051e311cc7fb56dcfe4ef0"
+    },
+    {
       "path": "Tests/WHOOPCoreTests/SleepIntervalTests.swift",
       "bytes": 4848,
       "sha256": "246740551744a18b475175c5436556c5855642b33b7cae23c1bf1e7254954b02"
@@ -1123,13 +1133,13 @@
     },
     {
       "path": "UITests/SetupFlowTests.swift",
-      "bytes": 15713,
-      "sha256": "c321c6ed30c3fb336b345a3cc0d9c9866d8f0034de78f6dd3ccab5b990636c86"
+      "bytes": 16559,
+      "sha256": "b4b3b6ee35da0d0b02f068273b15e201022a59fa98c221d921c082880cea7100"
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 26578,
-      "sha256": "c3053db504ad1143fe18175f465dc6a30f80ae31b1097395152ed5c0cfada558"
+      "bytes": 27895,
+      "sha256": "4937311c318f02e7567cc65242ceaec3d69929b76e5bd7e1c2820d063392f014"
     },
     {
       "path": "Validation/app-syntax.log",
@@ -1282,9 +1292,19 @@
       "sha256": "0d4e7b3e220140e1e7772e6eed653bae36906beb6f6c328cb6d4af7dcbcdfffe"
     },
     {
+      "path": "Validation/profile-package-tests.log",
+      "bytes": 2099,
+      "sha256": "47082bc8d7a84c93328e0ff68f9307e44035c28fbf4e4a352292feab40814bb0"
+    },
+    {
       "path": "Validation/profile-project.log",
       "bytes": 243,
       "sha256": "6874f982dcd0680d020e6de57e88704665798e1fa6cdaeb6e9fef03163d92e99"
+    },
+    {
+      "path": "Validation/profile-required-tests.log",
+      "bytes": 56389,
+      "sha256": "b174168f1a781dbb74b893b93479b6f4c769237bdb29dcaa7698d0b269edc7fa"
     },
     {
       "path": "Validation/profile-swift-syntax.log",
