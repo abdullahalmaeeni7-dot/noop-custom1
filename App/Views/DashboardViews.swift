@@ -17,8 +17,8 @@ struct HomeView: View {
     let openStress: () -> Void
     let openActivities: () -> Void
     let openDevice: () -> Void
-    let openHealthImport: () -> Void
-    let openAccount: () -> Void
+    let importData: () -> Void
+    let exportData: () -> Void
     private var day: DailySnapshot { store.selectedDay }
 
     let openLive: () -> Void
@@ -46,11 +46,8 @@ struct HomeView: View {
             if (day.trackerRecording != nil || !day.heartRates.isEmpty) && day.recovery == nil {
                 WCard {
                     Text(L10n.text("Recovery needs overnight data")).font(WFont.body(15).weight(.semibold))
-                    Text(L10n.text("Heart-rate broadcasting does not supply WHOOP Recovery or Sleep scores. Sync your WHOOP account or import its data to add them.")).font(WFont.body(13)).foregroundStyle(WColor.muted)
-                    Button(L10n.text("WHOOP ACCOUNT"), action: openAccount).buttonStyle(WButton(filled: false))
-                    if day.sleepMinutes == 0 {
-                        Button(L10n.text("SET UP AUTOMATIC SLEEP"), action: openHealthImport).buttonStyle(WButton(filled: false))
-                    }
+                    Text(L10n.text("Import your recorded measurements to add an available Recovery score.")).font(WFont.body(13)).foregroundStyle(WColor.muted)
+                    Button(L10n.text("IMPORT"), action: importData).buttonStyle(WButton(filled: false))
                 }
             }
             HStack(spacing: 11) {
@@ -192,8 +189,8 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 15) {
             Text(L10n.text("Discover More")).font(WFont.body(20).weight(.semibold))
             monitor("YOUR CONNECTED TRACKER", detail: "Find a sensor, check its status and record your next session.", symbol: "applewatch", tint: WColor.blue, action: openDevice)
-            monitor("YOUR HEALTH HISTORY", detail: "Import measurements from Apple Health.", symbol: "heart.text.square", tint: PulseColor.mint, action: openHealthImport)
-            monitor("YOUR WHOOP ACCOUNT", detail: "Connect to sync your saved WHOOP measurements.", symbol: "person.crop.circle", tint: WColor.sleep, action: openAccount)
+            monitor("IMPORT", detail: "Add measurements from your data file.", symbol: "square.and.arrow.down", tint: PulseColor.mint, action: importData)
+            monitor("EXPORT", detail: "Save your measurements to Files.", symbol: "square.and.arrow.up", tint: WColor.sleep, action: exportData)
         }
     }
 
@@ -205,8 +202,8 @@ struct HomeView: View {
                     .font(WFont.body(15)).foregroundStyle(WColor.muted)
                 Button(L10n.text(tracker.connectedName == nil ? "CONNECT MY TRACKER" : "VIEW MY TRACKER"), action: openDevice).buttonStyle(WButton())
                 HStack(spacing: 12) {
-                    Button(L10n.text("APPLE HEALTH"), action: openHealthImport).buttonStyle(WButton(filled: false))
-                    Button(L10n.text("WHOOP ACCOUNT"), action: openAccount).buttonStyle(WButton(filled: false))
+                    Button(L10n.text("IMPORT"), action: importData).buttonStyle(WButton(filled: false))
+                    Button(L10n.text("EXPORT"), action: exportData).buttonStyle(WButton(filled: false))
                 }
                 Text(L10n.text("You can also import a data file in More → Your data.")).font(WFont.body(12)).foregroundStyle(WColor.muted)
             }
@@ -745,7 +742,6 @@ struct HealthView: View {
     @EnvironmentObject private var store: AppStore
     let openMonitor: () -> Void
     let importData: () -> Void
-    let openHealthImport: () -> Void
     @State private var showingStress = false
     @State private var showingProfile = false
     var body: some View {
@@ -788,7 +784,6 @@ struct HealthView: View {
                     }
                 }
             }.buttonStyle(.plain)
-            Button(L10n.text("IMPORT FROM APPLE HEALTH"), action: openHealthImport).buttonStyle(WButton())
             Button(L10n.text("IMPORT YOUR WHOOP DATA"), action: importData).buttonStyle(WButton(filled: false))
         }.sheet(isPresented: $showingStress) { StressMonitorView() }
             .fullScreenCover(isPresented: $showingProfile) { WHOOPProfileView(fallbackName: "Your Profile", fallbackInitials: "YOU") }

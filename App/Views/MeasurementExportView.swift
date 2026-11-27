@@ -5,12 +5,10 @@ import WHOOPCore
 /// Reuses the persisted AppStore. Home screenshot fixtures never enter this view.
 struct MeasurementExportView: View {
     @EnvironmentObject private var store: AppStore
-    @EnvironmentObject private var account: AccountModel
     @Environment(\.dismiss) private var dismiss
     @State private var customRange = false
     @State private var start = DashboardDatePolicy.today()
     @State private var end = DashboardDatePolicy.today()
-    @State private var showingAccount = false
     @State private var showingProfile = false
     @State private var importing = false
     @State private var exporting = false
@@ -66,7 +64,6 @@ struct MeasurementExportView: View {
         }
         .font(PulseFont.body(15)).foregroundStyle(PulseColor.text).tint(PulseColor.sleep).preferredColorScheme(.dark)
         .environment(\.calendar, DayCalendar.utc).environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
-        .sheet(isPresented: $showingAccount) { AccountView() }
         .sheet(isPresented: $showingProfile) { WHOOPProfileView() }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.zip, .json, .commaSeparatedText]) { result in
             switch result {
@@ -100,12 +97,12 @@ struct MeasurementExportView: View {
                 count(selected.count, label: "DAYS")
                 count(sampleCount, label: "HEART-RATE SAMPLES")
             }
-            Text(L10n.text("Home examples are excluded. Saved imports may combine WHOOP account data, Apple Health and tracker measurements; the archive does not identify every provider separately."))
+            Text(L10n.text("Only your saved imports and tracker measurements are exported. Example data is excluded."))
                 .font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
             if case .failure(let error) = selection {
                 Text(L10n.text(error.localizedDescription)).foregroundStyle(PulseColor.yellow)
             } else if selected.isEmpty {
-                Label(L10n.text("No saved measurements in this range. Connect and sync your WHOOP account, import a data file, or choose another range."), systemImage: "tray")
+                Label(L10n.text("No saved measurements in this range. Import a data file or choose another range."), systemImage: "tray")
                     .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted).accessibilityIdentifier("exportEmptyState")
             }
         }
@@ -188,10 +185,6 @@ struct MeasurementExportView: View {
     private var importOptions: some View {
         PulseCard(padding: 18) {
             Text(L10n.text("ADD YOUR DATA")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 0.8)
-            Button { savedMessage = nil; showingAccount = true } label: {
-                Label(L10n.text(account.isLinked ? "Sync WHOOP account" : "Connect WHOOP account"), systemImage: "person.crop.circle.badge.checkmark")
-                    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
-            }.accessibilityIdentifier("exportConnectAccount")
             Button { savedMessage = nil; importing = true } label: {
                 Label(L10n.text("Import WHOOP ZIP, CSV or app JSON"), systemImage: "square.and.arrow.down")
                     .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)

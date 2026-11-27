@@ -172,7 +172,22 @@ public struct DayArchive: Codable, Equatable, Sendable {
 
 /// Local display preferences. Ages are decimal strings so no arbitrary numeric age
 /// ceiling or floating-point rounding is imposed on personalized display values.
+public enum ProfileGender: String, Codable, CaseIterable, Sendable { case man, woman }
+public enum WearWrist: String, Codable, CaseIterable, Sendable { case left, right }
+
 public struct ProfilePersonalization: Codable, Equatable, Sendable {
+    public var birthDate: Date?
+    public var gender: ProfileGender?
+    public var wearWrist: WearWrist?
+    public var hasRequiredDetails: Bool { birthDate != nil && gender != nil && wearWrist != nil }
+
+    public func validatedForSetup() throws -> Self {
+        guard hasRequiredDetails else {
+            throw ProfilePersonalizationError.invalid("Choose your birth date, man or woman, and wearing wrist to continue.")
+        }
+        return try validated()
+    }
+
     public var displayName: String
     public var username: String
     public var age: String
@@ -195,7 +210,15 @@ public struct ProfilePersonalization: Codable, Equatable, Sendable {
               !result.username.unicodeScalars.contains(where: CharacterSet.controlCharacters.contains) else {
             throw ProfilePersonalizationError.invalid("Use a name up to 100 characters and a username up to 80 characters, without control characters.")
         }
-        result.age = try Self.ageText(age)
+        if let birthDate {
+            guard birthDate.timeIntervalSince1970.isFinite,
+                  birthDate >= DayCalendar.utc.date(from: DateComponents(year: 1, month: 1, day: 1))!,
+                  DayCalendar.start(of: birthDate) <= DashboardDatePolicy.today() else {
+                throw ProfilePersonalizationError.invalid("Choose a valid birth date that is today or earlier.")
+            }
+            result.birthDate = DayCalendar.start(of: birthDate)
+            result.age = String(DayCalendar.utc.dateComponents([.year], from: result.birthDate!, to: DashboardDatePolicy.today()).year ?? 0)
+        } else { result.age = try Self.ageText(age) }
         result.whoopAge = try Self.ageText(whoopAge)
         if let dayStreakOverride, dayStreakOverride < 0 {
             throw ProfilePersonalizationError.invalid("Your chosen day streak must be zero or greater.")

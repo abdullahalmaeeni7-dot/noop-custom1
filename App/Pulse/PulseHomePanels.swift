@@ -304,9 +304,9 @@ struct WHOOPProfileView: View {
                         profileField("Username", text: $draft.username)
                     }
                     PulseCard {
-                        profileField("Age", text: $draft.age, decimal: true)
+                        ProfileDetailsFields(profile: $draft)
                         profileField("WHOOP Age · custom display", text: $draft.whoopAge, decimal: true)
-                        Text(L10n.text("Any non-negative age is allowed, including decimals. There is no upper age limit. These are your chosen display values.")).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
+                        Text(L10n.text("Your age follows your date of birth. WHOOP Age is your custom display value.")).font(PulseFont.body(13)).foregroundStyle(PulseColor.muted)
                     }
                     PulseCard {
                         Toggle(L10n.text("Choose my displayed day streak"), isOn: $customStreak).frame(minHeight: 44)
@@ -323,7 +323,7 @@ struct WHOOPProfileView: View {
                                 draft.dayStreakOverride = value
                             } else { draft.dayStreakOverride = nil }
                             draft.age = AppLanguage.canonicalDigits(draft.age); draft.whoopAge = AppLanguage.canonicalDigits(draft.whoopAge)
-                            try store.updateProfile(draft); error = nil; editing = false
+                            try store.updateProfile(draft.validatedForSetup()); error = nil; editing = false
                         } catch { self.error = error.localizedDescription }
                     }.font(PulseFont.label(12)).frame(maxWidth: .infinity, minHeight: 52).background(PulseColor.elevated, in: RoundedRectangle(cornerRadius: 11)).disabled(store.isImporting)
                 }.padding(20)

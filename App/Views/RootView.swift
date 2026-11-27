@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import WHOOPCore
 
 private enum AppSheet: String, Identifiable {
-    case journal, activity, device, data, about, reference, healthImport, workout, activities, account, stress, live, tier, measurementExport, review
+    case journal, activity, device, data, about, reference, workout, activities, stress, live, tier, measurementExport, review
     var id: String { rawValue }
 }
 
@@ -127,10 +127,8 @@ struct RootView: View {
                 case .data: DataHelpView()
                 case .about: AboutView()
                 case .reference: ReferenceStrainView()
-                case .healthImport: HealthImportView()
                 case .workout: WorkoutView()
                 case .activities: ActivityLibraryView()
-                case .account: AccountView()
                 case .stress: StressMonitorView()
                 case .live: LiveView()
                 case .tier: ExperienceTierView()
@@ -198,13 +196,13 @@ struct RootView: View {
     @ViewBuilder private var selectedScreen: some View {
         switch store.tab {
         case .home:
-            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { showingHealthMonitor = true }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, openHealthImport: { sheet = .healthImport }, openAccount: { sheet = .account }, openLive: { showingLive = true }, openReview: { sheet = .review })
+            HomeView(openMetric: openMetric, openJournal: { sheet = .journal }, openActivity: { sheet = .activity }, openWorkout: { showingStartOptions = true }, openHealth: { showingHealthMonitor = true }, openStress: { sheet = .stress }, openActivities: { sheet = .activities }, openDevice: { sheet = .device }, importData: { restoringBackup = false; importing = true }, exportData: { sheet = .measurementExport }, openLive: { showingLive = true }, openReview: { sheet = .review })
         case .sleep: MetricDetailView(metric: .sleep, embedded: true)
         case .recovery: MetricDetailView(metric: .recovery, embedded: true)
         case .strain: MetricDetailView(metric: .strain, embedded: true)
         case .nutrition: NutritionRootView()
         case .health:
-            HealthView(openMonitor: { showingHealthMonitor = true }, importData: { restoringBackup = false; importing = true }, openHealthImport: { sheet = .healthImport })
+            HealthView(openMonitor: { showingHealthMonitor = true }, importData: { restoringBackup = false; importing = true })
         case .community:
             CommunityView(openActivity: { sheet = .activity }, importData: { restoringBackup = false; importing = true })
         case .profile:
@@ -216,9 +214,9 @@ struct RootView: View {
                          if recorder.isRecording { message = "Finish or discard your recording before replacing local data." }
                          else { store.restoreExamples() }
                      }, clearData: { confirmClear = true },
-                     openHealthImport: { sheet = .healthImport }, openWorkout: { sheet = .workout },
+                     openWorkout: { sheet = .workout },
                      openActivities: { sheet = .activities }, exportBackup: exportBackup,
-                     restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openAccount: { sheet = .account }, openHealth: { showingHealthMonitor = true }, openCommunity: { store.tab = .community }, openProfile: { showingProfile = true }, openJournal: { sheet = .journal })
+                     restoreBackup: { restoringBackup = true; importing = true }, openLive: { showingLive = true }, openTier: { sheet = .tier }, openHealth: { showingHealthMonitor = true }, openCommunity: { store.tab = .community }, openProfile: { showingProfile = true }, openJournal: { sheet = .journal })
         }
     }
 

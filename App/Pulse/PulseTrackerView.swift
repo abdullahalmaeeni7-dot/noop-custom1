@@ -12,7 +12,6 @@ struct PulseTrackerView: View {
     @AppStorage(DailyTrackerRecorder.maximumKey) private var localMaximum = 190.0
     @Environment(\.dismiss) private var dismiss
     @State private var advanced = false
-    @State private var sleepSettings = false
     @State private var exporting = false
 
     var body: some View {
@@ -36,10 +35,6 @@ struct PulseTrackerView: View {
                     } else {
                         TrackerConnectionPanel()
                         TrackerSyncPanel()
-                        Button { sleepSettings = true } label: {
-                            Label(L10n.text("APPLE HEALTH"), systemImage: "moon.fill")
-                                .frame(maxWidth: .infinity)
-                        }.buttonStyle(WButton(filled: false))
                         Button { exporting = true } label: {
                             Label(L10n.text("EXPORT DATA"), systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity)
@@ -54,7 +49,6 @@ struct PulseTrackerView: View {
                 } }
                 .toolbarBackground(PulseColor.top, for: .navigationBar).toolbarBackground(.visible, for: .navigationBar)
         }.font(PulseFont.body(15)).foregroundStyle(PulseColor.text).tint(.white).preferredColorScheme(.dark)
-            .sheet(isPresented: $sleepSettings) { HealthImportView() }
             .sheet(isPresented: $exporting) { MeasurementExportView() }
             .onDisappear { tracker.stop() }
     }
@@ -77,7 +71,7 @@ struct PulseTrackerView: View {
             Text(L10n.text("Recorded beat intervals") + ": " + tracker.savedDeviceHistory.rrIntervals.formatted())
             Text(L10n.text("Listen for standard Bluetooth heart-rate broadcasts, or try the selected WHOOP service families already implemented. Individual WHOOP 4.0, 5.0 and MG compatibility has not been verified on physical devices."))
                 .font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-            Text(L10n.text("Live heart rate is saved automatically. Stored tracker packets can be downloaded and exported. Optional local estimates are calculations, not WHOOP scores. Official Recovery, Sleep and Strain still require WHOOP account data."))
+            Text(L10n.text("Live heart rate is saved automatically. Stored tracker packets can be downloaded and exported. Local estimates are calculations, not WHOOP scores. Import your recorded Recovery, Sleep and Strain scores from a data file."))
                 .font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
             Text(L10n.text("Only received intervals count. Saved charts retain one actual reading per minute. Bluetooth background delivery depends on iOS; force-quitting the app or losing connection leaves gaps. Stored tracker history is downloaded separately using Download from tracker."))
                 .font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)

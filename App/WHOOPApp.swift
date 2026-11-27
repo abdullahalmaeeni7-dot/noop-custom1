@@ -137,7 +137,7 @@ private enum SetupStep: Int, CaseIterable {
 }
 
 private enum SetupSheet: String, Identifiable {
-    case health, account, export
+    case export
     var id: String { rawValue }
 }
 
@@ -164,7 +164,7 @@ private struct FirstRunView: View {
                     Text(L10n.text(step.title)).font(AppLanguage.isArabic ? .system(size: 42, weight: .bold) : PulseFont.number(42)).fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                     stepContent.id(step).transition(.opacity)
-                    if let error { Label(error, systemImage: "exclamationmark.circle").foregroundStyle(.orange).font(PulseFont.body(14)).accessibilityIdentifier("setupError") }
+                    if let error { Label(L10n.text(error), systemImage: "exclamationmark.circle").foregroundStyle(.orange).font(PulseFont.body(14)).accessibilityIdentifier("setupError") }
                 }.padding(24).frame(maxWidth: 560, alignment: .leading).frame(maxWidth: .infinity)
             }.scrollIndicators(.hidden) }
             if step == .welcome { welcomeActions } else { bottomBar }
@@ -175,11 +175,12 @@ private struct FirstRunView: View {
                 if !initialized {
                     draft = store.profile
                     step = SetupStep(rawValue: savedStep) ?? .welcome
+                    if step.rawValue > SetupStep.profile.rawValue && !draft.hasRequiredDetails { step = .profile; savedStep = step.rawValue }
                     initialized = true
                 }
             }
             .sheet(item: $sheet) { route in
-                switch route { case .health: HealthImportView(); case .account: AccountView(); case .export: MeasurementExportView() }
+                switch route { case .export: MeasurementExportView() }
             }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.zip, .json, .commaSeparatedText]) { result in
                 Task { @MainActor in
@@ -215,6 +216,7 @@ private struct FirstRunView: View {
         VStack(spacing: 12) {
             Text(L10n.text("Pair your tracker. Sync your data. Make every day count."))
                 .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted).multilineTextAlignment(.center)
+            SetupLanguageTabs()
             Button(L10n.text("GET STARTED")) { changeStep(1) }
                 .buttonStyle(WButton()).accessibilityIdentifier("setupGetStarted")
         }.padding(.horizontal, 24).padding(.bottom, 16).frame(maxWidth: 560).frame(maxWidth: .infinity)
@@ -242,10 +244,9 @@ private struct FirstRunView: View {
                 Text(L10n.text("YOUR NAME")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
                 TextField(L10n.text("What should we call you?"), text: $draft.displayName).textContentType(.givenName).textInputAutocapitalization(.words).frame(minHeight: 48).accessibilityLabel(L10n.text("Your name"))
                 Divider()
-                Text(L10n.text("AGE · OPTIONAL")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
-                TextField(L10n.text("Your age"), text: $draft.age).keyboardType(.decimalPad).frame(minHeight: 48).accessibilityLabel(L10n.text("Your age, optional"))
             }
-            Text(L10n.text("Your name and age are stored on this iPhone. Recovery and sleep scores come from measurements you import; setup does not create scores.")).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
+            ProfileDetailsFields(profile: $draft)
+            Text(L10n.text("You can edit these details in Profile.")).font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
         case .tracker:
             TrackerConnectionPanel()
         case .data:
@@ -253,12 +254,10 @@ private struct FirstRunView: View {
                 .foregroundStyle(PulseColor.muted)
             TrackerSyncPanel()
             Text(L10n.text("ADD YOUR WHOOP SCORES")).font(PulseFont.label(11)).tracking(AppLanguage.isArabic ? 0 : 1)
-            Text(L10n.text("Official Recovery, Sleep and Strain come from your WHOOP account or export file."))
+            Text(L10n.text("Import a ZIP, CSV or JSON file to add your recorded measurements."))
                 .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
-            dataSource("Import your WHOOP ZIP", symbol: "square.and.arrow.down", detail: "Choose the downloaded ZIP, CSV or app JSON export.") { importing = true }
-            dataSource("WHOOP account", symbol: "person.crop.circle", detail: "Connect through your configured secure bridge.") { sheet = .account }
-            dataSource("Apple Health", symbol: "heart.fill", detail: "Choose which measurements to import.") { sheet = .health }
-            dataSource("Export Data", symbol: "square.and.arrow.up", detail: "Save your profile, highlights and measurements to Files.") { sheet = .export }
+            dataSource("Import", symbol: "square.and.arrow.down", detail: "Choose the downloaded ZIP, CSV or app JSON export.") { importing = true }
+            dataSource("Export", symbol: "square.and.arrow.up", detail: "Save your profile, highlights and measurements to Files.") { sheet = .export }
 
             if let importedSummary { Text(L10n.text(importedSummary)).font(PulseFont.body(14)).foregroundStyle(PulseColor.mint) }
             let count = store.days.filter { $0.source != .example }.count
@@ -278,7 +277,7 @@ private struct FirstRunView: View {
                     Capsule().fill(item == step ? PulseColor.text : PulseColor.muted.opacity(0.25)).frame(width: item == step ? 24 : 7, height: 6)
                 }
             }.accessibilityElement(children: .ignore).accessibilityLabel(L10n.text("Setup step \(step.rawValue + 1) of 4"))
-            Button(L10n.text(buttonTitle), action: advance).buttonStyle(WButton()).disabled(store.isImporting || tracker.isConnecting || tracker.isDownloadingHistory)
+            Button(L10n.text(buttonTitle), action: advance).buttonStyle(WButton()).disabled(store.isImporting || tracker.isConnecting || tracker.isDownloadingHistory || (step == .profile && !draft.hasRequiredDetails))
                 .accessibilityIdentifier("setupContinue")
         }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
             .background(AppGlassSurface(shape: RoundedRectangle(cornerRadius: 28, style: .continuous), solid: PulseColor.background))
@@ -296,7 +295,7 @@ private struct FirstRunView: View {
     private func advance() {
         error = nil
         do {
-            if step == .profile { draft.age = AppLanguage.canonicalDigits(draft.age); try store.updateProfile(draft) }
+            if step == .profile { draft = try draft.validatedForSetup(); try store.updateProfile(draft) }
             if step == .data {
                 try store.completeSetup()
                 savedStep = 0

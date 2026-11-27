@@ -162,6 +162,8 @@ public enum MeasurementExport {
         var rows = [["kind", "metric", "value", "unit", "date_utc", "source"]]
         if let profile {
             for (key, value, unit) in [("display_name", profile.displayName, "text"), ("username", profile.username, "text"),
+                ("birth_date", profile.birthDate.map { formatter.string(from: $0) } ?? "", "date"),
+                ("gender", profile.gender?.rawValue ?? "", "text"), ("wear_wrist", profile.wearWrist?.rawValue ?? "", "text"),
                 ("age", profile.age, "years_display_text"), ("whoop_age", profile.whoopAge, "years_display_text"),
                 ("day_streak_override", profile.dayStreakOverride.map(String.init) ?? "", "days")] {
                 rows.append(["profile", key, value, unit, "", "user_configured"])

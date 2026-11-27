@@ -94,14 +94,12 @@ struct MenuView: View {
     let openReference: () -> Void
     let showExamples: () -> Void
     let clearData: () -> Void
-    let openHealthImport: () -> Void
     let openWorkout: () -> Void
     let openActivities: () -> Void
     let exportBackup: () -> Void
     let restoreBackup: () -> Void
     let openLive: () -> Void
     let openTier: () -> Void
-    let openAccount: () -> Void
     let openHealth: () -> Void
     let openCommunity: () -> Void
     let openProfile: () -> Void
@@ -123,7 +121,7 @@ struct MenuView: View {
                     Divider()
                     MenuActionRow(title: "Live camera & photo overlays", symbol: "camera", action: openLive).accessibilityIdentifier("openLiveCamera")
                     Divider()
-                    MenuActionRow(title: "My Account", symbol: "person.crop.circle", action: openAccount)
+                    MenuActionRow(title: "Personal details", symbol: "person.crop.circle", action: openProfile)
                     Divider()
                     MenuActionRow(title: "Health Monitor", symbol: "heart.text.square", action: openHealth)
                     Divider()
@@ -145,8 +143,6 @@ struct MenuView: View {
             SectionHeading(title: "Your data")
             WCard {
                 VStack(spacing: 0) {
-                    MenuActionRow(title: "Import from Apple Health", symbol: "heart.text.square", action: openHealthImport)
-                    Divider()
                     MenuActionRow(title: "Import WHOOP ZIP / day data", symbol: "square.and.arrow.down", action: importData)
                     Divider()
                     MenuActionRow(title: "Export day data", symbol: "square.and.arrow.up", action: exportData)
@@ -247,7 +243,7 @@ struct AboutView: View {
                 WCard {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(L10n.text("WHAT YOU CAN DO")).font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 0.7)
-                        Text(L10n.text("Import measurements from Apple Health or files, inspect charts, keep a journal, record workouts, manage activities, save full backups and receive compatible Bluetooth heart-rate data."))
+                        Text(L10n.text("Import measurements from files, inspect charts, keep a journal, record workouts, manage activities, save full backups and receive compatible Bluetooth heart-rate data."))
                             .font(WFont.body(15)).foregroundStyle(WColor.muted)
                     }
                 }
@@ -376,5 +372,104 @@ struct LanguagePicker: View {
                 if choice == language.rawValue { Label(L10n.text(title), systemImage: "checkmark") } else { Text(L10n.text(title)) }
             }
         }
+    }
+}
+
+struct SetupLanguageTabs: View {
+    @AppStorage(AppLanguage.preferenceKey) private var choice = AppLanguage.system.rawValue
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach([AppLanguage.english, .arabic], id: \.rawValue) { language in
+                Button {
+                    AppLanguage.choose(language)
+                    choice = language.rawValue
+                } label: {
+                    Text(language == .arabic ? "العربية" : "English")
+                        .font(WFont.body(15).weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(AppLanguage.current == language ? Color.white.opacity(0.18) : Color.clear,
+                                    in: RoundedRectangle(cornerRadius: 10))
+                }.buttonStyle(.plain)
+                    .accessibilityIdentifier("setupLanguage-" + language.rawValue)
+                    .accessibilityAddTraits(AppLanguage.current == language ? .isSelected : [])
+            }
+        }.padding(4).background(WColor.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+struct ProfileDetailsFields: View {
+    @Binding var profile: ProfilePersonalization
+    @State private var choosingDate = false
+    @State private var date = DayCalendar.utc.date(from: DateComponents(year: 2000, month: 1, day: 1))!
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            PulseCard {
+                Text(L10n.text("DATE OF BIRTH")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
+                Button {
+                    date = profile.birthDate ?? date
+                    choosingDate = true
+                } label: {
+                    HStack {
+                        Text(profile.birthDate.map { utcDateText($0, style: .dateTime.day().month(.wide).year()) } ?? L10n.text("Select your birth date"))
+                        Spacer()
+                        Image(systemName: "calendar")
+                    }.frame(minHeight: 48)
+                }.buttonStyle(.plain).accessibilityIdentifier("profileBirthDate")
+            }
+            PulseCard {
+                Text(L10n.text("ABOUT YOU")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
+                HStack(spacing: 12) {
+                    ForEach(ProfileGender.allCases, id: \.rawValue) { gender in
+                        choice(gender == .man ? "Man" : "Woman", selected: profile.gender == gender,
+                               identifier: "profileGender-" + gender.rawValue) { profile.gender = gender }
+                    }
+                }
+            }
+            PulseCard {
+                Text(L10n.text("WHICH WRIST?")).font(PulseFont.label(11)).foregroundStyle(PulseColor.muted)
+                HStack(spacing: 12) {
+                    ForEach(WearWrist.allCases, id: \.rawValue) { wrist in
+                        choice(wrist == .left ? "Left wrist" : "Right wrist", selected: profile.wearWrist == wrist,
+                               identifier: "profileWrist-" + wrist.rawValue) { profile.wearWrist = wrist }
+                    }
+                }
+            }
+        }.sheet(isPresented: $choosingDate) {
+            NavigationStack {
+                DatePicker(L10n.text("Date of birth"), selection: $date,
+                           in: DayCalendar.utc.date(from: DateComponents(year: 1, month: 1, day: 1))!...DashboardDatePolicy.today(),
+                           displayedComponents: .date)
+                    .datePickerStyle(.wheel).labelsHidden().padding()
+                    .environment(\.timeZone, TimeZone(secondsFromGMT: 0)!)
+                    .environment(\.calendar, DayCalendar.utc)
+                    .navigationTitle(L10n.text("Date of birth")).navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(L10n.text("Done")) {
+                                profile.birthDate = DayCalendar.start(of: date)
+                                choosingDate = false
+                            }.accessibilityIdentifier("profileBirthDateDone")
+                        }
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(L10n.text("Cancel")) { choosingDate = false }
+                        }
+                    }
+            }.presentationDetents([.height(340)])
+        }
+    }
+
+    private func choice(_ title: String, selected: Bool, identifier: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(L10n.text(title))
+                Spacer(minLength: 2)
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+            }.font(PulseFont.body(16)).padding(.horizontal, 12).frame(maxWidth: .infinity, minHeight: 54)
+                .background(selected ? PulseColor.load.opacity(0.22) : Color.white.opacity(0.05),
+                            in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? PulseColor.load : .clear))
+        }.buttonStyle(.plain).accessibilityIdentifier(identifier)
+            .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

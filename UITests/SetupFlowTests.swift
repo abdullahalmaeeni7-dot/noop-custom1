@@ -16,6 +16,16 @@ final class SetupFlowTests: XCTestCase {
         let name = app.textFields["Your name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap(); name.typeText("Alex Avery")
+        XCTAssertFalse(app.buttons["setupContinue"].isEnabled)
+        let birthday = app.buttons["profileBirthDate"]
+        reveal(birthday, in: app)
+        birthday.tap()
+        XCTAssertTrue(app.buttons["profileBirthDateDone"].waitForExistence(timeout: 5))
+        app.buttons["profileBirthDateDone"].tap()
+        let man = app.buttons["profileGender-man"]
+        reveal(man, in: app); man.tap()
+        let left = app.buttons["profileWrist-left"]
+        reveal(left, in: app); left.tap()
         app.buttons["setupContinue"].tap()
         XCTAssertTrue(app.buttons["setupSearchTracker"].waitForExistence(timeout: 5))
         capture("02-pairing", app)
@@ -30,6 +40,9 @@ final class SetupFlowTests: XCTestCase {
         app.buttons["setupContinue"].tap() // Hardware is absent, so connect later.
         XCTAssertTrue(app.staticTexts["Sync your data."].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["setupSearchTracker"].exists)
+        XCTAssertFalse(app.buttons["setupData-person.crop.circle"].exists)
+        XCTAssertFalse(app.buttons["setupData-heart.fill"].exists)
+        XCTAssertTrue(app.buttons["setupData-square.and.arrow.down"].exists)
         capture("03-sync-and-import", app)
 
         let export = app.buttons["setupData-square.and.arrow.up"]
@@ -37,6 +50,7 @@ final class SetupFlowTests: XCTestCase {
         XCTAssertTrue(export.isHittable)
         export.tap()
         XCTAssertTrue(app.navigationBars["Export Data"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["exportConnectAccount"].exists)
         let json = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "SAVE JSON")).firstMatch
         reveal(json, in: app)
         XCTAssertTrue(json.exists && json.isEnabled, "The profile saved before pairing must be exportable in this same setup.")
@@ -61,6 +75,7 @@ final class SetupFlowTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["setupGetStarted"].waitForExistence(timeout: 15))
         XCTAssertFalse(app.buttons["setupImportFirst"].exists)
+        XCTAssertTrue(app.buttons["setupLanguage-ar"].exists)
         capture("07-arabic-welcome", app)
     }
 
