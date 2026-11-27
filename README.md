@@ -1,3 +1,9 @@
+# Personal setup and Import / Export
+
+[Download the latest unsigned IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/d3f617333be00fd3861e35ec6ce569588b66f3be/WHOOP-unsigned.ipa). Sign and install with Sideloadly. The Apple device build passed; the downloaded IPA checksum and arm64 device package were verified.
+
+Setup now requires your birth date, Man/Woman and wearing wrist, with English/Arabic tabs on Welcome. Data choices are Import and Export; WHOOP account and Apple Health connection entries are removed. Tracker pairing and saved measurements are preserved. [Details and verification](Docs/PERSONAL-SETUP.md). 221 core tests and 13 package-validator tests pass. Physical tracker behavior and the updated simulator interaction flow have not been verified in this revision.
+
 # Automatic tracker analysis
 
 [Download the updated unsigned IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/f5283adae318d0cde9c37200f366812452212306/WHOOP-unsigned.ipa). The Apple device build passed and its download checksum was verified. Sign and install with Sideloadly.
