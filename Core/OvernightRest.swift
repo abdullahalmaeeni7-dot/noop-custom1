@@ -14,7 +14,8 @@ public enum OvernightRest {
         days: [DailySnapshot],
         activities: [ActivityRecord],
         now: Date = Date(),
-        timeZone: TimeZone = .autoupdatingCurrent
+        timeZone: TimeZone = .autoupdatingCurrent,
+        allowTrackerHistory: Bool = false
     ) -> DateInterval? {
         let archive = DayCalendar.utc
         var local = Calendar(identifier: .gregorian)
@@ -54,7 +55,7 @@ public enum OvernightRest {
             for sample in day.heartRates where sample.timestamp >= evening && sample.timestamp <= end {
                 // An unknown-source import is never positive evidence. An overt
                 // contact loss or out-of-range tagged reading splits the run.
-                guard let onBody = sample.trackerContactReading else { continue }
+                guard let onBody = sample.trackerContactReading ?? (allowTrackerHistory && sample.trackerRecorded == true ? true : nil) else { continue }
                 let key = Int(floor(sample.timestamp.timeIntervalSince1970 / 60))
                 let eligible = onBody && restingRange.contains(sample.bpm)
                 if var value = minutes[key] {

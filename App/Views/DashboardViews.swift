@@ -9,8 +9,7 @@ struct HomeView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var tracker: DeviceModel
     @EnvironmentObject private var automaticRecorder: DailyTrackerRecorder
-    @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
-    let openMetric: (ScoreMetric) -> Void
+        let openMetric: (ScoreMetric) -> Void
     let openJournal: () -> Void
     let openActivity: () -> Void
     let openWorkout: () -> Void
@@ -41,7 +40,7 @@ struct HomeView: View {
             }
             if !selectedDayExists(in: store) { setupCard }
             else { dailyHighlight }
-            if showLocalEstimates && day.strainIsLocalEstimate {
+            if day.strainIsLocalEstimate {
                 Text(L10n.text("LOCAL STRAIN ESTIMATE · RECEIVED HEART RATE ONLY")).font(WFont.label(9)).foregroundStyle(WColor.blue)
             }
             if (day.trackerRecording != nil || !day.heartRates.isEmpty) && day.recovery == nil {
@@ -115,6 +114,10 @@ struct HomeView: View {
                     .background(LinearGradient(colors: [Color(red: 0.20, green: 0.17, blue: 0.34), Color(red: 0.12, green: 0.27, blue: 0.31)], startPoint: .leading, endPoint: .trailing), in: RoundedRectangle(cornerRadius: 13))
             }.buttonStyle(.plain)
             tonight
+            if day.estimatedSleepMinutes != nil && day.sleepMinutes == 0 && day.confirmedSleep == nil {
+                Text(L10n.text("Sleep estimated from tracker heart rate. You can edit it in Sleep."))
+                    .font(WFont.body(12)).foregroundStyle(WColor.muted)
+            }
             SleepReviewEntry(wakeDay: day.date, compact: true).id(day.date)
             activities
             journalCard
@@ -278,7 +281,7 @@ struct HomeView: View {
         return strain >= 14 ? "Pushing Limits" : strain >= 10 ? "Building Momentum" : "Finding Your Balance"
     }
     private var highlightText: String {
-        if showLocalEstimates && day.strainIsLocalEstimate { return "Your connected heart-rate readings are being saved automatically. The local Strain estimate covers received readings only." }
+        if day.strainIsLocalEstimate { return "Your connected heart-rate readings are being saved automatically. The local Strain estimate covers received readings only." }
         if let strain = day.strain {
             if strain >= 14 { return "You worked hard today. Your recorded Strain is \(decimalText(strain)). Explore your activities and Recovery to plan what comes next." }
             if strain >= 10 { return "You built up a solid day of activity. Review your Strain and Recovery together as you plan your next session." }

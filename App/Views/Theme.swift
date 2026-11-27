@@ -136,7 +136,7 @@ func decimalText(_ value: Double?, places: Int = 1) -> String {
 
 enum WhoopScoreDisplay {
     static let estimatePreferenceKey = "whoop.showLocalStrainEstimates.v1"
-    static var allowsLocalEstimates: Bool { UserDefaults.standard.bool(forKey: estimatePreferenceKey) }
+    static var allowsLocalEstimates: Bool { true }
 }
 
 enum ScoreMetric: String, CaseIterable, Identifiable {
@@ -153,7 +153,7 @@ enum ScoreMetric: String, CaseIterable, Identifiable {
         switch self {
         case .sleep: return day.sleepPerformance.map(Double.init)
         case .recovery: return day.recovery.map(Double.init)
-        case .strain: return day.strain ?? (WhoopScoreDisplay.allowsLocalEstimates ? day.trackerRecording?.strainEstimate : nil)
+        case .strain: return day.displayedStrain
         }
     }
     func text(_ day: DailySnapshot) -> String {
@@ -191,7 +191,7 @@ struct ScoreRing: View {
                             .animation(reduceMotion ? nil : .easeOut(duration: 0.7), value: metric.value(day))
                         if metric != .strain && metric.value(day) != nil { Text("%").font(WFont.number(37, bold: true)) }
                     }.foregroundStyle(.white).minimumScaleFactor(0.55).lineLimit(1)
-                    Text(L10n.text(metric == .sleep ? "SLEEP\nPERFORMANCE" : metric == .strain ? "DAY STRAIN" : "RECOVERY"))
+                    Text(L10n.text(metric == .sleep ? (day.sleepPerformance == nil && day.displayedSleepMinutes > 0 ? "TIME ASLEEP" : "SLEEP\nPERFORMANCE") : metric == .strain ? "DAY STRAIN" : "RECOVERY"))
                         .font(WFont.label(12)).tracking(AppLanguage.isArabic ? 0 : 1.2).multilineTextAlignment(.center)
                 } else {
                     Text(L10n.text(metric.value(day) == nil ? "NO DATA" : metric.text(day))).font(WFont.number(metric.value(day) == nil ? 12 : 25, bold: true))
@@ -206,6 +206,7 @@ struct ScoreRing: View {
         .accessibilityLabel("\(metric.title), \(metric.text(day))\(day.source == .example ? ", example data" : "")")
     }
     private var number: String {
+        if metric == .sleep, day.sleepPerformance == nil, day.displayedSleepMinutes > 0 { return clockDuration(day.displayedSleepMinutes) }
         guard let value = metric.value(day) else { return "—" }
         return metric == .strain ? decimalText(value) : String(Int(value))
     }

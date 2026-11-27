@@ -5,8 +5,7 @@ import WHOOPCore
 
 struct MetricDetailView: View {
     @EnvironmentObject private var store: AppStore
-    @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
-    @Environment(\.dismiss) private var dismiss
+        @Environment(\.dismiss) private var dismiss
     let metric: ScoreMetric
     var embedded = false
     @State private var showingInformation = false
@@ -36,7 +35,7 @@ struct MetricDetailView: View {
                     ScoreRing(metric: metric, day: day, large: true,
                               comparisonFraction: previous.flatMap { metric.value($0) == nil ? nil : metric.fraction($0) })
                         .padding(.top, 13).padding(.bottom, 5)
-                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : metric == .strain && showLocalEstimates && day.strainIsLocalEstimate ? "LOCAL STRAIN ESTIMATE" : "SAVED MEASUREMENTS"))
+                    Text(L10n.text(day.source == .example ? "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS" : metric == .strain && day.strainIsLocalEstimate ? "LOCAL STRAIN ESTIMATE" : metric == .sleep && day.estimatedSleepMinutes != nil && day.sleepMinutes == 0 && day.confirmedSleep == nil ? "ESTIMATED SLEEP" : "SAVED MEASUREMENTS"))
                         .font(WFont.label(7)).tracking(AppLanguage.isArabic ? 0 : 0.9).foregroundStyle(WColor.muted)
                     if metric == .strain, let recording = day.trackerRecording {
                         WCard {

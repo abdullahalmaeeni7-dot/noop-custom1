@@ -157,7 +157,7 @@
   "EXPLORE NUTRITION": "استكشاف التغذية",
   "Your day starts here": "يومك يبدأ هنا",
   "Connect your tracker to see live heart rate and record workouts. Import saved measurements to add sleep, Recovery and daily Strain to your overview.": "اربط جهاز التتبع لعرض النبض المباشر وتسجيل التمارين. استورد القياسات لإضافة النوم والتعافي والجهد اليومي إلى ملخصك.",
-  "APPLE HEALTH": "صحة آبل",
+  "APPLE HEALTH": "صحّة Apple",
   "WHOOP ACCOUNT": "حساب WHOOP",
   "You can also import a data file in More → Your data.": "يمكنك أيضاً استيراد ملف من المزيد ← بياناتك.",
   "EXAMPLE DATA · NOT PERSONAL MEASUREMENTS": "بيانات تجريبية · ليست قياسات شخصية",
@@ -1223,5 +1223,8 @@
   "EXAMPLE DAY": "يوم توضيحي",
   "Turn camera light off": "إطفاء إضاءة الكاميرا",
   "Turn camera light on": "تشغيل إضاءة الكاميرا",
-  "Tracker storage is full or unavailable. New readings are paused until the buffered data can be saved.": "مساحة تخزين قراءات السوار ممتلئة أو غير متاحة. يتوقف تسجيل قراءات جديدة مؤقتاً حتى يمكن حفظ القراءات المخزّنة مؤقتاً."
+  "Tracker storage is full or unavailable. New readings are paused until the buffered data can be saved.": "مساحة تخزين قراءات السوار ممتلئة أو غير متاحة. يتوقف تسجيل قراءات جديدة مؤقتاً حتى يمكن حفظ القراءات المخزّنة مؤقتاً.",
+  "Strain updates from saved tracker readings.": "يتم تحديث الإجهاد من قراءات السوار المحفوظة.",
+  "Sleep estimated from tracker heart rate. You can edit it in Sleep.": "تم تقدير النوم من نبض القلب المسجل بالسوار. يمكنك تعديله في قسم النوم.",
+  "ESTIMATED SLEEP": "النوم المقدّر"
 }

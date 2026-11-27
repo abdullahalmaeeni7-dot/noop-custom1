@@ -36,7 +36,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
     private var lastHistoryAttempt: (device: UUID, date: Date)?
     var automaticHistoryEnabled: Bool {
         guard let id = active?.identifier else { return false }
-        return UserDefaults.standard.bool(forKey: "whoop.tracker.autoHistory." + id.uuidString)
+        return UserDefaults.standard.object(forKey: "whoop.tracker.autoHistory." + id.uuidString) as? Bool ?? true
     }
 
     func setAutomaticHistory(_ enabled: Bool) {
@@ -438,7 +438,7 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         let received = Date()
         heartRate = bpm
         heartRateReceivedAt = received
-        heartRateSamples.send(HeartRateSample(timestamp: received, bpm: bpm, trackerContactReading: wearState == .onBody ? true : nil))
+        heartRateSamples.send(HeartRateSample(timestamp: received, bpm: bpm, trackerContactReading: wearState == .onBody ? true : nil, trackerRecorded: true))
         let token = UUID(); heartRateToken = token
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self, self.heartRateToken == token, self.active != nil else { return }
@@ -531,6 +531,26 @@ final class DeviceModel: NSObject, ObservableObject, @preconcurrency CBCentralMa
         attemptedAutomaticStream = false
         startingCustomStream = false; canStartCustomStream = false
     }
+    private var restoredArchiveGeneration: UUID?
+
+    func restoreArchivedMeasurements() async {
+        guard let store = historyAppStore, !store.isLoadingSavedData, !store.isImporting, !store.isExampleMode,
+              restoredArchiveGeneration != store.trackerDataGeneration else { return }
+        let generation = store.trackerDataGeneration
+        restoredArchiveGeneration = generation
+        do {
+            let days = try await historyArchive.savedMeasurements()
+            guard store.trackerDataGeneration == generation, !store.isImporting else {
+                restoredArchiveGeneration = nil
+                return
+            }
+            if !days.isEmpty { try store.mergeMeasurements(days, selectToday: false) }
+        } catch {
+            restoredArchiveGeneration = nil
+            historyPreviewError = error.localizedDescription
+        }
+    }
+
     func bindHistory(to store: AppStore) {
         historyAppStore = store; updateCustomAvailability(); refreshHistorySummary()
     }

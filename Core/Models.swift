@@ -30,9 +30,10 @@ public struct HeartRateSample: Codable, Identifiable, Equatable, Sendable {
     public var bpm: Double
     /// Only live tracker samples delivered with positive wrist-contact evidence set this flag.
     public var trackerContactReading: Bool?
+    public var trackerRecorded: Bool?
     public var id: Date { timestamp }
-    public init(timestamp: Date, bpm: Double, trackerContactReading: Bool? = nil) {
-        self.timestamp = timestamp; self.bpm = bpm; self.trackerContactReading = trackerContactReading
+    public init(timestamp: Date, bpm: Double, trackerContactReading: Bool? = nil, trackerRecorded: Bool? = nil) {
+        self.timestamp = timestamp; self.bpm = bpm; self.trackerContactReading = trackerContactReading; self.trackerRecorded = trackerRecorded
     }
 }
 
@@ -44,8 +45,10 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public var sleepMinutes: Int
     public var sleepFromAppleHealth: Bool?
     public var confirmedSleep: ConfirmedSleep?
+    public var estimatedSleepMinutes: Int? = nil
+    public var estimatedTrackerStrain: Double? = nil
     public var usesConfirmedSleep: Bool { sleepMinutes == 0 && confirmedSleep != nil }
-    public var displayedSleepMinutes: Int { sleepMinutes > 0 ? sleepMinutes : confirmedSleep?.minutes ?? 0 }
+    public var displayedSleepMinutes: Int { sleepMinutes > 0 ? sleepMinutes : confirmedSleep?.minutes ?? estimatedSleepMinutes ?? 0 }
     public var sleepNeededMinutes: Int
     public var restingHeartRate: Double?
     public var hrv: Double?
@@ -58,8 +61,8 @@ public struct DailySnapshot: Codable, Identifiable, Equatable, Sendable {
     public var oxygenSaturation: Double?
     public var skinTemperatureCelsius: Double?
     public var sleepBreakdown: SleepBreakdown?
-    public var displayedStrain: Double? { strain ?? trackerRecording?.strainEstimate }
-    public var strainIsLocalEstimate: Bool { strain == nil && trackerRecording?.strainEstimate != nil }
+    public var displayedStrain: Double? { strain ?? estimatedTrackerStrain ?? trackerRecording?.strainEstimate }
+    public var strainIsLocalEstimate: Bool { strain == nil && (estimatedTrackerStrain != nil || trackerRecording?.strainEstimate != nil) }
     public var cycleRecords: [WhoopCycleRecord]?
     public var id: Date { date }
 

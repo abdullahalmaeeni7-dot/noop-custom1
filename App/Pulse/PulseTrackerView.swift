@@ -8,8 +8,7 @@ struct PulseTrackerView: View {
     @EnvironmentObject private var tracker: DeviceModel
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var dailyTracker: DailyTrackerRecorder
-    @AppStorage(WhoopScoreDisplay.estimatePreferenceKey) private var showLocalEstimates = false
-    @AppStorage(DailyTrackerRecorder.restingKey) private var localResting = 55.0
+        @AppStorage(DailyTrackerRecorder.restingKey) private var localResting = 55.0
     @AppStorage(DailyTrackerRecorder.maximumKey) private var localMaximum = 190.0
     @Environment(\.dismiss) private var dismiss
     @State private var advanced = false
@@ -38,7 +37,7 @@ struct PulseTrackerView: View {
                         TrackerConnectionPanel()
                         TrackerSyncPanel()
                         Button { sleepSettings = true } label: {
-                            Label(L10n.text("AUTOMATIC SLEEP"), systemImage: "moon.fill")
+                            Label(L10n.text("APPLE HEALTH"), systemImage: "moon.fill")
                                 .frame(maxWidth: .infinity)
                         }.buttonStyle(WButton(filled: false))
                         Button { exporting = true } label: {
@@ -95,7 +94,7 @@ struct PulseTrackerView: View {
                     Text(L10n.text("Received readings") + ": " + recording.sampleCount.formatted()).font(PulseFont.body(15))
                     Text(L10n.text("Counted minutes") + ": " + (recording.observedSeconds / 60).formatted(.number.precision(.fractionLength(1)))).font(PulseFont.body(13))
                     Text(L10n.text("Last saved") + ": " + recording.lastSampleAt.formatted(date: .omitted, time: .standard)).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)
-                    if showLocalEstimates {
+                    if WhoopScoreDisplay.allowsLocalEstimates {
                         Text(L10n.text("LOCAL STRAIN ESTIMATE") + ": " + decimalText(recording.strainEstimate)).font(PulseFont.body(15))
                     }
                 } else {
@@ -108,8 +107,8 @@ struct PulseTrackerView: View {
                 Button(L10n.text("VIEW TODAY’S TRACKING")) {
                     store.selectedDate = DashboardDatePolicy.today(); store.tab = .home; dismiss()
                 }.frame(minHeight: 44)
-                Toggle(L10n.text("Show local Strain estimates"), isOn: $showLocalEstimates).frame(minHeight: 44)
-                if showLocalEstimates {
+                Text(L10n.text("Strain updates from saved tracker readings.")).font(PulseFont.body(13))
+                if WhoopScoreDisplay.allowsLocalEstimates {
                     Stepper(value: $localResting, in: 30...110) { Text(L10n.text("Resting HR") + ": " + Int(localResting).formatted()) }
                     Stepper(value: $localMaximum, in: 120...230) { Text(L10n.text("Maximum HR") + ": " + Int(localMaximum).formatted()) }
                     Text(L10n.text("Set your known heart-rate limits. Defaults are 55 and 190 BPM; they are assumptions, not measured baselines. Changes apply to new readings.")).font(PulseFont.body(12)).foregroundStyle(PulseColor.muted)

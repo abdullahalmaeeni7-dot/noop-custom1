@@ -72,18 +72,36 @@ public actor DeviceHistoryArchiveStore {
         }
         let meta = Self.summarize(batch, measurements: measurements)
         try Self.durableWrite(encoder.encode(meta), to: manifest)
+        return DeviceHistorySave(receipt: WhoopHistorySavedReceipt(batch), days: Self.snapshots(measurements), summary: try summary())
+    }
+
+    /// Rebuild projections from already saved raw batches after installing an update.
+    public func savedMeasurements(now: Date = Date()) throws -> [DailySnapshot] {
+        guard FileManager.default.fileExists(atPath: directory.path) else { return [] }
+        var measurements: [WhoopHistoricalMeasurement] = []
+        for file in try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            where file.lastPathComponent.hasSuffix(".history.json") {
+            let envelope = try ImportReader.jsonDecoder().decode(Envelope.self, from: Data(contentsOf: file))
+            guard envelope.format == "WHOOP_DEVICE_HISTORY", envelope.version == 1 else { throw DeviceHistoryArchiveError.invalidBatch }
+            measurements += envelope.batch.measurements.filter {
+                $0.timestamp >= now.addingTimeInterval(-8 * 86_400) && $0.timestamp <= now
+            }
+        }
+        return Self.snapshots(measurements)
+    }
+
+    private static func snapshots(_ measurements: [WhoopHistoricalMeasurement]) -> [DailySnapshot] {
         var days: [Date: [Int64: HeartRateSample]] = [:]
         for measurement in measurements {
             guard let bpm = measurement.heartRate else { continue }
-            let sample = HeartRateSample(timestamp: measurement.timestamp, bpm: bpm)
+            let sample = HeartRateSample(timestamp: measurement.timestamp, bpm: bpm, trackerRecorded: true)
             days[DayCalendar.start(of: sample.timestamp), default: [:]][Int64(sample.timestamp.timeIntervalSince1970 / 60)] = sample
         }
-        let snapshots = days.keys.sorted().map { date -> DailySnapshot in
+        return days.keys.sorted().map { date in
             var day = DailySnapshot.empty(on: date)
             day.heartRates = days[date]!.values.sorted { $0.timestamp < $1.timestamp }
             return day
         }
-        return DeviceHistorySave(receipt: WhoopHistorySavedReceipt(batch), days: snapshots, summary: try summary())
     }
     public func summary() throws -> DeviceHistoryArchiveSummary {
         guard FileManager.default.fileExists(atPath: directory.path) else { return .init() }

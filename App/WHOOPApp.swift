@@ -51,9 +51,9 @@ struct WHOOPApp: App {
                 .environmentObject(health).environmentObject(nutrition)
                 .task { liveActivity.bind(recorder) }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase != .active { dailyTracker.flush() } else { store.refreshCurrentDay(); tracker.reconnectSavedDevice(); tracker.syncStoredReadingsIfDue() }
+                    if phase != .active { dailyTracker.flush() } else { store.refreshCurrentDay(); store.refreshTrackerAnalysis(); tracker.reconnectSavedDevice(); tracker.syncStoredReadingsIfDue() }
                 }
-                .modifier(AutomaticHealthSync(store: store, health: health, account: account))
+                .modifier(AutomaticHealthSync(tracker: tracker, store: store, health: health, account: account))
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in store.refreshCurrentDay() }
                 .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { date in store.refreshCurrentDay(now: date); tracker.syncStoredReadingsIfDue() }
                 .environment(\.locale, AppLanguage.current.locale)
@@ -67,6 +67,7 @@ struct WHOOPApp: App {
 /// Observe readiness directly: a restored Bluetooth/HealthKit launch can load
 /// the store before or after the first active scene appears.
 private struct AutomaticHealthSync: ViewModifier {
+    @ObservedObject var tracker: DeviceModel
     @ObservedObject var store: AppStore
     @ObservedObject var health: HealthDataModel
     @ObservedObject var account: AccountModel
@@ -75,6 +76,7 @@ private struct AutomaticHealthSync: ViewModifier {
     func body(content: Content) -> some View {
         let ready = phase == .active && !store.isLoadingSavedData && !store.isImporting
         return content
+            .task(id: ready) { if ready { await tracker.restoreArchivedMeasurements() } }
             .task(id: ready && health.automaticSleepEnabled) {
                 if ready && health.automaticSleepEnabled { await health.resumeSleepSync(store: store) }
             }

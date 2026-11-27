@@ -28,12 +28,15 @@ final class AppStore: ObservableObject {
     private(set) var trackerDataGeneration = UUID()
     @Published var selectedDate: Date
     @Published private(set) var days: [DailySnapshot] {
-        didSet { dayIndex = days.enumerated().reduce(into: [:]) { $0[DayCalendar.start(of: $1.element.date)] = $1.offset } }
+        didSet { dayIndex = days.enumerated().reduce(into: [:]) { $0[DayCalendar.start(of: $1.element.date)] = $1.offset }; refreshTrackerAnalysis() }
     }
     private var dayIndex: [Date: Int] = [:]
     private var lastKnownToday = DashboardDatePolicy.today()
     @Published private(set) var isLoadingSavedData = false
-    @Published private(set) var activities: [ActivityRecord]
+    @Published private(set) var activities: [ActivityRecord] { didSet { refreshTrackerAnalysis() } }
+    @Published private var trackerAnalysis: [Date: TrackerDayAnalysis] = [:]
+    private var analysisTask: Task<Void, Never>?
+    private var analysisGeneration = UUID()
     @Published private(set) var nutrition = NutritionData()
     @Published private(set) var profile = ProfilePersonalization()
     @Published private(set) var whoopAccountUserID: Int64?
@@ -101,6 +104,7 @@ final class AppStore: ObservableObject {
             nutrition = state.nutrition ?? NutritionData(); profile = (try? (state.profile ?? ProfilePersonalization()).validated()) ?? ProfilePersonalization()
         }
         storageWritable = restored.writable; persistenceError = restored.error; isLoadingSavedData = false
+        refreshTrackerAnalysis()
     }
 
     /// A Bluetooth restoration launch can precede the first unlock after reboot.
@@ -113,11 +117,34 @@ final class AppStore: ObservableObject {
 
     var isExampleMode: Bool { !days.isEmpty && days.allSatisfy { $0.source == .example } }
     var selectedDay: DailySnapshot {
-        dayIndex[Self.utc.startOfDay(for: selectedDate)].map { days[$0] } ??
+        var day = dayIndex[Self.utc.startOfDay(for: selectedDate)].map { days[$0] } ??
         DailySnapshot(date: Self.utc.startOfDay(for: selectedDate), recovery: nil, strain: nil,
                       sleepPerformance: nil, sleepMinutes: 0, sleepNeededMinutes: 0,
                       restingHeartRate: nil, hrv: nil, respiratoryRate: nil, steps: 0,
                       energyKcal: 0, heartRates: [], source: .imported)
+        day.estimatedSleepMinutes = trackerAnalysis[day.date]?.sleepMinutes
+        day.estimatedTrackerStrain = trackerAnalysis[day.date]?.strain
+        return day
+    }
+
+    func refreshTrackerAnalysis() {
+        guard !isLoadingSavedData else { return }
+        analysisTask?.cancel()
+        let generation = UUID()
+        analysisGeneration = generation
+        let recordedDays = days
+        let recordedActivities = activities
+        let savedResting = UserDefaults.standard.double(forKey: DailyTrackerRecorder.restingKey)
+        let savedMaximum = UserDefaults.standard.double(forKey: DailyTrackerRecorder.maximumKey)
+        let resting = (30...110).contains(savedResting) ? savedResting : 55
+        let maximum = (120...230).contains(savedMaximum) ? savedMaximum : 190
+        analysisTask = Task {
+            let analysis = await Task.detached(priority: .utility) {
+                TrackerAnalysis.calculate(days: recordedDays, activities: recordedActivities, resting: resting, maximum: maximum)
+            }.value
+            guard !Task.isCancelled, analysisGeneration == generation else { return }
+            trackerAnalysis = analysis
+        }
     }
     func hasJournal(on date: Date) -> Bool { journal.contains { Self.utc.isDate($0.date, inSameDayAs: date) } }
     var currentJournal: JournalEntry {
