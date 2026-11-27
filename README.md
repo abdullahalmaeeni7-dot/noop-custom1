@@ -1,5 +1,7 @@
 # Automatic tracker analysis
 
+[Download the updated unsigned IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/f5283adae318d0cde9c37200f366812452212306/WHOOP-unsigned.ipa). The Apple device build passed and its download checksum was verified. Sign and install with Sideloadly.
+
 Pairing now starts supported history sync. Home derives strain and estimated sleep from saved tracker readings automatically. [Behavior and verification](Docs/AUTOMATIC-TRACKER-ANALYSIS.md)
 
 # Tracker updates

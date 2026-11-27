@@ -502,12 +502,17 @@
     }
   },
   "automatic_tracker_analysis": {
-    "core_tests_passed": 217,
+    "core_tests_passed": 218,
     "failures": 0,
-    "source": "c52f3f723313e739ad23d14f6c126ace0ca7259f",
+    "source": "f5283adae318d0cde9c37200f366812452212306",
     "physical_tracker_test": false,
     "official_score_equivalence": false,
     "default_history_sync": true,
-    "native_build": "pending"
+    "native_build": "passed",
+    "build_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/46036024364",
+    "ipa_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/f5283adae318d0cde9c37200f366812452212306/WHOOP-unsigned.ipa",
+    "sha256": "5a7a4a6ddb189424a412a478ea6fe52d06ddcd5bd7880e53aa27a4eee6d74e16",
+    "bytes": 5623648,
+    "download_verified": true
   }
 }
