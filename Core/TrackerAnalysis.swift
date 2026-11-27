@@ -13,7 +13,7 @@ public enum TrackerAnalysis {
         let personal = days.filter { $0.source != .example }
         let readings = personal.flatMap(\.heartRates).filter {
             ($0.trackerRecorded == true || $0.trackerContactReading != nil) &&
-            $0.trackerContactReading != false && $0.timestamp <= now &&
+            $0.timestamp <= now &&
             $0.bpm.isFinite && (25...230).contains($0.bpm)
         }
         let localDays = Dictionary(grouping: readings) { DashboardDatePolicy.today(now: $0.timestamp, timeZone: timeZone) }
@@ -26,7 +26,8 @@ public enum TrackerAnalysis {
             var coverage = 0.0
             for (before, after) in zip(sorted, sorted.dropFirst()) {
                 let elapsed = after.timestamp.timeIntervalSince(before.timestamp)
-                guard elapsed > 0, elapsed <= 90,
+                guard before.trackerContactReading != false, after.trackerContactReading != false,
+                      elapsed > 0, elapsed <= 90,
                       let reserve = try? StrainCalculator.reserve(heartRate: (before.bpm + after.bpm) / 2,
                                                                   restingHeartRate: resting, maximumHeartRate: maximum),
                       let load = try? StrainCalculator.weightedContribution(reserve: reserve, durationSeconds: elapsed) else { continue }
@@ -46,7 +47,7 @@ public enum TrackerAnalysis {
                   now.timeIntervalSince(interval.end) >= 30 * 60 else { continue }
             // Require subsequent samples to show the band continued recording.
             // A lost Bluetooth connection alone is not evidence of waking up.
-            guard readings.contains(where: { $0.timestamp > interval.end && $0.timestamp <= interval.end.addingTimeInterval(30 * 60) }) else { continue }
+            guard readings.contains(where: { $0.trackerContactReading != false && $0.timestamp > interval.end && $0.timestamp <= interval.end.addingTimeInterval(30 * 60) }) else { continue }
             var day = results[wakeDay] ?? TrackerDayAnalysis()
             day.sleepMinutes = Int(interval.duration / 60)
             results[wakeDay] = day

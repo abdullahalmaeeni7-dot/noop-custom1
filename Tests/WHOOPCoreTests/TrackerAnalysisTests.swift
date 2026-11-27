@@ -42,6 +42,13 @@ final class TrackerAnalysisTests: XCTestCase {
         XCTAssertEqual(day.displayedStrain, 12)
     }
 
+    func testOffBodyReadingBreaksIntegration() {
+        var day = DailySnapshot.empty(on: start)
+        day.heartRates = (0...4).map { HeartRateSample(timestamp: start.addingTimeInterval(Double($0) * 30), bpm: 170, trackerContactReading: $0 % 2 == 0, trackerRecorded: true) }
+        let result = TrackerAnalysis.calculate(days: [day], activities: [], now: start.addingTimeInterval(600), timeZone: utc)
+        XCTAssertNil(result.values.first?.strain)
+    }
+
     func testLocalDayAndExampleExclusion() {
         let dubai = TimeZone(identifier: "Asia/Dubai")!
         let sampleTime = DayCalendar.start(of: start).addingTimeInterval(22 * 3600)
