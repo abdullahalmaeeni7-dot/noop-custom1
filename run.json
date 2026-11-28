@@ -1,0 +1,25 @@
+{
+  "source": "dbb0a6a1a9dfa1efbeb88de35f3489aeb23eb28c",
+  "run": "46154953218",
+  "capture_outcome": "failure",
+  "images": [
+    "flow-08.png",
+    "flow-09.png",
+    "01-first-launch-en.png",
+    "02-home-ar.png",
+    "01-first-launch-ar.png",
+    "02-home-en.png",
+    "flow-15.png",
+    "flow-01.png",
+    "flow-02.png",
+    "flow-16.png",
+    "flow-17.png",
+    "flow-03.png",
+    "flow-07.png",
+    "flow-12.png",
+    "flow-10.png",
+    "flow-04.png",
+    "flow-05.png",
+    "flow-11.png"
+  ]
+}
