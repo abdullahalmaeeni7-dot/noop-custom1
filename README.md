@@ -1,3 +1,9 @@
+# Tracker icon and chart
+
+[Download the updated unsigned IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/dbb0a6a1a9dfa1efbeb88de35f3489aeb23eb28c/WHOOP-unsigned.ipa). Sign and install with Sideloadly. The Apple device build passed and the published download checksum and device package were verified.
+
+The top-right Home button now uses a screenless strap outline and consistently opens Device Settings. That screen includes a chart of received tracker heart-rate readings, with visible gaps and no example data. 225 core tests pass. Physical-band behavior and exact visual parity remain unverified. [Changes and checks](Docs/TRACKER-STATUS.md).
+
 # Personal setup and Import / Export
 
 [Download the latest unsigned IPA](https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/d3f617333be00fd3861e35ec6ce569588b66f3be/WHOOP-unsigned.ipa). Sign and install with Sideloadly. The Apple device build passed; the downloaded IPA checksum and arm64 device package were verified.

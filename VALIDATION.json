@@ -1,6 +1,6 @@
 {
   "scope": "Live editor and shared export geometry, colored Recovery calendar, Today browsing after imports, richer real sleep/health fields and APK-sourced motion; existing setup, tracker archive and app features preserved",
-  "checked_at": "2026-11-27",
+  "checked_at": "2026-11-28",
   "entry": "First launch \u2192 Get Started \u2192 Profile \u2192 Tracker \u2192 Sync/import/export \u2192 Home; More \u2192 Welcome & tracker setup to reopen",
   "portable_core": {
     "tests_passed": 213,
@@ -70,6 +70,10 @@
     "profile-package-tests.log": {
       "path": "Validation/profile-package-tests.log",
       "sha256": "47082bc8d7a84c93328e0ff68f9307e44035c28fbf4e4a352292feab40814bb0"
+    },
+    "tracker-status-tests.log": {
+      "path": "Validation/tracker-status-tests.log",
+      "sha256": "8fcea4d93d31cd970474c89115a0aa9e2be7cc2ca31c5d6bc32cf2fde1c7502f"
     }
   },
   "changed_source_sha256": {
@@ -549,5 +553,18 @@
     "ipa_sha256": "0c68e10f2d0a5ab8a759977d244c31a5ca0baa70c239b032502629013171d2d1",
     "ipa_bytes": 5532529,
     "ipa_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/d3f617333be00fd3861e35ec6ce569588b66f3be/WHOOP-unsigned.ipa"
+  },
+  "tracker_status_revision": {
+    "source_commit": "dbb0a6a1a9dfa1efbeb88de35f3489aeb23eb28c",
+    "core_tests_passed": 225,
+    "swift_frontend_syntax": "passed",
+    "native_device_build": "passed",
+    "native_ui_tests": "not yet verified",
+    "physical_tracker": "not tested",
+    "run_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/actions/runs/46154953239",
+    "device_package_validation": "passed",
+    "ipa_sha256": "a99c25a294e009efdacba8daa267970a60bf6542df6dfaac51501bc54a150e9c",
+    "ipa_bytes": 5566590,
+    "ipa_url": "https://github.com/abdullahalmaeeni7-dot/noop-custom1/raw/refs/heads/device-download/dbb0a6a1a9dfa1efbeb88de35f3489aeb23eb28c/WHOOP-unsigned.ipa"
   }
 }
