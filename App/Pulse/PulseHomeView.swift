@@ -97,10 +97,9 @@ struct PulseHomeView: View {
             Button { showingTracker = true } label: {
                 HStack(spacing: 4) {
                     if tracker.connectedName == nil { Text("\(data.battery)%").font(PulseFont.compact(12)).foregroundStyle(PulseColor.muted) }
-                    Image(systemName: "applewatch").font(.system(size: 24, weight: .light))
-                        .overlay(alignment: .topTrailing) { Circle().fill(tracker.connectedName == nil ? PulseColor.muted : PulseColor.mint).frame(width: 5, height: 5) }
+                    TrackerStatusIcon(connected: tracker.connectedName != nil, offBody: tracker.wearState == .offBody)
                 }.frame(minWidth: 61, minHeight: 44)
-            }.buttonStyle(PulsePressStyle()).accessibilityLabel(tracker.connectedName == nil ? "Connect tracker. Reference battery is sample data." : "Connected tracker. Open real device status.")
+            }.buttonStyle(PulsePressStyle()).accessibilityLabel(L10n.text("Open tracker status")).accessibilityIdentifier("homeTracker")
             }
             PulseDayStrip(index: $index, days: data.days)
         }.padding(.horizontal, 18).frame(height: 43)

@@ -246,12 +246,12 @@ struct RootView: View {
                     }.frame(minHeight: 44)
                 }.buttonStyle(.plain).frame(width: 92, alignment: .leading).accessibilityLabel(L10n.text("Profile, \(streak) day streak"))
                 Spacer(minLength: 145)
-                Button { sheet = recorder.isRecording ? .workout : .device } label: {
-                    ZStack(alignment: .topTrailing) {
-                        Image(systemName: recorder.isRecording ? "record.circle" : "applewatch").font(.system(size: 25, weight: .light)).foregroundStyle(.white)
-                        Circle().fill(recorder.isRecording ? .red : device.connectedName == nil ? WColor.muted : (device.wearState == .offBody ? WColor.yellow : PulseColor.mint)).frame(width: 6, height: 6)
-                    }.frame(width: 44, height: 44)
-                }.accessibilityLabel(recorder.isRecording ? "Return to recording" : device.connectedName == nil ? "Connect your tracker" : "View connected tracker").accessibilityIdentifier("homeTracker")
+                Button { sheet = .device } label: {
+                    TrackerStatusIcon(connected: device.connectedName != nil, offBody: device.wearState == .offBody)
+                        .frame(width: 44, height: 44).contentShape(Rectangle())
+                }.buttonStyle(.plain)
+                    .accessibilityLabel(L10n.text("Open tracker status"))
+                    .accessibilityIdentifier("homeTracker")
             }
             }
         }.frame(height: 44).padding(.horizontal, 18)

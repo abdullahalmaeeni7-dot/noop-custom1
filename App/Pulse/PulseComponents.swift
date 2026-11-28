@@ -274,3 +274,35 @@ struct PulseHomeTabShape: Shape {
         }.applying(CGAffineTransform(scaleX: scale, y: scale))
     }
 }
+
+/// Screenless band outline in the reference header's 24-by-32 coordinate space.
+struct TrackerBandSymbol: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: 18, y: 2))
+        path.addLine(to: CGPoint(x: 10, y: 2))
+        path.addCurve(to: CGPoint(x: 4, y: 27), control1: CGPoint(x: 4, y: 6), control2: CGPoint(x: 2, y: 19))
+        path.addQuadCurve(to: CGPoint(x: 9, y: 30), control: CGPoint(x: 5, y: 30))
+        path.addLine(to: CGPoint(x: 17, y: 30))
+        path.addCurve(to: CGPoint(x: 21, y: 17), control1: CGPoint(x: 20, y: 27), control2: CGPoint(x: 21, y: 22))
+        path.move(to: CGPoint(x: 18, y: 2))
+        path.addCurve(to: CGPoint(x: 14, y: 27), control1: CGPoint(x: 12, y: 9), control2: CGPoint(x: 12, y: 22))
+        path.move(to: CGPoint(x: 5, y: 23))
+        path.addLine(to: CGPoint(x: 11, y: 23))
+        return path.applying(CGAffineTransform(scaleX: rect.width / 24, y: rect.height / 32)
+            .concatenating(CGAffineTransform(translationX: rect.minX, y: rect.minY)))
+    }
+}
+
+struct TrackerStatusIcon: View {
+    let connected: Bool
+    var offBody = false
+    var body: some View {
+        TrackerBandSymbol().stroke(.white, style: StrokeStyle(lineWidth: 1.2, lineCap: .round, lineJoin: .round))
+            .frame(width: 23, height: 30)
+            .overlay(alignment: .topTrailing) {
+                Circle().fill(connected ? (offBody ? PulseColor.yellow : PulseColor.mint) : PulseColor.muted)
+                    .frame(width: 6, height: 6).offset(x: 1, y: 3)
+            }.accessibilityHidden(true)
+    }
+}

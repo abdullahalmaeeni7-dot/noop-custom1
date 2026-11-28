@@ -1251,5 +1251,11 @@
   "Import a ZIP, CSV or JSON file to add your recorded measurements.": "استورد ملف ZIP أو CSV أو JSON لإضافة قياساتك المسجلة.",
   "Only your saved imports and tracker measurements are exported. Example data is excluded.": "يتم تصدير بياناتك المستوردة وقياسات السوار المحفوظة فقط. لا يتم تضمين البيانات التجريبية.",
   "No saved measurements in this range. Import a data file or choose another range.": "لا توجد قياسات محفوظة في هذه الفترة. استورد ملف بيانات أو اختر فترة أخرى.",
-  "Live heart rate is saved automatically. Stored tracker packets can be downloaded and exported. Local estimates are calculations, not WHOOP scores. Import your recorded Recovery, Sleep and Strain scores from a data file.": "يُحفظ معدل نبض القلب المباشر تلقائيًا. يمكن تنزيل بيانات السوار وتصديرها. التقديرات المحلية هي حسابات وليست درجات WHOOP. استورد درجات التعافي والنوم والإجهاد المسجلة من ملف بيانات."
+  "Live heart rate is saved automatically. Stored tracker packets can be downloaded and exported. Local estimates are calculations, not WHOOP scores. Import your recorded Recovery, Sleep and Strain scores from a data file.": "يُحفظ معدل نبض القلب المباشر تلقائيًا. يمكن تنزيل بيانات السوار وتصديرها. التقديرات المحلية هي حسابات وليست درجات WHOOP. استورد درجات التعافي والنوم والإجهاد المسجلة من ملف بيانات.",
+  "Open tracker status": "فتح حالة السوار",
+  "LAST 24 HOURS": "آخر ٢٤ ساعة",
+  "Tracker disconnected": "السوار غير متصل",
+  "Waiting for a fresh reading": "بانتظار قراءة جديدة",
+  "No tracker readings received in the last 24 hours.": "لم تُستلم قراءات من السوار خلال آخر ٢٤ ساعة.",
+  "Recorded tracker heart rate over the last 24 hours": "معدل نبض القلب المسجل من السوار خلال آخر ٢٤ ساعة"
 }

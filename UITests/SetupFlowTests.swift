@@ -61,6 +61,8 @@ final class SetupFlowTests: XCTestCase {
         capture("05-personal-home", app)
         app.buttons["homeTracker"].tap()
         XCTAssertTrue(app.navigationBars["DEVICE SETTINGS"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["trackerHeartRatePanel"].exists || app.otherElements["trackerChartEmpty"].exists)
+        XCTAssertFalse(app.otherElements["trackerHeartRateChart"].exists, "An unpaired simulator must not fabricate a tracker chart.")
         XCTAssertTrue(app.buttons["setupSearchTracker"].exists)
         XCTAssertFalse(app.staticTexts["CONNECTION DETAILS"].exists)
         capture("06-device-status", app)

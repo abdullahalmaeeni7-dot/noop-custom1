@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 import WHOOPCore
 import UIKit
 
@@ -33,6 +34,7 @@ struct PulseTrackerView: View {
                             Button(L10n.text("DISCONNECT")) { tracker.disconnect() }.buttonStyle(WButton(filled: false))
                         }
                     } else {
+                        TrackerHeartRatePanel()
                         TrackerConnectionPanel()
                         TrackerSyncPanel()
                         Button { exporting = true } label: {
@@ -285,4 +287,69 @@ struct TrackerBandArtwork: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
+}
+
+
+struct TrackerHeartRatePanel: View {
+    @EnvironmentObject private var tracker: DeviceModel
+    @EnvironmentObject private var store: AppStore
+    @State private var latest: HeartRateSample?
+    @State private var points: [TrackerChartPoint] = []
+
+    var body: some View {
+        PulseCard {
+            HStack {
+                Text(L10n.text("HEART RATE")).font(PulseFont.label(12))
+                Spacer()
+                Text(L10n.text("LAST 24 HOURS")).font(PulseFont.label(10)).foregroundStyle(PulseColor.muted)
+            }
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let evidence = TrackerConnectionEvidence(connected: tracker.connectedName != nil,
+                    connecting: tracker.isConnecting, heartRate: tracker.heartRate,
+                    receivedAt: tracker.heartRateReceivedAt, now: context.date)
+                if let bpm = evidence.liveHeartRate, tracker.wearState != .offBody {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(decimalText(bpm, places: 0)).font(PulseFont.number(38)).monospacedDigit()
+                        Text(L10n.text("BPM")).font(PulseFont.label(11))
+                        Spacer()
+                        Text(L10n.text("LIVE")).font(PulseFont.label(10)).foregroundStyle(PulseColor.mint)
+                    }
+                } else {
+                    Text(L10n.text(tracker.wearState == .offBody ? "Tracker off body" : tracker.connectedName == nil ? "Tracker disconnected" : "Waiting for a fresh reading"))
+                        .font(PulseFont.body(14)).foregroundStyle(PulseColor.muted)
+                }
+            }
+            if points.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "waveform.path.ecg").font(.system(size: 30)).foregroundStyle(PulseColor.load)
+                    Text(L10n.text("No tracker readings received in the last 24 hours."))
+                        .font(PulseFont.body(14)).multilineTextAlignment(.center)
+                }.frame(maxWidth: .infinity, minHeight: 130).accessibilityIdentifier("trackerChartEmpty")
+            } else {
+                Chart(points) { point in
+                    LineMark(x: .value("Time", point.timestamp), y: .value("BPM", point.bpm),
+                             series: .value("Recorded interval", point.segment))
+                        .foregroundStyle(PulseColor.load).lineStyle(StrokeStyle(lineWidth: 2))
+                    PointMark(x: .value("Time", point.timestamp), y: .value("BPM", point.bpm))
+                        .foregroundStyle(PulseColor.load).symbolSize(8)
+                }
+                .chartYScale(domain: max(0, (points.map(\.bpm).min() ?? 40) - 10)...((points.map(\.bpm).max() ?? 100) + 10))
+                .chartXAxis { AxisMarks(values: .automatic(desiredCount: 3)) { _ in AxisValueLabel(format: .dateTime.hour().minute()) } }
+                .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) }
+                .frame(height: 160).accessibilityLabel(L10n.text("Recorded tracker heart rate over the last 24 hours"))
+                .accessibilityIdentifier("trackerHeartRateChart")
+            }
+        }.accessibilityIdentifier("trackerHeartRatePanel")
+            .onAppear {
+                if let bpm = tracker.heartRate, let timestamp = tracker.heartRateReceivedAt {
+                    latest = HeartRateSample(timestamp: timestamp, bpm: bpm, trackerRecorded: true)
+                }
+                refresh()
+            }
+            .onReceive(tracker.heartRateSamples) { latest = $0; refresh() }
+            .onChange(of: store.days) { _, _ in refresh() }
+            .onChange(of: store.trackerDataGeneration) { _, _ in latest = nil; refresh() }
+            .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in refresh() }
+    }
+    private func refresh() { points = TrackerChartData.points(days: store.days, live: latest, now: Date()) }
 }

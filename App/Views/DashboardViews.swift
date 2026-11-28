@@ -134,7 +134,11 @@ struct HomeView: View {
                         Image(systemName: "chevron.forward").foregroundStyle(WColor.muted)
                     }
                     HStack(spacing: 8) {
-                        Image(systemName: symbol).font(.system(size: 18, weight: .light)).foregroundStyle(tint)
+                        if symbol == "trackerBand" {
+                            TrackerBandSymbol().stroke(tint, style: StrokeStyle(lineWidth: 1.2, lineCap: .round)).frame(width: 18, height: 24)
+                        } else {
+                            Image(systemName: symbol).font(.system(size: 18, weight: .light)).foregroundStyle(tint)
+                        }
                         Text(L10n.text(detail)).font(WFont.body(12)).foregroundStyle(WColor.muted)
                     }
                 }.frame(minHeight: 58)
@@ -188,7 +192,7 @@ struct HomeView: View {
     private var discover: some View {
         VStack(alignment: .leading, spacing: 15) {
             Text(L10n.text("Discover More")).font(WFont.body(20).weight(.semibold))
-            monitor("YOUR CONNECTED TRACKER", detail: "Find a sensor, check its status and record your next session.", symbol: "applewatch", tint: WColor.blue, action: openDevice)
+            monitor("YOUR CONNECTED TRACKER", detail: "Find a sensor, check its status and record your next session.", symbol: "trackerBand", tint: WColor.blue, action: openDevice)
             monitor("IMPORT", detail: "Add measurements from your data file.", symbol: "square.and.arrow.down", tint: PulseColor.mint, action: importData)
             monitor("EXPORT", detail: "Save your measurements to Files.", symbol: "square.and.arrow.up", tint: WColor.sleep, action: exportData)
         }
