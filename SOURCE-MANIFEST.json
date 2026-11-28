@@ -118,8 +118,8 @@
     },
     {
       "path": "App/Pulse/PulseComponents.swift",
-      "bytes": 15461,
-      "sha256": "676b41ddeb529dc744fa4bfd95ea2eaed51b7500af1c2feff6c66ebdc6f0a499"
+      "bytes": 17066,
+      "sha256": "b90f04fcced2e7c59aec4edd1e39832997408618c0f3096c89316b4bd7759f25"
     },
     {
       "path": "App/Pulse/PulseHomeCards.swift",
@@ -143,13 +143,13 @@
     },
     {
       "path": "App/Pulse/PulseHomeView.swift",
-      "bytes": 22962,
-      "sha256": "4a7697a7770f5c171d2de70b8f712015741aa3a8d15a901b5a0fce29b1b05150"
+      "bytes": 22759,
+      "sha256": "6dfc3ab41a75f7da98185642e8e9fb023a0e6d8298d4ee667db0c6c7666b62b5"
     },
     {
       "path": "App/Pulse/PulseTrackerView.swift",
-      "bytes": 19798,
-      "sha256": "306ed3410866b505dc4d71917594c93b267e8aa52d412aa08c19a26837708a11"
+      "bytes": 23857,
+      "sha256": "bcbc9c6992ed3e39552e6f43b23f28e8961948cb4d8b92d00dad003c0e4eb1cb"
     },
     {
       "path": "App/Resources/BrandColors.xcassets/Contents.json",
@@ -308,8 +308,8 @@
     },
     {
       "path": "App/Views/DashboardViews.swift",
-      "bytes": 45634,
-      "sha256": "bf3727dfccbfd1a305f76ffcf783f1d5883111cfaa03d1b021ed73b37519963b"
+      "bytes": 45894,
+      "sha256": "f88d5109ade03255facfe4fd994ee9b4a569dcf3a9ab538dcd8d78130147351d"
     },
     {
       "path": "App/Views/DetailViews.swift",
@@ -368,8 +368,8 @@
     },
     {
       "path": "App/Views/RootView.swift",
-      "bytes": 29940,
-      "sha256": "d03cadd253d3f599ff6d73e3fdadf57111ee432d02cff316aa133225f02a4526"
+      "bytes": 29599,
+      "sha256": "8663c6dc50511eebe31abac65992ad2d6773d20f4c3c7e0db3c43e4075c5d720"
     },
     {
       "path": "App/Views/SecondaryViews.swift",
@@ -508,8 +508,8 @@
     },
     {
       "path": "Core/Resources/arabic.json",
-      "bytes": 136549,
-      "sha256": "ee9a7678144d739eebc843e4d9aa4d5184d655077b56b8799b1d9d2fec3c9163"
+      "bytes": 137066,
+      "sha256": "a8f3bfa05df7daefd810e885a822ae42068fcbb254fb82b99aced027ead3c4ea"
     },
     {
       "path": "Core/Resources/strain-lookup.json",
@@ -540,6 +540,11 @@
       "path": "Core/TrackerAnalysis.swift",
       "bytes": 3445,
       "sha256": "062c7fc20018f0fd2c7541f0cbf1f41e01856116e186903b94b9849ffb7498d8"
+    },
+    {
+      "path": "Core/TrackerChartData.swift",
+      "bytes": 1646,
+      "sha256": "63542a8f590d9381eb5e331a097914ba0ad2cbd0604c76fd62d170f3509688ea"
     },
     {
       "path": "Core/TrackerConnectionEvidence.swift",
@@ -797,6 +802,11 @@
       "sha256": "cc5c8eb0c804b2b56c3f71ea2944d2056947eac3688e495d536885a6330c0c2b"
     },
     {
+      "path": "Docs/TRACKER-STATUS.md",
+      "bytes": 2283,
+      "sha256": "7b28148f1677cc86f91f896bf3440978926114cc236492b8756499453c5a2b6a"
+    },
+    {
       "path": "Docs/ThirdParty/OpenStrap-protocol-MIT-LICENSE.txt",
       "bytes": 1066,
       "sha256": "681b69ab096cdd87ab4e7a85d4c63c4f2630e0444880c4e1ca5e55a8d97f177f"
@@ -878,8 +888,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 17034,
-      "sha256": "ed3643a28342bfe31aea13572f475371e3ee67d2225f73e521c6a09256046c38"
+      "bytes": 17723,
+      "sha256": "aafd5d0f956907256a17dd740669bf6e9abb23acaedaa043e65faab60e2425db"
     },
     {
       "path": "STATUS.md",
@@ -1092,6 +1102,11 @@
       "sha256": "ec865d81b621acc83eba6d06e11c83e4f23f90f0155afd23eea0d2435ab6953f"
     },
     {
+      "path": "Tests/WHOOPCoreTests/TrackerChartDataTests.swift",
+      "bytes": 1876,
+      "sha256": "04c82300e8cc23e93a367300baf57a084708d1c0472542d76cad0792f3b95947"
+    },
+    {
       "path": "Tests/WHOOPCoreTests/TrackerConnectionEvidenceTests.swift",
       "bytes": 1574,
       "sha256": "09ae7ce1240d8ad86bbf9132700ec6d6b0ee6c6985bbf37a5758bed73359a97f"
@@ -1133,13 +1148,13 @@
     },
     {
       "path": "UITests/SetupFlowTests.swift",
-      "bytes": 16559,
-      "sha256": "b4b3b6ee35da0d0b02f068273b15e201022a59fa98c221d921c082880cea7100"
+      "bytes": 16816,
+      "sha256": "eaf466597a1b0c641e44ead01f3c022d0e197eb953e7d6bb5c376753af7dc566"
     },
     {
       "path": "VALIDATION.json",
-      "bytes": 27895,
-      "sha256": "4937311c318f02e7567cc65242ceaec3d69929b76e5bd7e1c2820d063392f014"
+      "bytes": 28774,
+      "sha256": "816d8fd202c043069ef02e955b3c05d1747b84e946f2bed5fd4cba2896d6c381"
     },
     {
       "path": "Validation/app-syntax.log",
@@ -1425,6 +1440,11 @@
       "path": "Validation/startup-core-tests.log",
       "bytes": 38160,
       "sha256": "a5072f333ae501d15b8944f4d95f346f4bd02bd2bc7ce264aa13fadb3bd2c095"
+    },
+    {
+      "path": "Validation/tracker-status-tests.log",
+      "bytes": 58867,
+      "sha256": "8fcea4d93d31cd970474c89115a0aa9e2be7cc2ca31c5d6bc32cf2fde1c7502f"
     },
     {
       "path": "Validation/whoop-home-05-checks.json",
